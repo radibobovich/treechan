@@ -3,6 +3,7 @@ import '../services/board_service.dart';
 import '../board_json.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'thread_screen.dart';
+import '../flutter_simple_treeview_builder.dart';
 
 // screen where you can scroll threads of the board
 class BoardScreen extends StatefulWidget {
@@ -229,6 +230,8 @@ class CardFooter extends StatelessWidget {
                     //         builder: (context) => ThreadScreen(
                     //             threadId: thread?.op ?? 0,
                     //             tag: thread?.board ?? "b")));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => SimpleTree3()));
                   }),
             ],
           ),
