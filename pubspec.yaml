@@ -39,6 +39,15 @@ dependencies:
   http: ^0.13.5
   devtools: ^2.9.4
   flutter_html: ^2.2.1
+  animated_tree_view: ^1.0.0
+  html: ^0.15.1
+  dynamic_treeview: ^1.0.0+2
+  flutter_simple_treeview:
+    git: 
+      #url: radeonovich@github.com:flutter.widgets.tree/flutter.widgets.tree.git
+      url: https://github.com/radeonovich/flutter.widgets.tree.git
+      path: packages/flutter_simple_treeview
+      ref: master
 
 dev_dependencies:
   flutter_test:
