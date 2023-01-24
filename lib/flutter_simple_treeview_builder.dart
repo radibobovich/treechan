@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/screens/board_list_screen.dart';
 import 'board_json.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:html/parser.dart' as html;
 import './services/thread_service.dart';
 import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
@@ -59,7 +60,7 @@ Future<TreeNode> formatPosts() async {
     formattedPosts.add(formattedPost);
   });
 
-  return parse(formattedPosts, formattedPosts.first.postInfo!.num_);
+  return buildTree(formattedPosts, formattedPosts.first.postInfo!.num_);
 }
 
 List<int> getParents(Post post, int? opPost) {
@@ -93,7 +94,8 @@ List<int> getParents(Post post, int? opPost) {
   return parents;
 }
 
-TreeNode parse(List<FormattedPost> posts, int? opPost) {
+TreeNode buildTree(List<FormattedPost> posts, int? opPost) {
+  // builds a tree using recursive algorithm
   final mainNode = TreeNode(id: 0);
   posts.forEach((post) {
     if (post.parents!.isEmpty || post.parents!.contains(opPost)) {
@@ -116,6 +118,7 @@ TreeNode parse(List<FormattedPost> posts, int? opPost) {
 }
 
 TreeNode MakeTree(TreeNode node, List<FormattedPost> posts) {
+  // recursive algoritm to connect childs
   Iterable<FormattedPost> childs =
       posts.where((post) => post.parents?.contains(node.id) ?? false);
   for (var child in childs) {
@@ -135,6 +138,11 @@ class PostWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(post!.postInfo!.num_.toString());
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [Html(data: post!.postInfo!.comment)],
+      ),
+    );
   }
 }
