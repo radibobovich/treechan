@@ -8,28 +8,28 @@
             "name": "treechan",
             "request": "launch",
             "type": "dart",
-            "program": "board_list_screen.dart"
+            "program": "lib/screens/board_list_screen.dart"
         },
         {
             "name": "treechan (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
-            "program": "board_list_screen.dart"
+            "program": "lib/screens/board_list_screen.dart"
         },
         {
             "name": "treechan (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",
-            "program": "board_list_screen.dart"
+            "program": "lib/screens/board_list_screen.dart"
         },
         {
             "name": "treechan",
             "cwd": "treechan",
             "request": "launch",
             "type": "dart",
-            "program": "board_list_screen.dart"
+            "program": "lib/screens/board_list_screen.dart"
         },
         {
             "name": "treechan (profile mode)",
@@ -37,7 +37,7 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
-            "program": "board_list_screen.dart"
+            "program": "lib/screens/board_list_screen.dart"
         },
         {
             "name": "treechan (release mode)",
@@ -45,7 +45,7 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",
-            "program": "board_list_screen.dart"
+            "program": "lib/screens/board_list_screen.dart"
         }
     ]
 }
