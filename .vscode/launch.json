@@ -1,0 +1,51 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "treechan",
+            "request": "launch",
+            "type": "dart",
+            "program": "board_list_screen.dart"
+        },
+        {
+            "name": "treechan (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "board_list_screen.dart"
+        },
+        {
+            "name": "treechan (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "board_list_screen.dart"
+        },
+        {
+            "name": "treechan",
+            "cwd": "treechan",
+            "request": "launch",
+            "type": "dart",
+            "program": "board_list_screen.dart"
+        },
+        {
+            "name": "treechan (profile mode)",
+            "cwd": "treechan",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "board_list_screen.dart"
+        },
+        {
+            "name": "treechan (release mode)",
+            "cwd": "treechan",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "board_list_screen.dart"
+        }
+    ]
+}
