@@ -30,8 +30,10 @@ class _SimpleTree3State extends State<SimpleTree3> {
               future: mainNode,
               builder: ((context, snapshot) {
                 if (snapshot.hasData) {
-                  return TreeView(
-                      nodes: snapshot.data?.children ?? List.empty());
+                  return Expanded(
+                    child: TreeView(
+                        nodes: snapshot.data?.children ?? List.empty()),
+                  );
                 } else if (snapshot.hasError) {
                   return Text('${snapshot.error}');
                 }
@@ -50,7 +52,7 @@ class FormattedPost {
 Future<TreeNode> formatPosts() async {
   //each formatted post will have a list of its parents
   final formattedPosts = List<FormattedPost>.empty(growable: true);
-  final thread = await getThread("b", 281365085);
+  final thread = await getThread("b", 281431308);
   final opPost = thread!.posts!.first.num_;
 
   thread.posts?.forEach((post) {
@@ -138,10 +140,21 @@ class PostWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Html(data: post!.postInfo!.comment)],
+    return Expanded(
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Html(
+              data: post!.postInfo!.comment,
+              style: {
+                '#': Style(
+                  margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                )
+              },
+            )
+          ],
+        ),
       ),
     );
   }
