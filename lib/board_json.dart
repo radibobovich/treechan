@@ -6,7 +6,6 @@ class Root {
   String? boardBannerLink;
   String? filter;
   List<Thread>? threads;
-
   int? currentThread;
   int? filesCount;
   bool? isBoard;
