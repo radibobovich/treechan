@@ -9,7 +9,8 @@ class ImagesPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding:
+          (files == null ? const EdgeInsets.all(0) : const EdgeInsets.all(8.0)),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -34,7 +35,7 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
     }
   }
   for (var file in files) {
-    if (file.type == 1 || file.type == 2) {
+    if (file.type == 1 || file.type == 2 || file.type == 4) {
       images.add(
           ImagePreview(imageLinks: imageLinks, file: file, context: context));
     }
@@ -62,13 +63,15 @@ class ImagePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () => SwipeImageGallery(
-                context: context,
-                itemBuilder: (context, index) {
-                  return Image.network(imageLinks[index]);
-                },
-                itemCount: imageLinks.length)
-            .show(),
+        onTap: () => imageLinks.isNotEmpty
+            ? (SwipeImageGallery(
+                    context: context,
+                    itemBuilder: (context, index) {
+                      return Image.network(imageLinks[index]);
+                    },
+                    itemCount: imageLinks.length)
+                .show())
+            : () {},
         child:
             Image.network(file.thumbnail!, height: 140, fit: BoxFit.contain));
   }
