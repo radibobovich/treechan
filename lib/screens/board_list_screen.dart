@@ -16,7 +16,7 @@ void main() {
       alignment: Alignment.center,
       child: Text(
         'Error! ${details.exception}',
-        style: TextStyle(color: Colors.yellow),
+        style: const TextStyle(color: Colors.yellow),
         textDirection: TextDirection.ltr,
       ),
     );
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Доски'),
     );
   }
 }
