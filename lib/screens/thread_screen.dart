@@ -140,7 +140,7 @@ class PostWidget extends StatelessWidget {
               const Divider(
                 thickness: 1,
               ),
-              ImagesGroup(files: post!.postInfo!.files),
+              ImagesPreview(files: post!.postInfo!.files),
               Html(
                 data: post!.postInfo!.comment,
                 style: {

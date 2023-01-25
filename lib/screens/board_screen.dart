@@ -83,7 +83,7 @@ class ThreadCard extends StatelessWidget {
               ],
             ),
           ),
-          ImagesGroup(files: thread!.files),
+          ImagesPreview(files: thread!.files),
           Html(data: thread?.comment, style: {
             '#': Style(
               maxLines: 15,
