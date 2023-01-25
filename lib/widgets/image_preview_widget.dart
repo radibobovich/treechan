@@ -30,7 +30,8 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
   List<Widget> images = List<Widget>.empty(growable: true);
   List<String> imageLinks = List<String>.empty(growable: true);
   for (var file in files) {
-    if (file.type == 1 || file.type == 2) {
+    // TODO: replace conditions with one list with allowed formats
+    if (file.type == 1 || file.type == 2 || file.type == 4) {
       imageLinks.add("https://2ch.hk${file.path ?? ""}");
     }
   }
