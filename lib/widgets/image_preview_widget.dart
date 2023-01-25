@@ -29,14 +29,14 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
   //List<Widget> images = List<Widget>.filled(8, const SizedBox.shrink());
   List<Widget> images = List<Widget>.empty(growable: true);
   List<String> imageLinks = List<String>.empty(growable: true);
+  var supportedFormats = [1, 2, 4];
   for (var file in files) {
-    // TODO: replace conditions with one list with allowed formats
-    if (file.type == 1 || file.type == 2 || file.type == 4) {
+    if (supportedFormats.contains(file.type)) {
       imageLinks.add("https://2ch.hk${file.path ?? ""}");
     }
   }
   for (var file in files) {
-    if (file.type == 1 || file.type == 2 || file.type == 4) {
+    if (supportedFormats.contains(file.type)) {
       images.add(
           ImagePreview(imageLinks: imageLinks, file: file, context: context));
     }
