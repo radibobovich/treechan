@@ -3,7 +3,7 @@ import '../services/board_service.dart';
 import '../board_json.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'thread_screen.dart';
-import '/screens/thread_screen.dart';
+import '../widgets/image_preview_widget.dart';
 
 // screen where you can scroll threads of the board
 class BoardScreen extends StatefulWidget {
@@ -83,7 +83,7 @@ class ThreadCard extends StatelessWidget {
               ],
             ),
           ),
-          ImagesGroup(thread: thread),
+          ImagesGroup(files: thread!.files),
           Html(data: thread?.comment, style: {
             '#': Style(
               maxLines: 15,
@@ -131,42 +131,6 @@ class ThreadCard extends StatelessWidget {
   //     ],
   //   );
   // }
-}
-
-class ImagesGroup extends StatelessWidget {
-  const ImagesGroup({
-    Key? key,
-    required this.thread,
-  }) : super(key: key);
-
-  final Thread? thread;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _getImages(thread?.files),
-        ),
-      ),
-    );
-  }
-}
-
-List<Widget> _getImages(List<File>? files) {
-  if (files == null) {
-    // return empty image list
-    return List<Widget>.filled(1, const SizedBox.shrink());
-  }
-  List<Widget> images = List<Widget>.filled(8, const SizedBox.shrink());
-  for (int i = 0; i < files.length; i++) {
-    if (files[i].thumbnail != null) {
-      images[i] =
-          Image.network(files[i].thumbnail!, height: 140, fit: BoxFit.contain);
-    }
-  }
-  return images;
 }
 
 // contains username and date
