@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:treechan/screens/board_list_screen.dart';
 import '/board_json.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/parser.dart' as html;
 import '/services/thread_service.dart';
 import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
+import '../widgets/image_preview_widget.dart';
 
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen({super.key, required this.threadId, required this.tag});
@@ -54,12 +54,12 @@ Future<TreeNode> formatPosts(int threadId, String tag) async {
   final thread = await getThread(tag, threadId);
   final opPost = thread!.posts!.first.num_;
 
-  thread.posts?.forEach((post) {
+  for (var post in thread.posts!) {
     var parents = getParents(post, opPost);
 
     final formattedPost = FormattedPost(postInfo: post, parents: parents);
     formattedPosts.add(formattedPost);
-  });
+  }
 
   return buildTree(formattedPosts, formattedPosts.first.postInfo!.num_);
 }
@@ -97,7 +97,7 @@ TreeNode buildTree(List<FormattedPost> posts, int? opPost) {
       var node =
           TreeNode(content: PostWidget(post: post), id: post.postInfo!.num_);
       if (post.postInfo?.num_ != opPost) {
-        node = makeTree(node, posts);
+        node = attachChilds(node, posts);
       }
       mainNode.children?.add(node);
     }
@@ -105,7 +105,7 @@ TreeNode buildTree(List<FormattedPost> posts, int? opPost) {
   return mainNode;
 }
 
-TreeNode makeTree(TreeNode node, List<FormattedPost> posts) {
+TreeNode attachChilds(TreeNode node, List<FormattedPost> posts) {
   // recursive algoritm to connect childs
   Iterable<FormattedPost> childs =
       posts.where((post) => post.parents?.contains(node.id) ?? false);
@@ -114,7 +114,7 @@ TreeNode makeTree(TreeNode node, List<FormattedPost> posts) {
         TreeNode(content: PostWidget(post: child), id: child.postInfo!.num_));
   }
   node.children?.forEach((child) {
-    makeTree(child, posts);
+    attachChilds(child, posts);
   });
   return node;
 }
@@ -135,17 +135,12 @@ class PostWidget extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                child: Row(
-                  children: [
-                    Text(post!.postInfo!.name!),
-                    const Spacer(),
-                    Text(post!.postInfo!.date!),
-                  ],
-                ),
+                child: PostHeader(post: post),
               ),
               const Divider(
                 thickness: 1,
               ),
+              ImagesGroup(files: post!.postInfo!.files),
               Html(
                 data: post!.postInfo!.comment,
                 style: {
@@ -158,6 +153,26 @@ class PostWidget extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class PostHeader extends StatelessWidget {
+  const PostHeader({
+    Key? key,
+    required this.post,
+  }) : super(key: key);
+
+  final FormattedPost? post;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(post!.postInfo!.name!),
+        const Spacer(),
+        Text(post!.postInfo!.date!),
+      ],
     );
   }
 }
