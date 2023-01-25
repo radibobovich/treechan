@@ -39,14 +39,14 @@ class Root {
   Root.fromJson(Map<String, dynamic> json) {
     advertMobileImage = json['advert_mobile_image'];
     advertMobileLink = json['advert_mobile_link'];
-    board = json['board'] != null ? new Board.fromJson(json['board']) : null;
+    board = json['board'] != null ? Board.fromJson(json['board']) : null;
     boardBannerImage = json['board_banner_image'];
     boardBannerLink = json['board_banner_link'];
     filter = json['filter'];
     if (json['threads'] != null) {
       threads = <Thread>[];
       json['threads'].forEach((v) {
-        threads!.add(new Thread.fromJson(v));
+        threads!.add(Thread.fromJson(v));
       });
     }
 
@@ -63,29 +63,29 @@ class Root {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['advert_mobile_image'] = this.advertMobileImage;
-    data['advert_mobile_link'] = this.advertMobileLink;
-    if (this.board != null) {
-      data['board'] = this.board!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['advert_mobile_image'] = advertMobileImage;
+    data['advert_mobile_link'] = advertMobileLink;
+    if (board != null) {
+      data['board'] = board!.toJson();
     }
-    data['board_banner_image'] = this.boardBannerImage;
-    data['board_banner_link'] = this.boardBannerLink;
-    data['filter'] = this.filter;
-    if (this.threads != null) {
-      data['threads'] = this.threads!.map((v) => v.toJson()).toList();
+    data['board_banner_image'] = boardBannerImage;
+    data['board_banner_link'] = boardBannerLink;
+    data['filter'] = filter;
+    if (threads != null) {
+      data['threads'] = threads!.map((v) => v.toJson()).toList();
     }
 
-    data['current_thread'] = this.currentThread;
-    data['files_count'] = this.filesCount;
-    data['is_board'] = this.isBoard;
-    data['is_closed'] = this.isClosed;
-    data['is_index'] = this.isIndex;
-    data['max_num'] = this.maxNum;
-    data['posts_count'] = this.postsCount;
-    data['thread_first_image'] = this.threadFirstImage;
-    data['title'] = this.title;
-    data['unique_posters'] = this.uniquePosters;
+    data['current_thread'] = currentThread;
+    data['files_count'] = filesCount;
+    data['is_board'] = isBoard;
+    data['is_closed'] = isClosed;
+    data['is_index'] = isIndex;
+    data['max_num'] = maxNum;
+    data['posts_count'] = postsCount;
+    data['thread_first_image'] = threadFirstImage;
+    data['title'] = title;
+    data['unique_posters'] = uniquePosters;
 
     return data;
   }
@@ -171,31 +171,31 @@ class Board {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['bump_limit'] = this.bumpLimit;
-    data['category'] = this.category;
-    data['default_name'] = this.defaultName;
-    data['enable_dices'] = this.enableDices;
-    data['enable_flags'] = this.enableFlags;
-    data['enable_icons'] = this.enableIcons;
-    data['enable_likes'] = this.enableLikes;
-    data['enable_names'] = this.enableNames;
-    data['enable_oekaki'] = this.enableOekaki;
-    data['enable_posting'] = this.enablePosting;
-    data['enable_sage'] = this.enableSage;
-    data['enable_shield'] = this.enableShield;
-    data['enable_subject'] = this.enableSubject;
-    data['enable_thread_tags'] = this.enableThreadTags;
-    data['enable_trips'] = this.enableTrips;
-    data['file_types'] = this.fileTypes;
-    data['id'] = this.id;
-    data['info'] = this.info;
-    data['info_outer'] = this.infoOuter;
-    data['max_comment'] = this.maxComment;
-    data['max_files_size'] = this.maxFilesSize;
-    data['max_pages'] = this.maxPages;
-    data['name'] = this.name;
-    data['threads_per_page'] = this.threadsPerPage;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['bump_limit'] = bumpLimit;
+    data['category'] = category;
+    data['default_name'] = defaultName;
+    data['enable_dices'] = enableDices;
+    data['enable_flags'] = enableFlags;
+    data['enable_icons'] = enableIcons;
+    data['enable_likes'] = enableLikes;
+    data['enable_names'] = enableNames;
+    data['enable_oekaki'] = enableOekaki;
+    data['enable_posting'] = enablePosting;
+    data['enable_sage'] = enableSage;
+    data['enable_shield'] = enableShield;
+    data['enable_subject'] = enableSubject;
+    data['enable_thread_tags'] = enableThreadTags;
+    data['enable_trips'] = enableTrips;
+    data['file_types'] = fileTypes;
+    data['id'] = id;
+    data['info'] = info;
+    data['info_outer'] = infoOuter;
+    data['max_comment'] = maxComment;
+    data['max_files_size'] = maxFilesSize;
+    data['max_pages'] = maxPages;
+    data['name'] = name;
+    data['threads_per_page'] = threadsPerPage;
     return data;
   }
 }
@@ -252,7 +252,7 @@ class Thread {
     if (json['posts'] != null) {
       posts = <Post>[];
       json['posts'].forEach((v) {
-        posts!.add(new Post.fromJson(v));
+        posts!.add(Post.fromJson(v));
       });
     }
     banned = json['banned'];
@@ -265,7 +265,7 @@ class Thread {
     if (json['files'] != null) {
       files = <File>[];
       json['files'].forEach((v) {
-        files!.add(new File.fromJson(v));
+        files!.add(File.fromJson(v));
       });
     }
     filesCount = json['files_count'];
@@ -284,33 +284,33 @@ class Thread {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.posts != null) {
-      data['posts'] = this.posts!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (posts != null) {
+      data['posts'] = posts!.map((v) => v.toJson()).toList();
     }
-    data['banned'] = this.banned;
-    data['board'] = this.board;
-    data['closed'] = this.closed;
-    data['comment'] = this.comment;
-    data['date'] = this.date;
-    data['email'] = this.email;
-    data['endless'] = this.endless;
-    if (this.files != null) {
-      data['files'] = this.files!.map((v) => v.toJson()).toList();
+    data['banned'] = banned;
+    data['board'] = board;
+    data['closed'] = closed;
+    data['comment'] = comment;
+    data['date'] = date;
+    data['email'] = email;
+    data['endless'] = endless;
+    if (files != null) {
+      data['files'] = files!.map((v) => v.toJson()).toList();
     }
-    data['files_count'] = this.filesCount;
-    data['lasthit'] = this.lasthit;
-    data['name'] = this.name;
-    data['num'] = this.num_;
-    data['op'] = this.op;
-    data['parent'] = this.parent;
-    data['posts_count'] = this.postsCount;
-    data['sticky'] = this.sticky;
-    data['subject'] = this.subject;
-    data['tags'] = this.tags;
-    data['timestamp'] = this.timestamp;
-    data['trip'] = this.trip;
-    data['views'] = this.views;
+    data['files_count'] = filesCount;
+    data['lasthit'] = lasthit;
+    data['name'] = name;
+    data['num'] = num_;
+    data['op'] = op;
+    data['parent'] = parent;
+    data['posts_count'] = postsCount;
+    data['sticky'] = sticky;
+    data['subject'] = subject;
+    data['tags'] = tags;
+    data['timestamp'] = timestamp;
+    data['trip'] = trip;
+    data['views'] = views;
     return data;
   }
 }
@@ -374,24 +374,24 @@ class File {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['displayname'] = this.displayname;
-    data['fullname'] = this.fullname;
-    data['height'] = this.height;
-    data['md5'] = this.md5;
-    data['name'] = this.name;
-    data['path'] = this.path;
-    data['size'] = this.size;
-    data['thumbnail'] = this.thumbnail;
-    data['tn_height'] = this.tnHeight;
-    data['tn_width'] = this.tnWidth;
-    data['type'] = this.type;
-    data['width'] = this.width;
-    data['duration'] = this.duration;
-    data['duration_secs'] = this.durationSecs;
-    data['install'] = this.install;
-    data['pack'] = this.pack;
-    data['sticker'] = this.sticker;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['displayname'] = displayname;
+    data['fullname'] = fullname;
+    data['height'] = height;
+    data['md5'] = md5;
+    data['name'] = name;
+    data['path'] = path;
+    data['size'] = size;
+    data['thumbnail'] = thumbnail;
+    data['tn_height'] = tnHeight;
+    data['tn_width'] = tnWidth;
+    data['type'] = type;
+    data['width'] = width;
+    data['duration'] = duration;
+    data['duration_secs'] = durationSecs;
+    data['install'] = install;
+    data['pack'] = pack;
+    data['sticker'] = sticker;
     return data;
   }
 }
@@ -451,7 +451,7 @@ class Post {
     if (json['files'] != null) {
       files = <File>[];
       json['files'].forEach((v) {
-        files!.add(new File.fromJson(v));
+        files!.add(File.fromJson(v));
       });
     }
     lasthit = json['lasthit'];
@@ -469,29 +469,29 @@ class Post {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['banned'] = this.banned;
-    data['board'] = this.board;
-    data['closed'] = this.closed;
-    data['comment'] = this.comment;
-    data['date'] = this.date;
-    data['email'] = this.email;
-    data['endless'] = this.endless;
-    if (this.files != null) {
-      data['files'] = this.files!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['banned'] = banned;
+    data['board'] = board;
+    data['closed'] = closed;
+    data['comment'] = comment;
+    data['date'] = date;
+    data['email'] = email;
+    data['endless'] = endless;
+    if (files != null) {
+      data['files'] = files!.map((v) => v.toJson()).toList();
     }
-    data['lasthit'] = this.lasthit;
-    data['name'] = this.name;
-    data['num'] = this.num_;
-    data['number'] = this.number;
-    data['op'] = this.op;
-    data['parent'] = this.parent;
-    data['sticky'] = this.sticky;
-    data['subject'] = this.subject;
-    data['tags'] = this.tags;
-    data['timestamp'] = this.timestamp;
-    data['trip'] = this.trip;
-    data['views'] = this.views;
+    data['lasthit'] = lasthit;
+    data['name'] = name;
+    data['num'] = num_;
+    data['number'] = number;
+    data['op'] = op;
+    data['parent'] = parent;
+    data['sticky'] = sticky;
+    data['subject'] = subject;
+    data['tags'] = tags;
+    data['timestamp'] = timestamp;
+    data['trip'] = trip;
+    data['views'] = views;
     return data;
   }
 }

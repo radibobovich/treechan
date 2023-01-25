@@ -46,7 +46,7 @@ class _BoardScreenState extends State<BoardScreen> {
                   return Text('${snapshot.error}');
                 }
 
-                return const CircularProgressIndicator();
+                return const Center(child: CircularProgressIndicator());
               })),
     );
   }
@@ -95,42 +95,6 @@ class ThreadCard extends StatelessWidget {
       ),
     );
   }
-
-  // Column cardFooter(BuildContext context) {
-  //   return Column(
-  //     children: [
-  //       const Divider(
-  //         thickness: 1,
-  //       ),
-  //       Padding(
-  //         padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
-  //         child: Row(
-  //           children: [
-  //             const Icon(Icons.question_answer, size: 20),
-  //             Text.rich(
-  //                 // post count
-  //                 TextSpan(text: thread?.postsCount.toString() ?? "count"),
-  //                 style: const TextStyle(fontSize: 14)),
-  //             const Spacer(),
-  //             InkWell(
-  //                 // button go to thread
-  //                 child: const Text(
-  //                   "В тред",
-  //                 ),
-  //                 onTap: () {
-  //                   Navigator.push(
-  //                       context,
-  //                       MaterialPageRoute(
-  //                           builder: (context) => ThreadScreen(
-  //                               threadId: thread?.op ?? 0,
-  //                               tag: thread?.board ?? "b")));
-  //                 }),
-  //           ],
-  //         ),
-  //       )
-  //     ],
-  //   );
-  // }
 }
 
 // contains username and date
@@ -188,12 +152,6 @@ class CardFooter extends StatelessWidget {
                     "В тред",
                   ),
                   onTap: () {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => ThreadScreen(
-                    //             threadId: thread?.op ?? 0,
-                    //             tag: thread?.board ?? "b")));
                     Navigator.push(
                         context,
                         MaterialPageRoute(
