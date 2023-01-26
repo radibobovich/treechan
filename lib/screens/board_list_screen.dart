@@ -1,43 +1,14 @@
 import 'package:flutter/material.dart';
 import 'board_screen.dart';
 
-void main() {
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    bool inDebug = false;
-    assert(() {
-      inDebug = true;
-      return true;
-    }());
-    // In debug mode, use the normal error widget which shows
-    // the error message:
-    if (inDebug) return ErrorWidget(details.exception);
-    // In release builds, show a yellow-on-blue message instead:
-    return Container(
-      alignment: Alignment.center,
-      child: Text(
-        'Error! ${details.exception}',
-        style: const TextStyle(color: Colors.yellow),
-        textDirection: TextDirection.ltr,
-      ),
-    );
-  };
-  runApp(const MyApp());
+class BoardMenuItem {
+  final String name;
+  final String tag;
+
+  const BoardMenuItem(this.name, this.tag);
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Доски'),
-    );
-  }
-}
+var boardMenu = List.empty(growable: true);
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -47,16 +18,14 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class BoardMenuItem {
-  final String name;
-  final String tag;
-
-  const BoardMenuItem(this.name, this.tag);
-}
-
-final boardMenu = List.filled(1, const BoardMenuItem("Бред", "b"));
-
 class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    boardMenu.add(const BoardMenuItem("Бред", "b"));
+    boardMenu.add(const BoardMenuItem("Психология", 'psy'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: ListView.builder(
-            itemCount: 1,
+            itemCount: boardMenu.length,
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(boardMenu[index].name),
