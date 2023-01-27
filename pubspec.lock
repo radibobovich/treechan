@@ -179,7 +179,7 @@ packages:
     description:
       path: "packages/flutter_simple_treeview"
       ref: master
-      resolved-ref: "90634ba061b22f197838fb0aad493e1528eef75b"
+      resolved-ref: "6631014254ca4b29b729d363ee8342378706f7fb"
       url: "https://github.com/radeonovich/flutter.widgets.tree.git"
     source: git
     version: "3.0.2"
