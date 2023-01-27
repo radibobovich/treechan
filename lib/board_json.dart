@@ -91,15 +91,22 @@ class Root {
   }
 }
 
-class BoardList {
+List<Board>? boardListFromJson(List<dynamic> json) {
   List<Board>? boardList = List.empty(growable: true);
-  BoardList({this.boardList});
-  BoardList.fromJson(List<dynamic> json) {
-    for (var boardItem in json) {
-      boardList!.add(Board.fromJson(boardItem));
-    }
+  for (var boardItem in json) {
+    boardList.add(Board.fromJson(boardItem));
   }
+  return boardList;
 }
+// class BoardListContainer {
+//   List<Board>? boardList = List.empty(growable: true);
+//   BoardListContainer({this.boardList});
+//   BoardListContainer.fromJson(List<dynamic> json) {
+//     for (var boardItem in json) {
+//       boardList!.add(Board.fromJson(boardItem));
+//     }
+//   }
+// }
 
 class Board {
   int? bumpLimit;
