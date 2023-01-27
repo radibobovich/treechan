@@ -91,6 +91,16 @@ class Root {
   }
 }
 
+class BoardList {
+  List<Board>? boardList = List.empty(growable: true);
+  BoardList({this.boardList});
+  BoardList.fromJson(List<dynamic> json) {
+    for (var boardItem in json) {
+      boardList!.add(Board.fromJson(boardItem));
+    }
+  }
+}
+
 class Board {
   int? bumpLimit;
   String? category;
