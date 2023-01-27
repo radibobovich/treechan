@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/services/board_list_service.dart';
 import './screens/board_list_screen.dart';
 
 void main() {
+  //getBoards();
   runApp(const MyApp());
 }
 
