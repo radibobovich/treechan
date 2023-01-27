@@ -3,7 +3,8 @@ import 'package:treechan/services/board_list_service.dart';
 import './screens/board_list_screen.dart';
 
 void main() {
-  //getBoards();
+  WidgetsFlutterBinding.ensureInitialized();
+  getBoards();
   runApp(const MyApp());
 }
 

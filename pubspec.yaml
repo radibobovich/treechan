@@ -49,6 +49,7 @@ dependencies:
       path: packages/flutter_simple_treeview
       ref: master
   swipe_image_gallery: ^0.8.0
+  shared_preferences: ^2.0.17
 
 dev_dependencies:
   flutter_test:
