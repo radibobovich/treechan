@@ -155,7 +155,7 @@ class CardFooter extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ThreadScreen(
+                            builder: (context) => ThreadScreen2(
                                 threadId: thread!.num_ ?? 0,
                                 tag: thread!.board ?? "b")));
                   }),
