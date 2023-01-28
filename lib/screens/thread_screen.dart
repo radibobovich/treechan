@@ -36,6 +36,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
                 if (snapshot.hasData) {
                   return Flexible(
                     child: FlexibleTreeView<FormattedPost>(
+                      scrollable: false,
                       indent: 8,
                       showLines: true,
                       nodes: snapshot.data!,
