@@ -3,42 +3,74 @@ import '/board_json.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/parser.dart' as html;
 import '/services/thread_service.dart';
-import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
+//import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
+import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 
-class ThreadScreen extends StatefulWidget {
-  const ThreadScreen({super.key, required this.threadId, required this.tag});
+class ThreadScreen2 extends StatefulWidget {
+  const ThreadScreen2({super.key, required this.threadId, required this.tag});
   final int threadId;
   final String tag;
   @override
-  State<ThreadScreen> createState() => _ThreadScreenState();
+  State<ThreadScreen2> createState() => _ThreadScreen2State();
 }
 
-class _ThreadScreenState extends State<ThreadScreen> {
-  late Future<TreeNode> mainNode;
+class _ThreadScreen2State extends State<ThreadScreen2> {
+  late Future<List<TreeNode<FormattedPost>>>
+      roots; // List of posts which doesn't have parents
   @override
   void initState() {
     super.initState();
-    mainNode = formatPosts(widget.threadId, widget.tag);
+    roots = formatPosts(widget.threadId, widget.tag);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("Тред")),
-        body: SingleChildScrollView(
-          child: FutureBuilder<TreeNode>(
-              future: mainNode,
+        body: Column(children: [
+          FutureBuilder<List<TreeNode<FormattedPost>>>(
+              future: roots,
               builder: ((context, snapshot) {
                 if (snapshot.hasData) {
-                  return TreeView(
-                      nodes: snapshot.data?.children ?? List.empty());
+                  return Expanded(
+                    child: FlexibleTreeView<FormattedPost>(
+                      nodes: snapshot.data!,
+                      nodeItemBuilder: (context, node) {
+                        return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            //child: PostWidget(post: node.data),
+                            child: Row(
+                              children: [
+                                node.hasNodes
+                                    ? IconButton(
+                                        iconSize: 12,
+                                        splashRadius: 16,
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints.tight(
+                                            const Size(30, 30)),
+                                        icon: Icon(node.expanded
+                                            ? Icons.remove
+                                            : Icons.add),
+                                        onPressed: () {
+                                          node.expanded = !node.expanded;
+                                        },
+                                      )
+                                    : const SizedBox(
+                                        width: 12,
+                                      ),
+                                PostWidget(post: node.data),
+                              ],
+                            ));
+                      },
+                    ),
+                  );
                 } else if (snapshot.hasError) {
                   return Text('${snapshot.error}');
                 }
                 return const Center(child: CircularProgressIndicator());
               })),
-        ));
+        ]));
   }
 }
 
@@ -48,7 +80,8 @@ class FormattedPost {
   FormattedPost({this.postInfo, this.parents});
 }
 
-Future<TreeNode> formatPosts(int threadId, String tag) async {
+Future<List<TreeNode<FormattedPost>>> formatPosts(
+    int threadId, String tag) async {
   //each formatted post will have a list of its parents
   final formattedPosts = List<FormattedPost>.empty(growable: true);
   final thread = await getThread(tag, threadId);
@@ -58,10 +91,13 @@ Future<TreeNode> formatPosts(int threadId, String tag) async {
     var parents = getParents(post, opPost);
 
     final formattedPost = FormattedPost(postInfo: post, parents: parents);
+    // for (var parent in parents){
+    //   final formattedPost = FormattedPost(postInfo: post, parents: parent);
+    // }
     formattedPosts.add(formattedPost);
   }
 
-  return buildTree(formattedPosts, formattedPosts.first.postInfo!.num_);
+  return createTreeModel(formattedPosts, formattedPosts.first.postInfo!.num_);
 }
 
 List<int> getParents(Post post, int? opPost) {
@@ -89,34 +125,45 @@ List<int> getParents(Post post, int? opPost) {
   return parents;
 }
 
-TreeNode buildTree(List<FormattedPost> posts, int? opPost) {
-  // builds a tree using recursive algorithm
-  final mainNode = TreeNode(id: 0);
+List<TreeNode<FormattedPost>> createTreeModel(
+    List<FormattedPost> posts, int? opPost) {
+  //final mainNode = TreeNode<FormattedPost>(data: FormattedPost(), id: 0);
+
+  // List of posts which doesn't have parents
+  final roots = List<TreeNode<FormattedPost>>.empty(growable: true);
   for (var post in posts) {
     if (post.parents!.isEmpty || post.parents!.contains(opPost)) {
-      var node =
-          TreeNode(content: PostWidget(post: post), id: post.postInfo!.num_);
-      if (post.postInfo?.num_ != opPost) {
-        node = attachChilds(node, posts);
-      }
-      mainNode.children?.add(node);
+      //var node = TreeNode<FormattedPost>(data: post, id: post.postInfo!.num_);
+      var node = TreeNode<FormattedPost>(
+          data: post,
+          id: post.postInfo!.num_,
+          children: post.postInfo?.num_ != opPost
+              ? attachChilds(post.postInfo!.num_, posts)
+              : [],
+          expanded: true);
+      // if (post.postInfo?.num_ != opPost) {
+      //   node = attachChilds(node, posts);
+      // }
+      //mainNode.children?.add(node);
+      roots.add(node);
     }
   }
-  return mainNode;
+  return roots;
 }
 
-TreeNode attachChilds(TreeNode node, List<FormattedPost> posts) {
-  // recursive algoritm to connect childs
-  Iterable<FormattedPost> childs =
-      posts.where((post) => post.parents?.contains(node.id) ?? false);
-  for (var child in childs) {
-    node.children?.add(
-        TreeNode(content: PostWidget(post: child), id: child.postInfo!.num_));
+List<TreeNode<FormattedPost>> attachChilds(int? id, List<FormattedPost> posts) {
+  var childrenToAdd = <TreeNode<FormattedPost>>[];
+  // find all posts that are replying to this one
+  Iterable<FormattedPost> childsFound =
+      posts.where((post) => post.parents?.contains(id) ?? false);
+  for (var post in childsFound) {
+    // add replies to them too
+    childrenToAdd.add(TreeNode(
+        data: post,
+        children: attachChilds(post.postInfo!.num_, posts),
+        expanded: true));
   }
-  node.children?.forEach((child) {
-    attachChilds(child, posts);
-  });
-  return node;
+  return childrenToAdd;
 }
 
 class PostWidget extends StatelessWidget {
@@ -154,17 +201,14 @@ class PostWidget extends StatelessWidget {
         ),
       ),
     );
+    //return Text(post!.postInfo!.num_.toString());
   }
 }
 
 class PostHeader extends StatelessWidget {
-  const PostHeader({
-    Key? key,
-    required this.post,
-  }) : super(key: key);
+  const PostHeader({Key? key, required this.post}) : super(key: key);
 
   final FormattedPost? post;
-
   @override
   Widget build(BuildContext context) {
     return Row(
