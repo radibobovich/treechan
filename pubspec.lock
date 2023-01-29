@@ -153,7 +153,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "991124968f8ba6a92f1aa5ab678c71ce48326acf"
+      resolved-ref: "64503854a75f30f08d4522d0e42cff9090ab10fe"
       url: "https://github.com/radeonovich/flexible_tree_view.git"
     source: git
     version: "0.0.6"
