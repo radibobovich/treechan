@@ -54,6 +54,7 @@ dependencies:
     git:
       url: https://github.com/radeonovich/flexible_tree_view.git
       ref: master
+  grouped_list: ^5.1.2
 
 dev_dependencies:
   flutter_test:
