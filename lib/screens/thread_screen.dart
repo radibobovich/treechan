@@ -22,6 +22,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
   void initState() {
     super.initState();
     //showlines = true;
+    showLines = true;
     roots = formatPosts(widget.threadId, widget.tag);
   }
 
@@ -188,7 +189,8 @@ void checkDepth(TreeNode<FormattedPost> node) {
     showLines = false;
     return;
   }
+
   for (var element in node.children) {
-    return checkDepth(element);
+    checkDepth(element);
   }
 }
