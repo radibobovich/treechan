@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:treechan/services/board_list_service.dart';
 import './screens/board_list_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  getBoards();
+  //getBoards();
   runApp(const MyApp());
 }
 
@@ -16,8 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primarySwatch: Colors.blue, secondaryHeaderColor: Colors.blue),
       home: const MyHomePage(title: 'Доски'),
     );
   }
