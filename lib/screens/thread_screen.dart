@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import '/board_json.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:html/parser.dart' as html;
-import '/services/thread_service.dart';
-//import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 import '../services/tree_service.dart';
+
+/// changes to false when there are nodes with depth more than 16
+bool showlines = true;
 
 class ThreadScreen2 extends StatefulWidget {
   const ThreadScreen2({super.key, required this.threadId, required this.tag});
@@ -22,6 +21,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
   @override
   void initState() {
     super.initState();
+    showlines = true;
     roots = formatPosts(widget.threadId, widget.tag);
   }
 
@@ -37,8 +37,8 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
                   return Flexible(
                     child: FlexibleTreeView<FormattedPost>(
                       scrollable: false,
-                      indent: 8,
-                      showLines: true,
+                      indent: 16,
+                      showLines: showlines,
                       nodes: snapshot.data!,
                       nodeItemBuilder: (context, node) {
                         return PostNode(
@@ -68,21 +68,22 @@ class PostNode extends StatelessWidget {
       //child: PostWidget(post: node.data),
       child: Row(
         children: [
-          node.hasNodes
-              ? IconButton(
-                  iconSize: 12,
-                  splashRadius: 16,
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints.tight(const Size(30, 30)),
-                  icon: Icon(node.expanded ? Icons.remove : Icons.add),
-                  onPressed: () {
-                    node.expanded = !node.expanded;
-                  },
-                )
-              : const SizedBox(
-                  width: 12,
-                ),
-          PostWidget(post: node.data),
+          PostWidget(node: node),
+          // node.hasNodes
+          //     ? IconButton(
+          //         iconSize: 12,
+          //         splashRadius: 16,
+          //         padding: EdgeInsets.zero,
+          //         constraints: BoxConstraints.tight(const Size(30, 30)),
+          //         icon: Icon(node.expanded ? Icons.remove : Icons.add),
+          //         onPressed: () {
+          //           node.expanded = !node.expanded;
+          //         },
+          //       )
+          //     : SizedBox(
+          //         width: node.depth == 0 ? 0 : 30,
+          //         //width: 30,
+          //       ),
         ],
       ),
     );
@@ -91,11 +92,12 @@ class PostNode extends StatelessWidget {
 
 class PostWidget extends StatelessWidget {
   // widget represents post
-  final FormattedPost post;
-  const PostWidget({super.key, required this.post});
+  final TreeNode<FormattedPost> node;
+  const PostWidget({super.key, required this.node});
 
   @override
   Widget build(BuildContext context) {
+    final FormattedPost post = node.data;
     //return Text(post!.postInfo!.num_.toString());
     return Expanded(
       child: Card(
@@ -104,10 +106,7 @@ class PostWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                child: PostHeader(post: post),
-              ),
+              PostHeader(node: node),
               const Divider(
                 thickness: 1,
               ),
@@ -132,16 +131,44 @@ class PostWidget extends StatelessWidget {
 }
 
 class PostHeader extends StatelessWidget {
-  const PostHeader({Key? key, required this.post}) : super(key: key);
-  final FormattedPost? post;
+  const PostHeader({Key? key, required this.node}) : super(key: key);
+  final TreeNode<FormattedPost> node;
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(post!.postInfo!.name!),
-        const Spacer(),
-        Text(post!.postInfo!.date!),
-      ],
+    FormattedPost post = node.data;
+    if (node.depth > 16) {
+      // prevent lines overlapping posts
+      showlines = false;
+    }
+    return Padding(
+      padding: node.hasNodes
+          ? const EdgeInsets.fromLTRB(8, 2, 0, 0)
+          : const EdgeInsets.fromLTRB(8, 2, 8, 0),
+      child: Row(
+        children: [
+          Text(post.postInfo!.name!),
+          const Spacer(),
+          (node.depth % 16 <= 9 && node.depth % 16 != 0 || node.depth == 0)
+              ? Text(post.postInfo!.date!)
+              : const SizedBox.shrink(),
+          node.hasNodes
+              ? IconButton(
+                  iconSize: 20,
+                  splashRadius: 16,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints.tight(const Size(20, 20)),
+                  icon: Icon(
+                      node.expanded ? Icons.expand_more : Icons.chevron_right),
+                  onPressed: () {
+                    node.expanded = !node.expanded;
+                  },
+                )
+              : const SizedBox(
+                  //width: node.depth == 0 ? 0 : 30,
+                  //width: 30,
+                  width: 0)
+        ],
+      ),
     );
   }
 }
