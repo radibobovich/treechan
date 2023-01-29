@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:html/dom.dart' as dom;
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 import '../services/tree_service.dart';
@@ -116,13 +117,19 @@ class PostWidget extends StatelessWidget {
               ExcludeSemantics(
                 // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
                 child: Html(
-                  data: post.postInfo!.comment,
-                  style: {
-                    '#': Style(
-                        //margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                        )
-                  },
-                ),
+                    data: post.postInfo!.comment,
+                    style: {
+                      '#': Style(
+                          //margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                          )
+                    },
+                    onLinkTap: (String? url, RenderContext context,
+                        Map<String, String> attributes, dom.Element? element) {
+                      showDialog(
+                          context: context.buildContext,
+                          builder: (BuildContext context) =>
+                              PostWidget(node: node.parent!));
+                    }),
               )
             ],
           ),
