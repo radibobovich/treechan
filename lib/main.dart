@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './screens/board_list_screen.dart';
+import 'package:treechan/themes.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,8 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-          primarySwatch: Colors.blue, secondaryHeaderColor: Colors.blue),
+      theme: AppTheme.nightTheme,
+      // ThemeData(
+      //     primarySwatch: Colors.blue, secondaryHeaderColor: Colors.blue),
       home: const MyHomePage(title: 'Доски'),
     );
   }
