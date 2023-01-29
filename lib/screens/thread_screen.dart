@@ -4,6 +4,9 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 import '../services/tree_service.dart';
 
+/// changes to false when there are nodes with depth more than 16
+bool showLines = true;
+
 class ThreadScreen2 extends StatefulWidget {
   const ThreadScreen2({super.key, required this.threadId, required this.tag});
   final int threadId;
@@ -172,8 +175,6 @@ class PostHeader extends StatelessWidget {
   }
 }
 
-/// changes to false when there are nodes with depth more than 16
-bool showLines = true;
 void setShowLinesProperty(List<TreeNode<FormattedPost>> roots) {
   for (var root in roots) {
     for (var child in root.children) {
@@ -183,7 +184,7 @@ void setShowLinesProperty(List<TreeNode<FormattedPost>> roots) {
 }
 
 void checkDepth(TreeNode<FormattedPost> node) {
-  if (node.depth > 16) {
+  if (node.depth >= 16) {
     showLines = false;
     return;
   }
