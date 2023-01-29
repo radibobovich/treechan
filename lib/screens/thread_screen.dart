@@ -4,9 +4,6 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 import '../services/tree_service.dart';
 
-/// changes to false when there are nodes with depth more than 16
-bool showlines = true;
-
 class ThreadScreen2 extends StatefulWidget {
   const ThreadScreen2({super.key, required this.threadId, required this.tag});
   final int threadId;
@@ -21,7 +18,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
   @override
   void initState() {
     super.initState();
-    showlines = true;
+    //showlines = true;
     roots = formatPosts(widget.threadId, widget.tag);
   }
 
@@ -34,11 +31,12 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
               future: roots,
               builder: ((context, snapshot) {
                 if (snapshot.hasData) {
+                  setShowLinesProperty(snapshot.data!);
                   return Flexible(
                     child: FlexibleTreeView<FormattedPost>(
                       scrollable: false,
                       indent: 16,
-                      showLines: showlines,
+                      showLines: showLines,
                       nodes: snapshot.data!,
                       nodeItemBuilder: (context, node) {
                         return PostNode(
@@ -136,10 +134,11 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FormattedPost post = node.data;
-    if (node.depth > 16) {
-      // prevent lines overlapping posts
-      showlines = false;
-    }
+    // if (node.depth > 16) {
+    //   // prevent lines overlapping posts
+    //   showlines = false;
+
+    // }
     return Padding(
       padding: node.hasNodes
           ? const EdgeInsets.fromLTRB(8, 2, 0, 0)
@@ -170,5 +169,25 @@ class PostHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// changes to false when there are nodes with depth more than 16
+bool showLines = true;
+void setShowLinesProperty(List<TreeNode<FormattedPost>> roots) {
+  for (var root in roots) {
+    for (var child in root.children) {
+      checkDepth(child);
+    }
+  }
+}
+
+void checkDepth(TreeNode<FormattedPost> node) {
+  if (node.depth > 16) {
+    showLines = false;
+    return;
+  }
+  for (var element in node.children) {
+    return checkDepth(element);
   }
 }
