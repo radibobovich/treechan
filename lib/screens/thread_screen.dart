@@ -36,14 +36,13 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
     return Scaffold(
         appBar: AppBar(title: const Text("Тред")),
         body: Column(children: [
-          FutureBuilder<List<TreeNode<Post>>>(
-              future: roots,
-              builder: ((context, snapshot) {
-                if (snapshot.hasData) {
-                  setShowLinesProperty(snapshot.data!);
-                  print(showLines);
-                  return Flexible(
-                    child: FlexibleTreeView<Post>(
+          Expanded(
+            child: FutureBuilder<List<TreeNode<Post>>>(
+                future: roots,
+                builder: ((context, snapshot) {
+                  if (snapshot.hasData) {
+                    setShowLinesProperty(snapshot.data!);
+                    return FlexibleTreeView<Post>(
                       scrollable: false,
                       indent: 16,
                       showLines: showLines,
@@ -51,13 +50,13 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
                       nodeItemBuilder: (context, node) {
                         return PostNode(node: node, roots: snapshot.data!);
                       },
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return Text('${snapshot.error}');
-                }
-                return const Center(child: CircularProgressIndicator());
-              })),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('${snapshot.error}');
+                  }
+                  return const Center(child: CircularProgressIndicator());
+                })),
+          ),
         ]));
   }
 }
@@ -74,7 +73,7 @@ class PostNode extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       //child: PostWidget(post: node.data),
-      child: Expanded(child: PostWidget(node: node, roots: roots)),
+      child: PostWidget(node: node, roots: roots),
     );
   }
 }
