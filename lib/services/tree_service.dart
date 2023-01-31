@@ -55,7 +55,9 @@ List<TreeNode<Post>> createTreeModel(List<Post> posts, int? opPost) {
   // List of posts which doesn't have parents
   final roots = List<TreeNode<Post>>.empty(growable: true);
   for (var post in posts) {
-    if (post.parents.isEmpty || post.parents.contains(opPost)) {
+    if (post.parents.isEmpty ||
+        post.parents.contains(opPost) ||
+        hasExternalReferences(posts, post.parents)) {
       // find posts which are replies to the OP-post
       var node = TreeNode<Post>(
           data: post,
@@ -66,6 +68,17 @@ List<TreeNode<Post>> createTreeModel(List<Post> posts, int? opPost) {
     }
   }
   return roots;
+}
+
+/// Check if post has references to posts in other threads.
+bool hasExternalReferences(List<Post> posts, List<int> referenceIds) {
+  for (var referenceId in referenceIds) {
+    // if there are no posts with that id in current thread, then it is an external reference
+    if (posts.where((post) => post.num_ == referenceId).isEmpty) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /// Called recursively to connect post childs.
