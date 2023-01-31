@@ -102,7 +102,11 @@ class PostWidget extends StatelessWidget {
             ExcludeSemantics(
               // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
               child: HtmlContainer(
-                  post: post, roots: roots, isCalledFromThread: true),
+                  post: post,
+                  roots: roots,
+                  isCalledFromThread: true,
+                  threadId: globalThreadId.toString(),
+                  tag: globalTag),
             )
           ],
         ),
