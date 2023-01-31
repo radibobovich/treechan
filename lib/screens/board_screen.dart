@@ -109,13 +109,9 @@ class CardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text.rich(TextSpan(
-            text: thread?.name ?? "No author", //username
-            style: const TextStyle(fontSize: 14))),
+        Text(thread?.name ?? "No author"),
         const Spacer(),
-        Text.rich(TextSpan(
-            text: thread?.date ?? "a long time ago", //date
-            style: const TextStyle(fontSize: 14))),
+        Text(thread?.date ?? "a long time ago"),
       ],
     );
   }
@@ -141,10 +137,7 @@ class CardFooter extends StatelessWidget {
           child: Row(
             children: [
               const Icon(Icons.question_answer, size: 20),
-              Text.rich(
-                  // post count
-                  TextSpan(text: thread?.postsCount.toString() ?? "count"),
-                  style: const TextStyle(fontSize: 14)),
+              Text(thread?.postsCount.toString() ?? "count"),
               const Spacer(),
               InkWell(
                   // button go to thread

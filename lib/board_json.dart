@@ -435,6 +435,7 @@ class Post {
   String? trip;
   int? views;
 
+  List<int> parents = List.empty(growable: true);
   Post(
       {this.banned,
       this.board,
