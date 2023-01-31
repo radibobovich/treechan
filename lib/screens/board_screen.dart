@@ -63,37 +63,46 @@ class ThreadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 8, 8, 16),
-                  child: CardHeader(thread: thread),
-                ),
-                Text.rich(TextSpan(
-                  text: thread?.subject ?? "No subject",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                )),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ThreadScreen2(
+                    threadId: thread!.num_ ?? 0, tag: thread!.board ?? "b")));
+      },
+      child: Card(
+        margin: const EdgeInsets.all(2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 8, 16),
+                    child: CardHeader(thread: thread),
+                  ),
+                  Text.rich(TextSpan(
+                    text: thread?.subject ?? "No subject",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  )),
+                ],
+              ),
             ),
-          ),
-          ImagesPreview(files: thread!.files),
-          // Html(data: thread?.comment, style: {
-          //   '#': Style(
-          //     maxLines: 15,
-          //     textOverflow: TextOverflow.ellipsis,
-          //   )
-          // }),
-          HtmlContainer(post: thread!, isCalledFromThread: false),
-          CardFooter(thread: thread)
-        ],
+            ImagesPreview(files: thread!.files),
+            // Html(data: thread?.comment, style: {
+            //   '#': Style(
+            //     maxLines: 15,
+            //     textOverflow: TextOverflow.ellipsis,
+            //   )
+            // }),
+            HtmlContainer(post: thread!, isCalledFromThread: false),
+            CardFooter(thread: thread)
+          ],
+        ),
       ),
     );
   }
@@ -141,19 +150,19 @@ class CardFooter extends StatelessWidget {
               const Icon(Icons.question_answer, size: 20),
               Text(thread?.postsCount.toString() ?? "count"),
               const Spacer(),
-              InkWell(
-                  // button go to thread
-                  child: const Text(
-                    "В тред",
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ThreadScreen2(
-                                threadId: thread!.num_ ?? 0,
-                                tag: thread!.board ?? "b")));
-                  }),
+              // InkWell(
+              //     // button go to thread
+              //     child: const Text(
+              //       "В тред",
+              //     ),
+              //     onTap: () {
+              //       Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => ThreadScreen2(
+              //                   threadId: thread!.num_ ?? 0,
+              //                   tag: thread!.board ?? "b")));
+              //     }),
             ],
           ),
         )
