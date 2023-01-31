@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
-import 'package:html/dom.dart' as dom;
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 import '../widgets/html_container_widget.dart';
@@ -43,6 +41,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
               builder: ((context, snapshot) {
                 if (snapshot.hasData) {
                   setShowLinesProperty(snapshot.data!);
+                  print(showLines);
                   return Flexible(
                     child: FlexibleTreeView<Post>(
                       scrollable: false,
