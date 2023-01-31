@@ -9,6 +9,8 @@ class AppTheme {
       primaryColor: Colors.blueGrey.shade900,
       appBarTheme: const AppBarTheme(color: Color.fromARGB(255, 25, 39, 52)),
       cardTheme: const CardTheme(color: Color.fromARGB(255, 25, 39, 52)),
+      dialogTheme:
+          const DialogTheme(backgroundColor: Color.fromARGB(255, 25, 39, 52)),
       iconTheme: const IconThemeData(color: Color.fromARGB(255, 204, 204, 204)),
       dividerColor: const Color.fromARGB(255, 56, 68, 77),
       scaffoldBackgroundColor: const Color.fromARGB(255, 21, 32, 43),
