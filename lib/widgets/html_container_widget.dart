@@ -49,7 +49,6 @@ class HtmlContainer extends StatelessWidget {
             // check if link is to the post in other thread and maybe in other board
           } else if (url![0] == "/" && url.contains("catalog.html")) {
             // TODO: go to catalog
-
           } else if (url[0] == "/" && url.contains("/res/")) {
             String tag = url.substring(1, url.indexOf("/res/"));
             int threadId = int.parse(
