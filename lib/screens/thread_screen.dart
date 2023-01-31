@@ -4,6 +4,7 @@ import 'package:html/dom.dart' as dom;
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
 import '../services/tree_service.dart';
+import 'package:treechan/board_json.dart';
 
 /// changes to false when there are nodes with depth more than 16
 bool showLines = true;
@@ -19,7 +20,7 @@ class ThreadScreen2 extends StatefulWidget {
 }
 
 class _ThreadScreen2State extends State<ThreadScreen2> {
-  late Future<List<TreeNode<FormattedPost>>>
+  late Future<List<TreeNode<Post>>>
       roots; // List of posts which doesn't have parents
   @override
   void initState() {
@@ -35,13 +36,13 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
     return Scaffold(
         appBar: AppBar(title: const Text("Тред")),
         body: Column(children: [
-          FutureBuilder<List<TreeNode<FormattedPost>>>(
+          FutureBuilder<List<TreeNode<Post>>>(
               future: roots,
               builder: ((context, snapshot) {
                 if (snapshot.hasData) {
                   setShowLinesProperty(snapshot.data!);
                   return Flexible(
-                    child: FlexibleTreeView<FormattedPost>(
+                    child: FlexibleTreeView<Post>(
                       scrollable: false,
                       indent: 16,
                       showLines: showLines,
@@ -62,8 +63,8 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
 
 /// Represents post with expand/minimize button.
 class PostNode extends StatelessWidget {
-  final TreeNode<FormattedPost> node;
-  final List<TreeNode<FormattedPost>> roots;
+  final TreeNode<Post> node;
+  final List<TreeNode<Post>> roots;
   const PostNode({Key? key, required this.node, required this.roots})
       : super(key: key);
 
@@ -79,13 +80,13 @@ class PostNode extends StatelessWidget {
 
 class PostWidget extends StatelessWidget {
   // widget represents post
-  final TreeNode<FormattedPost> node;
-  final List<TreeNode<FormattedPost>> roots;
+  final TreeNode<Post> node;
+  final List<TreeNode<Post>> roots;
   const PostWidget({super.key, required this.node, required this.roots});
 
   @override
   Widget build(BuildContext context) {
-    final FormattedPost post = node.data;
+    final Post post = node.data;
     //return Text(post!.postInfo!.num_.toString());
     return Card(
       child: Padding(
@@ -97,11 +98,11 @@ class PostWidget extends StatelessWidget {
             const Divider(
               thickness: 1,
             ),
-            ImagesPreview(files: post.postInfo!.files),
+            ImagesPreview(files: post.files),
             ExcludeSemantics(
               // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
               child: Html(
-                  data: post.postInfo!.comment,
+                  data: post.comment,
                   style: {
                     '#': Style(
                         //margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
@@ -140,10 +141,10 @@ class PostWidget extends StatelessWidget {
 }
 
 /// Finds post by id in the list of trees.
-TreeNode<FormattedPost>? findPost(List<TreeNode<FormattedPost>> roots, int id) {
+TreeNode<Post>? findPost(List<TreeNode<Post>> roots, int id) {
   // for (var root in roots doesn't work for some reason)
   for (int i = 0; i < roots.length; i++) {
-    if (roots[i].data.postInfo!.num_ == id) {
+    if (roots[i].data.num_ == id) {
       return roots[i];
     }
 
@@ -156,11 +157,10 @@ TreeNode<FormattedPost>? findPost(List<TreeNode<FormattedPost>> roots, int id) {
   return null;
 }
 
-TreeNode<FormattedPost>? findPostInChildren(
-    TreeNode<FormattedPost> node, int id) {
+TreeNode<Post>? findPostInChildren(TreeNode<Post> node, int id) {
   // for (var child in node.children) doesn't work for some reason
   for (int i = 0; i < node.children.length; i++) {
-    if (node.children[i].data.postInfo!.num_ == id) {
+    if (node.children[i].data.num_ == id) {
       return node.children[i];
     }
     var result = findPostInChildren(node.children[i], id);
@@ -174,10 +174,10 @@ TreeNode<FormattedPost>? findPostInChildren(
 
 class PostHeader extends StatelessWidget {
   const PostHeader({Key? key, required this.node}) : super(key: key);
-  final TreeNode<FormattedPost> node;
+  final TreeNode<Post> node;
   @override
   Widget build(BuildContext context) {
-    FormattedPost post = node.data;
+    Post post = node.data;
     // if (node.depth > 16) {
     //   // prevent lines overlapping posts
     //   showlines = false;
@@ -189,10 +189,10 @@ class PostHeader extends StatelessWidget {
           : const EdgeInsets.fromLTRB(8, 2, 8, 0),
       child: Row(
         children: [
-          Text(post.postInfo!.name!),
+          Text(post.name!),
           const Spacer(),
           (node.depth % 16 <= 9 && node.depth % 16 != 0 || node.depth == 0)
-              ? Text(post.postInfo!.date!)
+              ? Text(post.date!)
               : const SizedBox.shrink(),
           node.hasNodes
               ? IconButton(
@@ -216,7 +216,7 @@ class PostHeader extends StatelessWidget {
   }
 }
 
-void setShowLinesProperty(List<TreeNode<FormattedPost>> roots) {
+void setShowLinesProperty(List<TreeNode<Post>> roots) {
   for (var root in roots) {
     for (var child in root.children) {
       checkDepth(child);
@@ -224,7 +224,7 @@ void setShowLinesProperty(List<TreeNode<FormattedPost>> roots) {
   }
 }
 
-void checkDepth(TreeNode<FormattedPost> node) {
+void checkDepth(TreeNode<Post> node) {
   if (node.depth >= 16) {
     showLines = false;
     return;
