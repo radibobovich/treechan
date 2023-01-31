@@ -3,7 +3,6 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:treechan/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/dom.dart' as dom;
-import 'package:url_launcher/url_launcher.dart';
 import '../screens/thread_screen.dart';
 
 class HtmlContainer extends StatelessWidget {
