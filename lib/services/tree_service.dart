@@ -3,28 +3,27 @@ import 'package:treechan/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
 
-class FormattedPost {
-  // TODO: make it extend Post
-  Post? postInfo;
-  List<int>? parents = List.empty(growable: true);
-  FormattedPost({this.postInfo, this.parents});
-}
+// class FormattedPost {
+//   Post? postInfo;
+//   List<int>? parents = List.empty(growable: true);
+//   FormattedPost({this.postInfo, this.parents});
+// }
 
 /// Add a list of parents to each post and runs createTreeModel.
-Future<List<TreeNode<FormattedPost>>> formatPosts(
-    int threadId, String tag) async {
-  final formattedPosts = List<FormattedPost>.empty(growable: true);
+Future<List<TreeNode<Post>>> formatPosts(int threadId, String tag) async {
+  //final formattedPosts = List<FormattedPost>.empty(growable: true);
+  final formattedPosts = List<Post>.empty(growable: true);
   final thread = await getThread(tag, threadId);
   final opPost = thread!.posts!.first.num_;
 
   for (var post in thread.posts!) {
     var parents = getParents(post, opPost);
-
-    final formattedPost = FormattedPost(postInfo: post, parents: parents);
-    formattedPosts.add(formattedPost);
+    post.parents = parents;
+    //final formattedPost = FormattedPost(postInfo: post, parents: parents);
+    formattedPosts.add(post);
   }
 
-  return createTreeModel(formattedPosts, formattedPosts.first.postInfo!.num_);
+  return createTreeModel(formattedPosts, formattedPosts.first.num_);
 }
 
 /// extracts parent id from <a> tag of post comment.
@@ -52,19 +51,16 @@ List<int> getParents(Post post, int? opPost) {
 }
 
 /// Creates a list of root trees and connects childs to each.
-List<TreeNode<FormattedPost>> createTreeModel(
-    List<FormattedPost> posts, int? opPost) {
+List<TreeNode<Post>> createTreeModel(List<Post> posts, int? opPost) {
   // List of posts which doesn't have parents
-  final roots = List<TreeNode<FormattedPost>>.empty(growable: true);
+  final roots = List<TreeNode<Post>>.empty(growable: true);
   for (var post in posts) {
-    if (post.parents!.isEmpty || post.parents!.contains(opPost)) {
+    if (post.parents.isEmpty || post.parents.contains(opPost)) {
       // find posts which are replies to the OP-post
-      var node = TreeNode<FormattedPost>(
+      var node = TreeNode<Post>(
           data: post,
-          id: post.postInfo!.num_,
-          children: post.postInfo?.num_ != opPost
-              ? attachChilds(post.postInfo!.num_, posts)
-              : [],
+          id: post.num_,
+          children: post.num_ != opPost ? attachChilds(post.num_, posts) : [],
           expanded: true);
       roots.add(node);
     }
@@ -73,17 +69,14 @@ List<TreeNode<FormattedPost>> createTreeModel(
 }
 
 /// Called recursively to connect post childs.
-List<TreeNode<FormattedPost>> attachChilds(int? id, List<FormattedPost> posts) {
-  var childrenToAdd = <TreeNode<FormattedPost>>[];
+List<TreeNode<Post>> attachChilds(int? id, List<Post> posts) {
+  var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
-  Iterable<FormattedPost> childsFound =
-      posts.where((post) => post.parents?.contains(id) ?? false);
+  Iterable<Post> childsFound = posts.where((post) => post.parents.contains(id));
   for (var post in childsFound) {
     // add replies to them too
     childrenToAdd.add(TreeNode(
-        data: post,
-        children: attachChilds(post.postInfo!.num_, posts),
-        expanded: true));
+        data: post, children: attachChilds(post.num_, posts), expanded: true));
   }
   return childrenToAdd;
 }
