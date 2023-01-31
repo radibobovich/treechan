@@ -68,12 +68,51 @@ class ImagePreview extends StatelessWidget {
             ? (SwipeImageGallery(
                     context: context,
                     itemBuilder: (context, index) {
-                      return Image.network(imageLinks[index]);
+                      return getImageFromNet(index);
                     },
                     itemCount: imageLinks.length)
                 .show())
             : () {},
-        child:
-            Image.network(file.thumbnail!, height: 140, fit: BoxFit.contain));
+        child: getImagePreviewFromNet());
+  }
+
+  // TODO: fix bug when image is 404, for example Books - first thread - link to Ink thread - scroll down
+  Image getImagePreviewFromNet() {
+    return Image.network(
+      file.thumbnail!,
+      height: 140,
+      fit: BoxFit.contain,
+    );
+    // return FutureBuilder<ImageProvider>(
+    //   future: tryPrecache(context,
+    //       provider: NetworkImage(file.thumbnail!),
+    //       fallback:
+    //           const NetworkImage("https://2ch.hk/static/img/nf/404_3.jpg")),
+    //   builder: (context, provider) => !provider.hasData
+    //       ? const CircularProgressIndicator()
+    //       : provider.hasError
+    //           ? const Icon(Icons.error)
+    //           : Image(image: provider.data!),
+    // );
+  }
+
+  Image getImageFromNet(int index) {
+    return Image.network(imageLinks[index]);
   }
 }
+
+// Future<ImageProvider> tryPrecache(
+//   BuildContext context, {
+//   Size? size,
+//   required ImageProvider provider,
+//   required ImageProvider fallback,
+// }) async {
+//   var failed = false;
+//   await precacheImage(
+//     provider,
+//     context,
+//     size: size,
+//     onError: (_, __) => failed = true,
+//   );
+//   return failed ? fallback : provider;
+// }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/widgets/html_container_widget.dart';
 import '../services/board_service.dart';
 import '../board_json.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -84,12 +85,13 @@ class ThreadCard extends StatelessWidget {
             ),
           ),
           ImagesPreview(files: thread!.files),
-          Html(data: thread?.comment, style: {
-            '#': Style(
-              maxLines: 15,
-              textOverflow: TextOverflow.ellipsis,
-            )
-          }),
+          // Html(data: thread?.comment, style: {
+          //   '#': Style(
+          //     maxLines: 15,
+          //     textOverflow: TextOverflow.ellipsis,
+          //   )
+          // }),
+          HtmlContainer(post: thread!, isCalledFromThread: false),
           CardFooter(thread: thread)
         ],
       ),

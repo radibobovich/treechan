@@ -3,8 +3,10 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../widgets/image_preview_widget.dart';
+import '../widgets/html_container_widget.dart';
 import '../services/tree_service.dart';
 import 'package:treechan/board_json.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// changes to false when there are nodes with depth more than 16
 bool showLines = true;
@@ -101,37 +103,8 @@ class PostWidget extends StatelessWidget {
             ImagesPreview(files: post.files),
             ExcludeSemantics(
               // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-              child: Html(
-                  data: post.comment,
-                  style: {
-                    '#': Style(
-                        //margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                        )
-                  },
-                  onLinkTap: (String? url, RenderContext context,
-                      Map<String, String> attributes, dom.Element? element) {
-                    if (url!.contains(
-                        // check if link points to some post in thread
-                        //TODO: if link is to the post on another thread, get this post
-                        "/$globalTag/res/$globalThreadId.html#")) {
-                      // get post id placed after # symbol
-                      int id = int.parse(url.substring(url.indexOf("#") + 1));
-                      if (findPost(roots, id) == null) {
-                        return;
-                      }
-                      showDialog(
-                          context: context.buildContext,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                  PostWidget(
-                                      node: findPost(roots, id)!, roots: roots)
-                                ]));
-                          });
-                    }
-                  }),
+              child: HtmlContainer(
+                  post: post, roots: roots, isCalledFromThread: true),
             )
           ],
         ),
@@ -140,36 +113,10 @@ class PostWidget extends StatelessWidget {
   }
 }
 
-/// Finds post by id in the list of trees.
-TreeNode<Post>? findPost(List<TreeNode<Post>> roots, int id) {
-  // for (var root in roots doesn't work for some reason)
-  for (int i = 0; i < roots.length; i++) {
-    if (roots[i].data.num_ == id) {
-      return roots[i];
-    }
-
-    var result = findPostInChildren(roots[i], id);
-    if (result == null) {
-      continue;
-    }
-    return result;
+Future<void> tryLaunchUrl(String url) async {
+  if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+    throw Exception('Could not launch $url');
   }
-  return null;
-}
-
-TreeNode<Post>? findPostInChildren(TreeNode<Post> node, int id) {
-  // for (var child in node.children) doesn't work for some reason
-  for (int i = 0; i < node.children.length; i++) {
-    if (node.children[i].data.num_ == id) {
-      return node.children[i];
-    }
-    var result = findPostInChildren(node.children[i], id);
-    if (result == null) {
-      continue;
-    }
-    return result;
-  }
-  return null;
 }
 
 class PostHeader extends StatelessWidget {
