@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:treechan/widgets/html_container_widget.dart';
 import '../services/board_service.dart';
 import '../board_json.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'thread_screen.dart';
 import '../widgets/image_preview_widget.dart';
 
