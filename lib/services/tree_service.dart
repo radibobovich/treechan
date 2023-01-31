@@ -4,6 +4,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
 
 class FormattedPost {
+  // TODO: make it extend Post
   Post? postInfo;
   List<int>? parents = List.empty(growable: true);
   FormattedPost({this.postInfo, this.parents});

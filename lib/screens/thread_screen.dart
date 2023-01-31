@@ -7,6 +7,8 @@ import '../services/tree_service.dart';
 
 /// changes to false when there are nodes with depth more than 16
 bool showLines = true;
+int globalThreadId = 0;
+String globalTag = '';
 
 class ThreadScreen2 extends StatefulWidget {
   const ThreadScreen2({super.key, required this.threadId, required this.tag});
@@ -22,9 +24,10 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
   @override
   void initState() {
     super.initState();
-    //showlines = true;
     showLines = true;
     roots = formatPosts(widget.threadId, widget.tag);
+    globalThreadId = widget.threadId;
+    globalTag = widget.tag;
   }
 
   @override
@@ -44,9 +47,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
                       showLines: showLines,
                       nodes: snapshot.data!,
                       nodeItemBuilder: (context, node) {
-                        return PostNode(
-                          node: node,
-                        );
+                        return PostNode(node: node, roots: snapshot.data!);
                       },
                     ),
                   );
@@ -62,33 +63,16 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
 /// Represents post with expand/minimize button.
 class PostNode extends StatelessWidget {
   final TreeNode<FormattedPost> node;
-  const PostNode({Key? key, required this.node}) : super(key: key);
+  final List<TreeNode<FormattedPost>> roots;
+  const PostNode({Key? key, required this.node, required this.roots})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       //child: PostWidget(post: node.data),
-      child: Row(
-        children: [
-          PostWidget(node: node),
-          // node.hasNodes
-          //     ? IconButton(
-          //         iconSize: 12,
-          //         splashRadius: 16,
-          //         padding: EdgeInsets.zero,
-          //         constraints: BoxConstraints.tight(const Size(30, 30)),
-          //         icon: Icon(node.expanded ? Icons.remove : Icons.add),
-          //         onPressed: () {
-          //           node.expanded = !node.expanded;
-          //         },
-          //       )
-          //     : SizedBox(
-          //         width: node.depth == 0 ? 0 : 30,
-          //         //width: 30,
-          //       ),
-        ],
-      ),
+      child: Expanded(child: PostWidget(node: node, roots: roots)),
     );
   }
 }
@@ -96,47 +80,96 @@ class PostNode extends StatelessWidget {
 class PostWidget extends StatelessWidget {
   // widget represents post
   final TreeNode<FormattedPost> node;
-  const PostWidget({super.key, required this.node});
+  final List<TreeNode<FormattedPost>> roots;
+  const PostWidget({super.key, required this.node, required this.roots});
 
   @override
   Widget build(BuildContext context) {
     final FormattedPost post = node.data;
     //return Text(post!.postInfo!.num_.toString());
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PostHeader(node: node),
-              const Divider(
-                thickness: 1,
-              ),
-              ImagesPreview(files: post.postInfo!.files),
-              ExcludeSemantics(
-                // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-                child: Html(
-                    data: post.postInfo!.comment,
-                    style: {
-                      '#': Style(
-                          //margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                          )
-                    },
-                    onLinkTap: (String? url, RenderContext context,
-                        Map<String, String> attributes, dom.Element? element) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PostHeader(node: node),
+            const Divider(
+              thickness: 1,
+            ),
+            ImagesPreview(files: post.postInfo!.files),
+            ExcludeSemantics(
+              // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
+              child: Html(
+                  data: post.postInfo!.comment,
+                  style: {
+                    '#': Style(
+                        //margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                        )
+                  },
+                  onLinkTap: (String? url, RenderContext context,
+                      Map<String, String> attributes, dom.Element? element) {
+                    if (url!.contains(
+                        // check if link points to some post in thread
+                        //TODO: if link is to the post on another thread, get this post
+                        "/$globalTag/res/$globalThreadId.html#")) {
+                      // get post id placed after # symbol
+                      int id = int.parse(url.substring(url.indexOf("#") + 1));
+                      if (findPost(roots, id) == null) {
+                        return;
+                      }
                       showDialog(
                           context: context.buildContext,
-                          builder: (BuildContext context) =>
-                              PostWidget(node: node.parent!));
-                    }),
-              )
-            ],
-          ),
+                          builder: (BuildContext context) {
+                            return Dialog(
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                  PostWidget(
+                                      node: findPost(roots, id)!, roots: roots)
+                                ]));
+                          });
+                    }
+                  }),
+            )
+          ],
         ),
       ),
     );
   }
+}
+
+/// Finds post by id in the list of trees.
+TreeNode<FormattedPost>? findPost(List<TreeNode<FormattedPost>> roots, int id) {
+  // for (var root in roots doesn't work for some reason)
+  for (int i = 0; i < roots.length; i++) {
+    if (roots[i].data.postInfo!.num_ == id) {
+      return roots[i];
+    }
+
+    var result = findPostInChildren(roots[i], id);
+    if (result == null) {
+      continue;
+    }
+    return result;
+  }
+  return null;
+}
+
+TreeNode<FormattedPost>? findPostInChildren(
+    TreeNode<FormattedPost> node, int id) {
+  // for (var child in node.children) doesn't work for some reason
+  for (int i = 0; i < node.children.length; i++) {
+    if (node.children[i].data.postInfo!.num_ == id) {
+      return node.children[i];
+    }
+    var result = findPostInChildren(node.children[i], id);
+    if (result == null) {
+      continue;
+    }
+    return result;
+  }
+  return null;
 }
 
 class PostHeader extends StatelessWidget {
