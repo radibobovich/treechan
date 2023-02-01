@@ -48,7 +48,7 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
                       showLines: showLines,
                       nodes: snapshot.data!,
                       nodeItemBuilder: (context, node) {
-                        return PostNode(node: node, roots: snapshot.data!);
+                        return PostWidget(node: node, roots: snapshot.data!);
                       },
                     );
                   } else if (snapshot.hasError) {
@@ -58,23 +58,6 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
                 })),
           ),
         ]));
-  }
-}
-
-/// Represents post with expand/minimize button.
-class PostNode extends StatelessWidget {
-  final TreeNode<Post> node;
-  final List<TreeNode<Post>> roots;
-  const PostNode({Key? key, required this.node, required this.roots})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      //child: PostWidget(post: node.data),
-      child: PostWidget(node: node, roots: roots),
-    );
   }
 }
 
@@ -88,27 +71,30 @@ class PostWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final Post post = node.data;
     //return Text(post!.postInfo!.num_.toString());
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PostHeader(node: node),
-            const Divider(
-              thickness: 1,
-            ),
-            ImagesPreview(files: post.files),
-            ExcludeSemantics(
-              // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-              child: HtmlContainer(
-                  post: post,
-                  roots: roots,
-                  isCalledFromThread: true,
-                  threadId: globalThreadId.toString(),
-                  tag: globalTag),
-            )
-          ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Tooltip(message: "#${post.num_}", child: PostHeader(node: node)),
+              const Divider(
+                thickness: 1,
+              ),
+              ImagesPreview(files: post.files),
+              ExcludeSemantics(
+                // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
+                child: HtmlContainer(
+                    post: post,
+                    roots: roots,
+                    isCalledFromThread: true,
+                    threadId: globalThreadId.toString(),
+                    tag: globalTag),
+              )
+            ],
+          ),
         ),
       ),
     );
