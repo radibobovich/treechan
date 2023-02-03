@@ -26,10 +26,9 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
     // return empty image list
     return List<Widget>.filled(1, const SizedBox.shrink());
   }
-  //List<Widget> images = List<Widget>.filled(8, const SizedBox.shrink());
   List<Widget> images = List<Widget>.empty(growable: true);
   List<String> imageLinks = List<String>.empty(growable: true);
-  var supportedFormats = [1, 2, 4];
+  List<int> supportedFormats = [1, 2, 4];
   for (var file in files) {
     if (supportedFormats.contains(file.type)) {
       imageLinks.add("https://2ch.hk${file.path ?? ""}");
@@ -41,12 +40,6 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
           ImagePreview(imageLinks: imageLinks, file: file, context: context));
     }
   }
-  // for (int i = 0; i < files.length; i++) {
-  //   if (files[i].thumbnail != null) {
-  //     images[i] =
-  //         Image.network(files[i].thumbnail!, height: 140, fit: BoxFit.contain);
-  //   }
-  // }
   return images;
 }
 
