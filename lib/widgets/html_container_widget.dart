@@ -11,7 +11,56 @@ import '../models/tree_service.dart';
 
 /// Represents post text.
 /// Extracted from PostWidget because of a large onLinkTap function.
-class HtmlContainer extends StatelessWidget {
+class _StatefulBuilderWrapper extends StatefulWidget {
+  final RenderContext node;
+  final Widget children;
+  const _StatefulBuilderWrapper(
+      {Key? key, required this.node, required this.children})
+      : super(key: key);
+
+  @override
+  __StatefulBuilderWrapperState createState() =>
+      __StatefulBuilderWrapperState();
+}
+
+class __StatefulBuilderWrapperState extends State<_StatefulBuilderWrapper> {
+  bool _spoilerVisibility = false;
+
+  @override
+  void initState() {
+    _spoilerVisibility = false;
+    super.initState();
+  }
+
+  void toggleVisibility() {
+    setState(() {
+      _spoilerVisibility = !_spoilerVisibility;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return GestureDetector(
+          onTap: () => toggleVisibility(),
+          child: _spoilerVisibility
+              ? Container(
+                  height: 16.5,
+                  padding: EdgeInsets.zero,
+                  child: widget.children,
+                )
+              : Text(widget.node.tree.element!.text,
+                  style: TextStyle(
+                      backgroundColor: Colors.grey[600],
+                      color: Colors.grey[600])),
+        );
+      },
+    );
+  }
+}
+
+class HtmlContainer extends StatefulWidget {
   const HtmlContainer(
       {Key? key,
       required this.post,
@@ -26,20 +75,31 @@ class HtmlContainer extends StatelessWidget {
   final String? tag;
   final int? threadId;
   final bool isCalledFromThread;
+
+  @override
+  State<HtmlContainer> createState() => _HtmlContainerState();
+}
+
+class _HtmlContainerState extends State<HtmlContainer> {
   @override
   Widget build(BuildContext context) {
     return Html(
-      style: isCalledFromThread
+      style: widget.isCalledFromThread
           ? {}
           : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
-      data: post.comment,
+      data: widget.post.comment,
       customRender: {
-        // "a": (node, children) => LinkTextSpan(
-        //     style: TextStyle(
-        //         color: Theme.of(context).secondaryHeaderColor,
-        //         decoration: TextDecoration.underline),
-        //     url: node.tree.element!.attributes['href']!,
-        //     text: node.parser.htmlData.text),
+        "span": (node, children) {
+          List<String> spanClasses = node.tree.elementClasses;
+          if (spanClasses.contains("unkfunc")) {
+            return TextSpan(
+                style:
+                    const TextStyle(color: Color.fromARGB(255, 120, 153, 34)),
+                text: node.tree.element!.text);
+          } else if (spanClasses.contains("spoiler")) {
+            return _StatefulBuilderWrapper(node: node, children: children);
+          }
+        },
         "a": (node, children) => TextSpan(
             style: TextStyle(
                 color: Theme.of(context).secondaryHeaderColor,
@@ -48,12 +108,12 @@ class HtmlContainer extends StatelessWidget {
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 String url = node.tree.element!.attributes['href']!;
-                if (isCalledFromThread && url.contains(
+                if (widget.isCalledFromThread && url.contains(
                     // check if link points to some post in thread
-                    "/$tag/res/$threadId.html#")) {
+                    "/${widget.tag}/res/${widget.threadId}.html#")) {
                   // get post id placed after # symbol
                   int id = int.parse(url.substring(url.indexOf("#") + 1));
-                  if (findPost(roots!, id) == null) {
+                  if (findPost(widget.roots!, id) == null) {
                     return;
                   }
                   showDialog(
@@ -64,10 +124,10 @@ class HtmlContainer extends StatelessWidget {
                           child:
                               Column(mainAxisSize: MainAxisSize.min, children: [
                             PostWidget(
-                              node: findPost(roots!, id)!,
-                              roots: roots!,
-                              threadId: threadId!,
-                              tag: tag!,
+                              node: findPost(widget.roots!, id)!,
+                              roots: widget.roots!,
+                              threadId: widget.threadId!,
+                              tag: widget.tag!,
                             )
                           ]),
                         ));
