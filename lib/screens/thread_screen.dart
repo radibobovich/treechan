@@ -197,7 +197,12 @@ class PostHeader extends StatelessWidget {
           : const EdgeInsets.fromLTRB(8, 2, 8, 0),
       child: Row(
         children: [
-          Text(post.name!),
+          Text(
+            post.name!,
+            style: post.email == "mailto:sage"
+                ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
+                : const TextStyle(),
+          ),
           const Spacer(),
           (node.depth % 16 <= 9 && node.depth % 16 != 0 || node.depth == 0)
               ? Text(post.date!)
