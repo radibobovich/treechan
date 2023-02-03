@@ -68,7 +68,7 @@ class ThreadCard extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) => ThreadScreen(
-                    threadId: thread!.num_ ?? 0, tag: thread!.board ?? "b")));
+                    threadId: thread!.num_ ?? 0, tag: thread!.board!)));
       },
       child: Card(
         margin: const EdgeInsets.all(2),
@@ -85,7 +85,7 @@ class ThreadCard extends StatelessWidget {
                     child: CardHeader(thread: thread),
                   ),
                   Text.rich(TextSpan(
-                    text: thread?.subject ?? "No subject",
+                    text: thread!.subject,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )),
                 ],

@@ -144,6 +144,12 @@ class PostWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Tooltip(message: "#${post.id}", child: PostHeader(node: node)),
+              post.subject == null
+                  ? const SizedBox.shrink()
+                  : Text.rich(TextSpan(
+                      text: post.subject,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    )),
               const Divider(
                 thickness: 1,
               ),
