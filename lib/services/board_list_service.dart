@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
 
+/// Returns a list of available boards saved in device memory, otherwise downloads it.
 Future<List<Board>?> getBoards() async {
   SharedPreferences prefs;
   prefs = await SharedPreferences.getInstance();
@@ -23,15 +24,12 @@ Future<List<Board>?> getBoards() async {
 }
 
 Future<String?> downloadBoards() async {
-  var url = "https://2ch.hk/api/mobile/v2/boards";
+  String url = "https://2ch.hk/api/mobile/v2/boards";
 
   final response = await http.get(Uri.parse(url));
 
   if (response.statusCode == 200) {
-    //var boardList = BoardList.fromJson(jsonDecode(response.body));
     return response.body;
-    //prefs.setString('boards', response.body);
-    //return boardListFromJson(jsonDecode(response.body));
   }
   return null;
 }

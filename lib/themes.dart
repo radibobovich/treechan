@@ -4,7 +4,9 @@ class AppTheme {
   AppTheme._();
   static final ThemeData flutterTheme =
       ThemeData(primarySwatch: Colors.blue, secondaryHeaderColor: Colors.blue);
+
   static final ThemeData classicTheme = ThemeData(primarySwatch: Colors.grey);
+
   static final ThemeData nightTheme = ThemeData(
       primaryColor: Colors.blueGrey.shade900,
       secondaryHeaderColor: const Color.fromARGB(255, 195, 103, 42),

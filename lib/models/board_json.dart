@@ -1,3 +1,5 @@
+// Represents JSON response structure of 2ch API.
+
 class Root {
   String? advertMobileImage;
   String? advertMobileLink;
@@ -108,15 +110,6 @@ List<Post> postListFromJson(List<dynamic> json) {
   }
   return postList;
 }
-// class BoardListContainer {
-//   List<Board>? boardList = List.empty(growable: true);
-//   BoardListContainer({this.boardList});
-//   BoardListContainer.fromJson(List<dynamic> json) {
-//     for (var boardItem in json) {
-//       boardList!.add(Board.fromJson(boardItem));
-//     }
-//   }
-// }
 
 class Board {
   int? bumpLimit;
