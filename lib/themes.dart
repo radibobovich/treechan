@@ -16,7 +16,7 @@ class AppTheme {
       //dividerColor: const Color.fromARGB(255, 56, 68, 77),
       dividerTheme:
           //const DividerThemeData(color: Color.fromARGB(102, 56, 68, 77)),
-          const DividerThemeData(color: Color.fromARGB(255, 172, 178, 185)),
+          const DividerThemeData(color: Color.fromARGB(255, 56, 68, 77)),
       scaffoldBackgroundColor: const Color.fromARGB(255, 21, 32, 43),
       textTheme: const TextTheme(
           titleMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
