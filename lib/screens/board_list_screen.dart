@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:treechan/board_json.dart';
+import 'package:treechan/models/board_json.dart';
 import 'package:treechan/services/board_list_service.dart';
 import 'board_screen.dart';
 import 'package:grouped_list/grouped_list.dart';

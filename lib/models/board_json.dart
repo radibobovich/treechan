@@ -17,6 +17,7 @@ class Root {
   String? title;
   int? uniquePosters;
 
+  int? opPostId;
   Root(
       {this.advertMobileImage,
       this.advertMobileLink,
@@ -34,7 +35,8 @@ class Root {
       this.title,
       this.uniquePosters,
       this.filter,
-      this.threads});
+      this.threads,
+      this.opPostId});
 
   Root.fromJson(Map<String, dynamic> json) {
     advertMobileImage = json['advert_mobile_image'];
@@ -98,6 +100,14 @@ List<Board>? boardListFromJson(List<dynamic> json) {
   }
   return boardList;
 }
+
+List<Post> postListFromJson(List<dynamic> json) {
+  List<Post> postList = List.empty(growable: true);
+  for (var postItem in json) {
+    postList.add(Post.fromJson(postItem));
+  }
+  return postList;
+}
 // class BoardListContainer {
 //   List<Board>? boardList = List.empty(growable: true);
 //   BoardListContainer({this.boardList});
@@ -134,31 +144,32 @@ class Board {
   String? name;
   int? threadsPerPage;
 
-  Board(
-      {this.bumpLimit,
-      this.category,
-      this.defaultName,
-      this.enableDices,
-      this.enableFlags,
-      this.enableIcons,
-      this.enableLikes,
-      this.enableNames,
-      this.enableOekaki,
-      this.enablePosting,
-      this.enableSage,
-      this.enableShield,
-      this.enableSubject,
-      this.enableThreadTags,
-      this.enableTrips,
-      this.fileTypes,
-      this.id,
-      this.info,
-      this.infoOuter,
-      this.maxComment,
-      this.maxFilesSize,
-      this.maxPages,
-      this.name,
-      this.threadsPerPage});
+  Board({
+    this.bumpLimit,
+    this.category,
+    this.defaultName,
+    this.enableDices,
+    this.enableFlags,
+    this.enableIcons,
+    this.enableLikes,
+    this.enableNames,
+    this.enableOekaki,
+    this.enablePosting,
+    this.enableSage,
+    this.enableShield,
+    this.enableSubject,
+    this.enableThreadTags,
+    this.enableTrips,
+    this.fileTypes,
+    this.id,
+    this.info,
+    this.infoOuter,
+    this.maxComment,
+    this.maxFilesSize,
+    this.maxPages,
+    this.name,
+    this.threadsPerPage,
+  });
 
   Board.fromJson(Map<String, dynamic> json) {
     bumpLimit = json['bump_limit'];
@@ -424,7 +435,7 @@ class Post {
   List<File>? files;
   int? lasthit;
   String? name;
-  int? num_;
+  int? id;
   int? number;
   int? op;
   int? parent;
@@ -447,7 +458,7 @@ class Post {
       this.files,
       this.lasthit,
       this.name,
-      this.num_,
+      this.id,
       this.number,
       this.op,
       this.parent,
@@ -474,7 +485,7 @@ class Post {
     }
     lasthit = json['lasthit'];
     name = json['name'];
-    num_ = json['num'];
+    id = json['num'];
     number = json['number'];
     op = json['op'];
     parent = json['parent'];
@@ -500,7 +511,7 @@ class Post {
     }
     data['lasthit'] = lasthit;
     data['name'] = name;
-    data['num'] = num_;
+    data['num'] = id;
     data['number'] = number;
     data['op'] = op;
     data['parent'] = parent;
