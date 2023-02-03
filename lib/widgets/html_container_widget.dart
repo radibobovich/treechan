@@ -43,18 +43,17 @@ class HtmlContainer extends StatelessWidget {
             showDialog(
                 context: renderContext.buildContext,
                 builder: (BuildContext context) {
-                  return SingleChildScrollView(
-                    child: Dialog(
-                        child:
-                            Column(mainAxisSize: MainAxisSize.min, children: [
+                  return Dialog(
+                      child: SingleChildScrollView(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
                       PostWidget(
                         node: findPost(roots!, id)!,
                         roots: roots!,
                         threadId: threadId!,
                         tag: tag!,
                       )
-                    ])),
-                  );
+                    ]),
+                  ));
                 });
 
             // check if link is to the post in other thread and maybe in other board
