@@ -48,11 +48,16 @@ dependencies:
       ref: master
   grouped_list: ^5.1.2
   url_launcher: ^6.1.8
-
+  custom_refresh_indicator: ^2.0.1
+  pull_to_refresh: ^2.0.0
+  pull_to_refresh_plus: ^2.0.3
+  refresh_loadmore: ^2.0.5
+  easy_refresh:
+    git: https://github.com/radeonovich/flutter_easy_refresh.git
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+    
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

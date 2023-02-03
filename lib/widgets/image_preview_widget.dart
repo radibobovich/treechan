@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:treechan/board_json.dart';
+import 'package:treechan/models/board_json.dart';
 import 'package:swipe_image_gallery/swipe_image_gallery.dart';
 
 /// Scrollable horizontal row with image previews.

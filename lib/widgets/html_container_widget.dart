@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:treechan/board_json.dart';
+import 'package:treechan/models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/dom.dart' as dom;
 import '../screens/thread_screen.dart';
+import '../models/tree_service.dart';
 
+/// Represents post text.
+/// Extracted from PostWidget because of a large onLinkTap function.
 class HtmlContainer extends StatelessWidget {
   const HtmlContainer(
       {Key? key,
@@ -18,7 +21,7 @@ class HtmlContainer extends StatelessWidget {
   final dynamic post;
   final List<TreeNode<Post>>? roots;
   final String? tag;
-  final String? threadId;
+  final int? threadId;
   final bool isCalledFromThread;
   @override
   Widget build(BuildContext context) {
@@ -40,24 +43,32 @@ class HtmlContainer extends StatelessWidget {
             showDialog(
                 context: renderContext.buildContext,
                 builder: (BuildContext context) {
-                  return Dialog(
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    PostWidget(node: findPost(roots!, id)!, roots: roots!)
-                  ]));
+                  return SingleChildScrollView(
+                    child: Dialog(
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                      PostWidget(
+                        node: findPost(roots!, id)!,
+                        roots: roots!,
+                        threadId: threadId!,
+                        tag: tag!,
+                      )
+                    ])),
+                  );
                 });
 
             // check if link is to the post in other thread and maybe in other board
           } else if (url![0] == "/" && url.contains("catalog.html")) {
             // TODO: go to catalog
           } else if (url[0] == "/" && url.contains("/res/")) {
-            String tag = url.substring(1, url.indexOf("/res/"));
-            int threadId = int.parse(
+            String linkTag = url.substring(1, url.indexOf("/res/"));
+            int linkThreadId = int.parse(
                 url.substring(url.indexOf("/res/") + 5, url.indexOf(".html")));
             Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      ThreadScreen2(threadId: threadId, tag: tag),
+                      ThreadScreen(threadId: linkThreadId, tag: linkTag),
                   // TODO: add postId to show concrete post in new page
                 ));
           }
@@ -70,36 +81,4 @@ class HtmlContainer extends StatelessWidget {
           }
         });
   }
-}
-
-/// Finds post by id in the list of trees.
-TreeNode<Post>? findPost(List<TreeNode<Post>> roots, int id) {
-  // for (var root in roots doesn't work for some reason)
-  for (int i = 0; i < roots.length; i++) {
-    if (roots[i].data.num_ == id) {
-      return roots[i];
-    }
-
-    var result = findPostInChildren(roots[i], id);
-    if (result == null) {
-      continue;
-    }
-    return result;
-  }
-  return null;
-}
-
-TreeNode<Post>? findPostInChildren(TreeNode<Post> node, int id) {
-  // for (var child in node.children) doesn't work for some reason
-  for (int i = 0; i < node.children.length; i++) {
-    if (node.children[i].data.num_ == id) {
-      return node.children[i];
-    }
-    var result = findPostInChildren(node.children[i], id);
-    if (result == null) {
-      continue;
-    }
-    return result;
-  }
-  return null;
 }

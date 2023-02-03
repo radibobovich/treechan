@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/widgets/html_container_widget.dart';
 import '../services/board_service.dart';
-import '../board_json.dart';
+import '../models/board_json.dart';
 import 'thread_screen.dart';
 import '../widgets/image_preview_widget.dart';
 
@@ -67,7 +67,7 @@ class ThreadCard extends StatelessWidget {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => ThreadScreen2(
+                builder: (context) => ThreadScreen(
                     threadId: thread!.num_ ?? 0, tag: thread!.board ?? "b")));
       },
       child: Card(
@@ -98,7 +98,10 @@ class ThreadCard extends StatelessWidget {
             //     textOverflow: TextOverflow.ellipsis,
             //   )
             // }),
-            HtmlContainer(post: thread!, isCalledFromThread: false),
+            HtmlContainer(
+              post: thread!,
+              isCalledFromThread: false,
+            ),
             CardFooter(thread: thread)
           ],
         ),

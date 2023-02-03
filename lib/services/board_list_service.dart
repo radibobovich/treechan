@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/board_json.dart';
+import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
 
 Future<List<Board>?> getBoards() async {
