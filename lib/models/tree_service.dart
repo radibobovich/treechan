@@ -4,7 +4,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
 import 'thread_container.dart';
 
-/// Add a list of parents to each post and runs createTreeModel.
+/// Returns threadContainer with list of comment trees and other info.
 Future<ThreadContainer> getThreadContainer(int threadId, String tag,
     {bool isRefresh = false, int maxNum = 0}) async {
   final threadContainer = await getThreadRawData(tag, threadId,
@@ -20,7 +20,7 @@ Future<ThreadContainer> getThreadContainer(int threadId, String tag,
   return threadContainer;
 }
 
-/// extracts parent id from <a> tag of post comment.
+/// Extracts parent id from <a> tag of post comment.
 List<int> getPostParents(Post post) {
   //take post comment
   final postCommentHtml = html.parse(post.comment);
@@ -30,14 +30,14 @@ List<int> getPostParents(Post post) {
   for (var aTag in aTags) {
     final keys = aTag.attributes.keys;
     final values = aTag.attributes.values;
-    var attrMap = {}; // map
+    Map<Object, String> attrMap = {}; // map
     for (int i = 0; i < keys.length; i++) {
       // create key-value pairs for attributes
       attrMap[keys.elementAt(i)] = values.elementAt(i);
     }
-    //take data-num attribute, it points to a parent post
+    // take data-num attribute, it points to a parent post
     if (attrMap.containsKey('data-num')) {
-      var parent = int.parse(attrMap['data-num']);
+      int parent = int.parse(attrMap['data-num']!);
       parents.add(parent);
     }
   }
@@ -53,7 +53,7 @@ List<TreeNode<Post>> createTreeModel(List<Post> posts, int? opPost) {
         post.parents.contains(opPost) ||
         hasExternalReferences(posts, post.parents)) {
       // find posts which are replies to the OP-post
-      var node = TreeNode<Post>(
+      TreeNode<Post> node = TreeNode<Post>(
           data: post,
           id: post.id,
           children: post.id != opPost ? attachChilds(post.id, posts) : [],
@@ -96,7 +96,7 @@ TreeNode<Post>? findPost(List<TreeNode<Post>> roots, int id) {
       return roots[i];
     }
 
-    var result = findPostInChildren(roots[i], id);
+    TreeNode<Post>? result = findPostInChildren(roots[i], id);
     if (result == null) {
       continue;
     }
@@ -105,13 +105,14 @@ TreeNode<Post>? findPost(List<TreeNode<Post>> roots, int id) {
   return null;
 }
 
+/// Called recursively.
 TreeNode<Post>? findPostInChildren(TreeNode<Post> node, int id) {
   // for (var child in node.children) doesn't work for some reason
   for (int i = 0; i < node.children.length; i++) {
     if (node.children[i].data.id == id) {
       return node.children[i];
     }
-    var result = findPostInChildren(node.children[i], id);
+    TreeNode<Post>? result = findPostInChildren(node.children[i], id);
     if (result == null) {
       continue;
     }

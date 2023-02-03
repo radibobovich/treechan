@@ -3,6 +3,7 @@ import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
 import '../models/thread_container.dart';
 
+/// Sends GET request and gets thread information and list of posts.
 Future<ThreadContainer> getThreadRawData(String tag, int threadId,
     {bool isRefresh = false, int maxNum = 0}) async {
   ThreadContainer threadContainer = ThreadContainer();
@@ -10,10 +11,11 @@ Future<ThreadContainer> getThreadRawData(String tag, int threadId,
   url = (isRefresh && maxNum != 0)
       ? "https://2ch.hk/api/mobile/v2/after/$tag/$threadId/${maxNum + 1}"
       : "https://2ch.hk/$tag/res/${threadId.toString()}.json";
+
   final response = await http.get(Uri.parse(url));
   if (response.statusCode == 200) {
     // if it is a refresh request
-    if (isRefresh && maxNum != 0) {
+    if (isRefresh) {
       List<Post> newPosts =
           postListFromJson(jsonDecode(response.body)["posts"]);
       extendThumbnailLinks(newPosts);
@@ -22,7 +24,7 @@ Future<ThreadContainer> getThreadRawData(String tag, int threadId,
       threadContainer.threadInfo =
           Root(maxNum: newPosts.isEmpty ? null : newPosts.last.id);
     } else {
-      // if it is a get-thread request
+      // if it is a get-full-thread request
       var threadResponse = Root.fromJson(jsonDecode(response.body));
       List<Post>? threadPosts = threadResponse.threads!.first.posts;
 
@@ -38,6 +40,7 @@ Future<ThreadContainer> getThreadRawData(String tag, int threadId,
   }
 }
 
+/// Extends image thumbnail links to a full link.
 void extendThumbnailLinks(List<Post>? posts) {
   return posts?.forEach((post) {
     if (post.files != null) {
