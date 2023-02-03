@@ -7,8 +7,6 @@ import '../models/tree_service.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// changes to false when there are nodes with depth more than 16
-
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen({super.key, required this.threadId, required this.tag});
   final int threadId;
@@ -19,7 +17,7 @@ class ThreadScreen extends StatefulWidget {
 
 class _ThreadScreenState extends State<ThreadScreen> {
   late Future<ThreadContainer> threadContainer;
-  bool showLines = true; // List of posts which doesn't have parents
+  bool showLines = true;
   @override
   void initState() {
     super.initState();
@@ -73,10 +71,9 @@ class _ThreadScreenState extends State<ThreadScreen> {
   }
 
   Future<ThreadContainer> refreshThread(ThreadContainer threadContainer) async {
-    //int opPost = threadData.roots!.first.data.num_!;
     int opPost = threadContainer.threadInfo.opPostId!;
     // download posts which are not presented in current roots
-    var newThreadContainer = await getThreadContainer(
+    ThreadContainer newThreadContainer = await getThreadContainer(
         widget.threadId, widget.tag,
         isRefresh: true, maxNum: (threadContainer.threadInfo.maxNum!));
     if (newThreadContainer.roots!.isEmpty) return threadContainer;
@@ -98,6 +95,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
     return threadContainer;
   }
 
+  /// Sets showLines property to false when there are nodes with depth >=16.
   void setShowLinesProperty(List<TreeNode<Post>>? roots) {
     for (var root in roots!) {
       for (var child in root.children) {
@@ -106,6 +104,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
     }
   }
 
+  /// Called recursively.
   void checkDepth(TreeNode<Post> node) {
     if (node.depth >= 16) {
       showLines = false;
@@ -119,7 +118,6 @@ class _ThreadScreenState extends State<ThreadScreen> {
 }
 
 class PostWidget extends StatelessWidget {
-  // widget represents post
   final TreeNode<Post> node;
   final List<TreeNode<Post>> roots;
   final int threadId;
@@ -134,7 +132,6 @@ class PostWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Post post = node.data;
-    //return Text(post!.postInfo!.num_.toString());
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Card(
@@ -186,11 +183,6 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Post post = node.data;
-    // if (node.depth > 16) {
-    //   // prevent lines overlapping posts
-    //   showlines = false;
-
-    // }
     return Padding(
       padding: node.hasNodes
           ? const EdgeInsets.fromLTRB(8, 2, 0, 0)
