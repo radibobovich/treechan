@@ -4,15 +4,6 @@ import 'package:treechan/services/board_list_service.dart';
 import 'board_screen.dart';
 import 'package:grouped_list/grouped_list.dart';
 
-class BoardMenuItem {
-  final String name;
-  final String tag;
-
-  const BoardMenuItem(this.name, this.tag);
-}
-
-var boardMenu = List.empty(growable: true);
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -22,15 +13,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  //late Future<SharedPreferences> prefs;
   late Future<List<Board>?> boards;
   @override
   void initState() {
     super.initState();
-    //prefs = SharedPreferences.getInstance();
-    boards = getBoards();
-    //boardMenu.add(const BoardMenuItem("Бред", "b"));
-    //boardMenu.add(const BoardMenuItem("Психология", 'psy'));
   }
 
   @override
@@ -40,14 +26,12 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: FutureBuilder<List<Board>?>(
-          future: boards,
+          future: getBoards(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               snapshot.data!.removeWhere(
                 (element) => element.category == "Пользовательские",
               );
-              //String boardsJson = snapshot.data!.getString('boards')!;
-              //List<Board> boards = boardListFromJson(jsonDecode(boardsJson))!;
               return GroupedListView<dynamic, String>(
                 elements: snapshot.data!, //boards
                 groupBy: (board) => board.category,
@@ -92,25 +76,6 @@ class _MyHomePageState extends State<MyHomePage> {
             }
             return const Center(child: CircularProgressIndicator());
           },
-        )
-        // ListView.builder(
-        //     itemCount: boardMenu.length,
-        //     itemBuilder: (context, index) {
-        //       return ListTile(
-        //         title: Text(boardMenu[index].name),
-        //         onTap: () {
-        //           Navigator.push(
-        //             context,
-        //             MaterialPageRoute(
-        //               builder: (context) => BoardScreen(
-        //                   boardName: boardMenu[index].name,
-        //                   boardTag: boardMenu[index].tag),
-        //             ),
-        //           );
-        //         },
-        //       );
-        //     })
-        // This trailing comma makes auto-formatting nicer for build methods.
-        );
+        ));
   }
 }
