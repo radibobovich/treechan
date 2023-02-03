@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:treechan/board_json.dart';
+import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
 
 Future<List<Thread>?> getThreadsByBump(String tag) async {
@@ -14,7 +14,7 @@ Future<List<Thread>?> getThreadsByBump(String tag) async {
         thread.files?.forEach((element) {
           // make full link to image thumbnail
           if (element.thumbnail != null) {
-            element.thumbnail = "http://2ch.hk${element.thumbnail ?? ""}";
+            element.thumbnail = "http://2ch.hk${element.thumbnail}";
           }
         });
       }

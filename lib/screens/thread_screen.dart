@@ -1,54 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:treechan/models/thread_container.dart';
 import '../widgets/image_preview_widget.dart';
 import '../widgets/html_container_widget.dart';
-import '../services/tree_service.dart';
-import 'package:treechan/board_json.dart';
+import '../models/tree_service.dart';
+import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// changes to false when there are nodes with depth more than 16
-bool showLines = true;
-int globalThreadId = 0;
-String globalTag = '';
 
-class ThreadScreen2 extends StatefulWidget {
-  const ThreadScreen2({super.key, required this.threadId, required this.tag});
+class ThreadScreen extends StatefulWidget {
+  const ThreadScreen({super.key, required this.threadId, required this.tag});
   final int threadId;
   final String tag;
   @override
-  State<ThreadScreen2> createState() => _ThreadScreen2State();
+  State<ThreadScreen> createState() => _ThreadScreenState();
 }
 
-class _ThreadScreen2State extends State<ThreadScreen2> {
-  late Future<List<TreeNode<Post>>>
-      roots; // List of posts which doesn't have parents
+class _ThreadScreenState extends State<ThreadScreen> {
+  late Future<ThreadContainer> threadContainer;
+  bool showLines = true; // List of posts which doesn't have parents
   @override
   void initState() {
     super.initState();
     showLines = true;
-    roots = formatPosts(widget.threadId, widget.tag);
-    globalThreadId = widget.threadId;
-    globalTag = widget.tag;
+    threadContainer = getThreadContainer(widget.threadId, widget.tag);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Тред")),
+        appBar: AppBar(
+          title: const Text("Тред"),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  threadContainer = refreshThread(await threadContainer);
+                  setShowLinesProperty((await threadContainer).roots);
+                  setState(() {});
+                },
+                icon: const Icon(Icons.refresh))
+          ],
+        ),
         body: Column(children: [
           Expanded(
-            child: FutureBuilder<List<TreeNode<Post>>>(
-                future: roots,
+            child: FutureBuilder<ThreadContainer>(
+                future: threadContainer,
                 builder: ((context, snapshot) {
                   if (snapshot.hasData) {
-                    setShowLinesProperty(snapshot.data!);
+                    setShowLinesProperty(snapshot.data!.roots);
                     return FlexibleTreeView<Post>(
                       scrollable: false,
                       indent: 16,
                       showLines: showLines,
-                      nodes: snapshot.data!,
+                      nodes: snapshot.data!.roots!,
                       nodeItemBuilder: (context, node) {
-                        return PostWidget(node: node, roots: snapshot.data!);
+                        return PostWidget(
+                          node: node,
+                          roots: snapshot.data!.roots!,
+                          threadId: snapshot.data!.threadInfo.opPostId!,
+                          tag: snapshot.data!.threadInfo.board!.id!,
+                        );
                       },
                     );
                   } else if (snapshot.hasError) {
@@ -59,13 +71,65 @@ class _ThreadScreen2State extends State<ThreadScreen2> {
           ),
         ]));
   }
+
+  Future<ThreadContainer> refreshThread(ThreadContainer threadContainer) async {
+    //int opPost = threadData.roots!.first.data.num_!;
+    int opPost = threadContainer.threadInfo.opPostId!;
+    // download posts which are not presented in current roots
+    var newThreadContainer = await getThreadContainer(
+        widget.threadId, widget.tag,
+        isRefresh: true, maxNum: (threadContainer.threadInfo.maxNum!));
+    if (newThreadContainer.roots!.isEmpty) return threadContainer;
+    for (var root in newThreadContainer.roots!) {
+      for (var parentId in root.data.parents) {
+        // connect downloaded roots to its old parents
+        if (parentId != opPost) {
+          findPost(threadContainer.roots!, parentId)!.addNode(root);
+        } else {
+          // add replies to op-post without indent
+          threadContainer.roots!.add(root);
+        }
+      }
+      if (root.data.parents.isEmpty) {
+        threadContainer.roots!.add(root);
+      }
+    }
+    threadContainer.threadInfo.maxNum = newThreadContainer.threadInfo.maxNum;
+    return threadContainer;
+  }
+
+  void setShowLinesProperty(List<TreeNode<Post>>? roots) {
+    for (var root in roots!) {
+      for (var child in root.children) {
+        checkDepth(child);
+      }
+    }
+  }
+
+  void checkDepth(TreeNode<Post> node) {
+    if (node.depth >= 16) {
+      showLines = false;
+      return;
+    }
+
+    for (var element in node.children) {
+      checkDepth(element);
+    }
+  }
 }
 
 class PostWidget extends StatelessWidget {
   // widget represents post
   final TreeNode<Post> node;
   final List<TreeNode<Post>> roots;
-  const PostWidget({super.key, required this.node, required this.roots});
+  final int threadId;
+  final String tag;
+  const PostWidget(
+      {super.key,
+      required this.node,
+      required this.roots,
+      required this.threadId,
+      required this.tag});
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +143,7 @@ class PostWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Tooltip(message: "#${post.num_}", child: PostHeader(node: node)),
+              Tooltip(message: "#${post.id}", child: PostHeader(node: node)),
               const Divider(
                 thickness: 1,
               ),
@@ -90,8 +154,8 @@ class PostWidget extends StatelessWidget {
                     post: post,
                     roots: roots,
                     isCalledFromThread: true,
-                    threadId: globalThreadId.toString(),
-                    tag: globalTag),
+                    threadId: threadId,
+                    tag: tag),
               )
             ],
           ),
@@ -148,24 +212,5 @@ class PostHeader extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-void setShowLinesProperty(List<TreeNode<Post>> roots) {
-  for (var root in roots) {
-    for (var child in root.children) {
-      checkDepth(child);
-    }
-  }
-}
-
-void checkDepth(TreeNode<Post> node) {
-  if (node.depth >= 16) {
-    showLines = false;
-    return;
-  }
-
-  for (var element in node.children) {
-    checkDepth(element);
   }
 }
