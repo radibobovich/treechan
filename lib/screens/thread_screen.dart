@@ -144,15 +144,18 @@ class PostWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Tooltip(message: "#${post.id}", child: PostHeader(node: node)),
-              post.subject == null
-                  ? const SizedBox.shrink()
-                  : Text.rich(TextSpan(
-                      text: post.subject,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    )),
               const Divider(
                 thickness: 1,
               ),
+              post.subject == ""
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text.rich(TextSpan(
+                        text: post.subject,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      )),
+                    ),
               ImagesPreview(files: post.files),
               ExcludeSemantics(
                 // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
