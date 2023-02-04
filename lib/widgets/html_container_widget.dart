@@ -140,13 +140,14 @@ class _HtmlContainerState extends State<HtmlContainer> {
                   String linkTag = url.substring(1, url.indexOf("/res/"));
                   int linkThreadId = int.parse(url.substring(
                       url.indexOf("/res/") + 5, url.indexOf(".html")));
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ThreadScreen(threadId: linkThreadId, tag: linkTag),
-                        // TODO: add postId to show concrete post in new page
-                      ));
+                  // TODO: replace navigator.push
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) =>
+                  //           ThreadScreen(threadId: linkThreadId, tag: linkTag),
+                  //       // TODO: add postId to show concrete post in new page
+                  //     ));
                 }
 
                 // check if it is a web link

@@ -3,24 +3,30 @@ import 'package:treechan/models/board_json.dart';
 import 'package:treechan/services/board_list_service.dart';
 import 'board_screen.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'app_navigator.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class BoardListScreen extends StatefulWidget {
+  const BoardListScreen(
+      {super.key,
+      required this.title,
+      required this.onOpen,
+      required this.onGoBack});
   final String title;
-
+  final Function onOpen;
+  final Function onGoBack;
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<BoardListScreen> createState() => _BoardListScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  late Future<List<Board>?> boards;
+class _BoardListScreenState extends State<BoardListScreen>
+    with AutomaticKeepAliveClientMixin {
   @override
-  void initState() {
-    super.initState();
-  }
+  bool get wantKeepAlive => true;
+  late Future<List<Board>?> boards;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -60,16 +66,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (context, board) {
                   return ListTile(
                     title: Text(board.name),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BoardScreen(
-                              boardName: board.name,
-                              boardTag: board.id,
-                            ),
-                          ));
-                    },
+                    onTap: () => widget.onOpen(Item(
+                        type: ItemTypes.board,
+                        name: board.name,
+                        tag: board.id)),
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => AppNavigator(
+                    //               initialBoardName: board.name,
+                    //               initialBoardTag: board.id,
+                    //             )
+                    //         //  BoardWidget()
+                    //         //   boardName: board.name,
+                    //         //   boardTag: board.id,
+                    //         // ),
+
+                    //         ));
                   );
                 },
               );
