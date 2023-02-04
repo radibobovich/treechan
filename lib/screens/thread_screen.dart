@@ -8,14 +8,22 @@ import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ThreadScreen extends StatefulWidget {
-  const ThreadScreen({super.key, required this.threadId, required this.tag});
+  const ThreadScreen(
+      {super.key,
+      required this.threadId,
+      required this.tag,
+      required this.onGoBack});
   final int threadId;
   final String tag;
+  final Function onGoBack;
   @override
   State<ThreadScreen> createState() => _ThreadScreenState();
 }
 
-class _ThreadScreenState extends State<ThreadScreen> {
+class _ThreadScreenState extends State<ThreadScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   late Future<ThreadContainer> threadContainer;
   bool showLines = true;
   @override
@@ -27,9 +35,14 @@ class _ThreadScreenState extends State<ThreadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
         appBar: AppBar(
           title: const Text("Тред"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => widget.onGoBack,
+          ),
           actions: [
             IconButton(
                 onPressed: () async {

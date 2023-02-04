@@ -4,18 +4,28 @@ import '../services/board_service.dart';
 import '../models/board_json.dart';
 import 'thread_screen.dart';
 import '../widgets/image_preview_widget.dart';
+import 'app_navigator.dart';
 
 // screen where you can scroll threads of the board
 class BoardScreen extends StatefulWidget {
   const BoardScreen(
-      {super.key, required this.boardName, required this.boardTag});
+      {super.key,
+      required this.boardName,
+      required this.boardTag,
+      required this.onOpen,
+      required this.onGoBack});
   final String boardName;
   final String boardTag;
+  final Function onOpen;
+  final Function onGoBack;
   @override
   State<BoardScreen> createState() => _BoardScreenState();
 }
 
-class _BoardScreenState extends State<BoardScreen> {
+class _BoardScreenState extends State<BoardScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   late Future<List<Thread>?> threadList;
   @override
   void initState() {
@@ -26,9 +36,14 @@ class _BoardScreenState extends State<BoardScreen> {
 // List of threads
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.boardName),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => widget.onGoBack,
+        ),
       ),
       body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -39,7 +54,8 @@ class _BoardScreenState extends State<BoardScreen> {
                   return ListView.builder(
                     itemCount: snapshot.data?.length,
                     itemBuilder: (context, index) {
-                      return ThreadCard(thread: snapshot.data?[index]);
+                      return ThreadCard(
+                          thread: snapshot.data?[index], onOpen: widget.onOpen);
                     },
                   );
                 } else if (snapshot.hasError) {
@@ -55,20 +71,24 @@ class _BoardScreenState extends State<BoardScreen> {
 // Represents thread in list of threads
 class ThreadCard extends StatelessWidget {
   final Thread? thread;
-  const ThreadCard({
-    Key? key,
-    required this.thread,
-  }) : super(key: key);
+  final Function onOpen;
+  const ThreadCard({Key? key, required this.thread, required this.onOpen})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ThreadScreen(
-                    threadId: thread!.num_ ?? 0, tag: thread!.board!)));
+        onOpen(Item(
+            type: ItemTypes.thread,
+            id: thread!.num_,
+            tag: thread!.board!,
+            name: thread!.subject!));
+        // Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //         builder: (context) => ThreadScreen(
+        //             threadId: thread!.num_ ?? 0, tag: thread!.board!)));
       },
       child: Card(
         margin: const EdgeInsets.all(2),
@@ -92,12 +112,6 @@ class ThreadCard extends StatelessWidget {
               ),
             ),
             ImagesPreview(files: thread!.files),
-            // Html(data: thread?.comment, style: {
-            //   '#': Style(
-            //     maxLines: 15,
-            //     textOverflow: TextOverflow.ellipsis,
-            //   )
-            // }),
             HtmlContainer(
               post: thread!,
               isCalledFromThread: false,
@@ -152,19 +166,6 @@ class CardFooter extends StatelessWidget {
               const Icon(Icons.question_answer, size: 20),
               Text(thread?.postsCount.toString() ?? "count"),
               const Spacer(),
-              // InkWell(
-              //     // button go to thread
-              //     child: const Text(
-              //       "В тред",
-              //     ),
-              //     onTap: () {
-              //       Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //               builder: (context) => ThreadScreen2(
-              //                   threadId: thread!.num_ ?? 0,
-              //                   tag: thread!.board ?? "b")));
-              //     }),
             ],
           ),
         )
