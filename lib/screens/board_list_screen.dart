@@ -3,9 +3,11 @@ import 'package:treechan/models/board_json.dart';
 import 'package:treechan/services/board_list_service.dart';
 import 'board_screen.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'app_navigator.dart';
+import 'tab_bar_navigator.dart';
+//import 'navigator.dart';
 
 class BoardListScreen extends StatefulWidget {
+  //const BoardListScreen({super.key, this.title, this.onOpen, this.onGoBack});
   const BoardListScreen(
       {super.key,
       required this.title,
@@ -70,6 +72,7 @@ class _BoardListScreenState extends State<BoardListScreen>
                         type: ItemTypes.board,
                         name: board.name,
                         tag: board.id)),
+
                     // Navigator.push(
                     //     context,
                     //     MaterialPageRoute(

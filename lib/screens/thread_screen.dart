@@ -6,16 +6,22 @@ import '../widgets/html_container_widget.dart';
 import '../models/tree_service.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/go_back_widget.dart';
+import '../screens/tab_bar_navigator.dart';
 
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen(
       {super.key,
       required this.threadId,
       required this.tag,
-      required this.onGoBack});
+      required this.onOpen,
+      required this.onGoBack,
+      required this.onSetSubject});
   final int threadId;
   final String tag;
+  final Function onOpen;
   final Function onGoBack;
+  final Function onSetSubject;
   @override
   State<ThreadScreen> createState() => _ThreadScreenState();
 }
@@ -26,6 +32,7 @@ class _ThreadScreenState extends State<ThreadScreen>
   bool get wantKeepAlive => true;
   late Future<ThreadContainer> threadContainer;
   bool showLines = true;
+  bool firstLoad = true;
   @override
   void initState() {
     super.initState();
@@ -39,10 +46,7 @@ class _ThreadScreenState extends State<ThreadScreen>
     return Scaffold(
         appBar: AppBar(
           title: const Text("Тред"),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => widget.onGoBack,
-          ),
+          leading: GoBackButton(onGoBack: widget.onGoBack),
           actions: [
             IconButton(
                 onPressed: () async {
@@ -59,6 +63,17 @@ class _ThreadScreenState extends State<ThreadScreen>
                 future: threadContainer,
                 builder: ((context, snapshot) {
                   if (snapshot.hasData) {
+                    // TODO: remove or fix
+                    // if (firstLoad) {
+                    //   Item currentItem = Item(
+                    //       type: ItemTypes.thread,
+                    //       id: snapshot.data!.threadInfo.opPostId,
+                    //       tag: snapshot.data!.threadInfo.board!.id!,
+                    //       name:
+                    //           snapshot.data!.threadInfo.threads!.first.subject);
+                    //   widget.onSetSubject(currentItem);
+                    //   firstLoad = false;
+                    // }
                     setShowLinesProperty(snapshot.data!.roots);
                     return FlexibleTreeView<Post>(
                       scrollable: false,
@@ -71,6 +86,8 @@ class _ThreadScreenState extends State<ThreadScreen>
                           roots: snapshot.data!.roots!,
                           threadId: snapshot.data!.threadInfo.opPostId!,
                           tag: snapshot.data!.threadInfo.board!.id!,
+                          onOpen: widget.onOpen,
+                          onGoBack: widget.onGoBack,
                         );
                       },
                     );
@@ -135,12 +152,16 @@ class PostWidget extends StatelessWidget {
   final List<TreeNode<Post>> roots;
   final int threadId;
   final String tag;
+  final Function onOpen;
+  final Function onGoBack;
   const PostWidget(
       {super.key,
       required this.node,
       required this.roots,
       required this.threadId,
-      required this.tag});
+      required this.tag,
+      required this.onOpen,
+      required this.onGoBack});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +195,9 @@ class PostWidget extends StatelessWidget {
                     roots: roots,
                     isCalledFromThread: true,
                     threadId: threadId,
-                    tag: tag),
+                    tag: tag,
+                    onOpen: onOpen,
+                    onGoBack: onGoBack),
               )
             ],
           ),
