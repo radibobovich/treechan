@@ -11,6 +11,8 @@ class AppTheme {
       primaryColor: Colors.blueGrey.shade900,
       secondaryHeaderColor: const Color.fromARGB(255, 195, 103, 42),
       appBarTheme: const AppBarTheme(color: Color.fromARGB(255, 25, 39, 52)),
+      drawerTheme: const DrawerThemeData(
+          backgroundColor: Color.fromARGB(255, 25, 39, 52)),
       cardTheme: const CardTheme(color: Color.fromARGB(255, 25, 39, 52)),
       dialogTheme:
           const DialogTheme(backgroundColor: Color.fromARGB(255, 25, 39, 52)),

@@ -8,6 +8,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/dom.dart' as dom;
 import '../screens/thread_screen.dart';
 import '../models/tree_service.dart';
+import '../screens/tab_bar_navigator.dart';
 
 /// Represents post text.
 /// Extracted from PostWidget because of a large onLinkTap function.
@@ -67,7 +68,9 @@ class HtmlContainer extends StatefulWidget {
       this.roots,
       this.tag,
       this.threadId,
-      required this.isCalledFromThread})
+      required this.isCalledFromThread,
+      required this.onOpen,
+      required this.onGoBack})
       : super(key: key);
 
   final dynamic post;
@@ -75,7 +78,8 @@ class HtmlContainer extends StatefulWidget {
   final String? tag;
   final int? threadId;
   final bool isCalledFromThread;
-
+  final Function onOpen;
+  final Function onGoBack;
   @override
   State<HtmlContainer> createState() => _HtmlContainerState();
 }
@@ -128,6 +132,8 @@ class _HtmlContainerState extends State<HtmlContainer> {
                               roots: widget.roots!,
                               threadId: widget.threadId!,
                               tag: widget.tag!,
+                              onOpen: widget.onOpen,
+                              onGoBack: widget.onGoBack,
                             )
                           ]),
                         ));
@@ -141,6 +147,14 @@ class _HtmlContainerState extends State<HtmlContainer> {
                   int linkThreadId = int.parse(url.substring(
                       url.indexOf("/res/") + 5, url.indexOf(".html")));
                   // TODO: replace navigator.push
+                  Item currentItem = Item(
+                      type: ItemTypes.thread,
+                      tag: widget.tag!,
+                      id: widget.threadId);
+                  Item newItem = Item(
+                      type: ItemTypes.thread, tag: linkTag, id: linkThreadId);
+                  widget.onOpen(newItem, currentItem);
+
                   // Navigator.push(
                   //     context,
                   //     MaterialPageRoute(
