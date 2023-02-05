@@ -4,7 +4,9 @@ import '../services/board_service.dart';
 import '../models/board_json.dart';
 import 'thread_screen.dart';
 import '../widgets/image_preview_widget.dart';
-import 'app_navigator.dart';
+import 'tab_bar_navigator.dart';
+import '../widgets/go_back_widget.dart';
+//import 'navigator.dart';
 
 // screen where you can scroll threads of the board
 class BoardScreen extends StatefulWidget {
@@ -39,12 +41,8 @@ class _BoardScreenState extends State<BoardScreen>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.boardName),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => widget.onGoBack,
-        ),
-      ),
+          title: Text(widget.boardName),
+          leading: GoBackButton(onGoBack: widget.onGoBack)),
       body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: FutureBuilder<List<Thread>?>(
@@ -55,7 +53,10 @@ class _BoardScreenState extends State<BoardScreen>
                     itemCount: snapshot.data?.length,
                     itemBuilder: (context, index) {
                       return ThreadCard(
-                          thread: snapshot.data?[index], onOpen: widget.onOpen);
+                        thread: snapshot.data?[index],
+                        onOpen: widget.onOpen,
+                        onGoBack: widget.onGoBack,
+                      );
                     },
                   );
                 } else if (snapshot.hasError) {
@@ -72,7 +73,12 @@ class _BoardScreenState extends State<BoardScreen>
 class ThreadCard extends StatelessWidget {
   final Thread? thread;
   final Function onOpen;
-  const ThreadCard({Key? key, required this.thread, required this.onOpen})
+  final Function onGoBack;
+  const ThreadCard(
+      {Key? key,
+      required this.thread,
+      required this.onOpen,
+      required this.onGoBack})
       : super(key: key);
 
   @override
@@ -115,6 +121,8 @@ class ThreadCard extends StatelessWidget {
             HtmlContainer(
               post: thread!,
               isCalledFromThread: false,
+              onOpen: onOpen,
+              onGoBack: onGoBack,
             ),
             CardFooter(thread: thread)
           ],

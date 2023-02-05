@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/board_list_screen.dart';
 import 'package:treechan/themes.dart';
-import 'screens/app_navigator.dart';
+import 'screens/tab_bar_navigator.dart';
+//import 'screens/navigator.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +15,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: AppTheme.nightTheme,
-        //home: const MyHomePage(title: 'Доски'),
-        home: const AppNavigator());
+      title: 'Flutter Demo',
+      theme: AppTheme.nightTheme,
+      home: const AppNavigator(),
+      initialRoute: '/',
+    );
   }
 }
