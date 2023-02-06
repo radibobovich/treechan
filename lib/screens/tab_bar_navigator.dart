@@ -119,6 +119,7 @@ class _AppNavigatorState extends State<AppNavigator>
     }
   }
 
+  //TODO: override back button to go back in right place
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -150,12 +151,14 @@ class _AppNavigatorState extends State<AppNavigator>
                       onGoBack: () => _goBack());
                 case ItemTypes.board:
                   return BoardScreen(
+                      key: ValueKey(item),
                       boardName: item.name!,
                       boardTag: item.tag,
                       onOpen: (Item item) => _addItem(item),
                       onGoBack: () => _goBack());
                 case ItemTypes.thread:
                   return ThreadScreen(
+                      key: ValueKey(item),
                       threadId: item.id!,
                       tag: item.tag,
                       onOpen: (Item item, {Item? prevItem}) => _addItem(item),
@@ -165,7 +168,6 @@ class _AppNavigatorState extends State<AppNavigator>
             }).toList(),
           );
         }),
-        // How to prevent drawer width overflow?
         drawer: Drawer(
           child: ListView.builder(
             itemCount: _items.length,
@@ -192,8 +194,14 @@ class _AppNavigatorState extends State<AppNavigator>
                         ? IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () {
+                              int currentPosition = _tabController!.index;
                               _removeItem(item);
-                              _scaffoldKey.currentState!.closeDrawer();
+                              if (currentPosition == index) {
+                                _tabController!.animateTo(currentPosition - 1);
+                              } else {
+                                _tabController!.animateTo(currentPosition);
+                              }
+                              //_scaffoldKey.currentState!.closeDrawer();
                             },
                             color:
                                 Theme.of(context).textTheme.titleMedium!.color,
