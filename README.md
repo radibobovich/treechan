@@ -3,4 +3,4 @@
 2ch клиент с древовидной системой постов. 
 Сейчас в разработке, на данный момент уже можно пользоваться ридонли.
 
-TODO список: (https://trello.com/b/JxlUBxC0/todo "Trello")
+TODO список: [Trello](https://trello.com/b/JxlUBxC0/todo "Trello")
