@@ -46,15 +46,14 @@ class __StatefulBuilderWrapperState extends State<_StatefulBuilderWrapper> {
         return GestureDetector(
           onTap: () => toggleVisibility(),
           child: _spoilerVisibility
-              ? Container(
-                  height: 16.5,
-                  padding: EdgeInsets.zero,
-                  child: widget.children,
-                )
-              : Text(widget.node.tree.element!.text,
+              ? widget.children
+              : Text(
+                  widget.node.tree.element!.text,
                   style: TextStyle(
                       backgroundColor: Colors.grey[600],
-                      color: Colors.grey[600])),
+                      color: Colors.grey[600],
+                      fontSize: 14.5),
+                ),
         );
       },
     );
