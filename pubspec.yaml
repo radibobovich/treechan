@@ -48,10 +48,6 @@ dependencies:
       ref: master
   grouped_list: ^5.1.2
   url_launcher: ^6.1.8
-  custom_refresh_indicator: ^2.0.1
-  pull_to_refresh: ^2.0.0
-  pull_to_refresh_plus: ^2.0.3
-  refresh_loadmore: ^2.0.5
   easy_refresh:
     git: https://github.com/radeonovich/flutter_easy_refresh.git
 dev_dependencies:
