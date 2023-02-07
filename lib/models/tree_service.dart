@@ -77,6 +77,34 @@ List<TreeNode<Post>> attachChilds(int? id, List<Post> posts) {
   return childrenToAdd;
 }
 
+/// Gets new posts from server and adds them to the existing threadContainer.
+/// Connects new posts to their old parents.
+/// Returns updated threadContainer.
+Future<ThreadContainer> refreshThread(
+    ThreadContainer threadContainer, int threadId, String tag) async {
+  int opPost = threadContainer.threadInfo.opPostId!;
+  // download posts which are not presented in current roots
+  ThreadContainer newThreadContainer = await getThreadContainer(threadId, tag,
+      isRefresh: true, maxNum: (threadContainer.threadInfo.maxNum!));
+  if (newThreadContainer.roots!.isEmpty) return threadContainer;
+  for (var root in newThreadContainer.roots!) {
+    for (var parentId in root.data.parents) {
+      // connect downloaded roots to its old parents
+      if (parentId != opPost) {
+        findPost(threadContainer.roots!, parentId)!.addNode(root);
+      } else {
+        // add replies to op-post without indent
+        threadContainer.roots!.add(root);
+      }
+    }
+    if (root.data.parents.isEmpty) {
+      threadContainer.roots!.add(root);
+    }
+  }
+  threadContainer.threadInfo.maxNum = newThreadContainer.threadInfo.maxNum;
+  return threadContainer;
+}
+
 /// Check if post has references to posts in other threads.
 bool hasExternalReferences(List<Post> posts, List<int> referenceIds) {
   for (var referenceId in referenceIds) {

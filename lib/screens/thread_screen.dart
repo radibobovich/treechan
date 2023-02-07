@@ -32,7 +32,6 @@ class _ThreadScreenState extends State<ThreadScreen>
   bool get wantKeepAlive => true;
   late Future<ThreadContainer> threadContainer;
   bool showLines = true;
-  bool firstLoad = true;
   @override
   void initState() {
     super.initState();
@@ -56,7 +55,8 @@ class _ThreadScreenState extends State<ThreadScreen>
           actions: [
             IconButton(
                 onPressed: () async {
-                  threadContainer = refreshThread(await threadContainer);
+                  threadContainer = refreshThread(
+                      await threadContainer, widget.threadId, widget.tag);
                   setShowLinesProperty((await threadContainer).roots);
                   setState(() {});
                 },
@@ -93,31 +93,6 @@ class _ThreadScreenState extends State<ThreadScreen>
                 })),
           ),
         ]));
-  }
-
-  Future<ThreadContainer> refreshThread(ThreadContainer threadContainer) async {
-    int opPost = threadContainer.threadInfo.opPostId!;
-    // download posts which are not presented in current roots
-    ThreadContainer newThreadContainer = await getThreadContainer(
-        widget.threadId, widget.tag,
-        isRefresh: true, maxNum: (threadContainer.threadInfo.maxNum!));
-    if (newThreadContainer.roots!.isEmpty) return threadContainer;
-    for (var root in newThreadContainer.roots!) {
-      for (var parentId in root.data.parents) {
-        // connect downloaded roots to its old parents
-        if (parentId != opPost) {
-          findPost(threadContainer.roots!, parentId)!.addNode(root);
-        } else {
-          // add replies to op-post without indent
-          threadContainer.roots!.add(root);
-        }
-      }
-      if (root.data.parents.isEmpty) {
-        threadContainer.roots!.add(root);
-      }
-    }
-    threadContainer.threadInfo.maxNum = newThreadContainer.threadInfo.maxNum;
-    return threadContainer;
   }
 
   /// Sets showLines property to false when there are nodes with depth >=16.
