@@ -1,11 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
-//import 'package:mono_kit/widgets/link_text_span.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:html/dom.dart' as dom;
 import '../screens/thread_screen.dart';
 import '../models/tree_service.dart';
 import '../screens/tab_bar_navigator.dart';
@@ -145,22 +142,17 @@ class _HtmlContainerState extends State<HtmlContainer> {
                   String linkTag = url.substring(1, url.indexOf("/res/"));
                   int linkThreadId = int.parse(url.substring(
                       url.indexOf("/res/") + 5, url.indexOf(".html")));
-                  // TODO: replace navigator.push
-                  Item currentItem = Item(
-                      type: ItemTypes.thread,
+                  DrawerTab currentTab = DrawerTab(
+                      type: TabTypes.thread,
                       tag: widget.tag!,
                       id: widget.threadId);
-                  Item newItem = Item(
-                      type: ItemTypes.thread, tag: linkTag, id: linkThreadId);
-                  widget.onOpen(newItem, currentItem);
-
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) =>
-                  //           ThreadScreen(threadId: linkThreadId, tag: linkTag),
-                  //       // TODO: add postId to show concrete post in new page
-                  //     ));
+                  DrawerTab newTab = DrawerTab(
+                      type: TabTypes.thread,
+                      tag: linkTag,
+                      id: linkThreadId,
+                      prevTab: currentTab);
+                  widget.onOpen(newTab);
+                  // TODO: add postId to show concrete post in new page
                 }
 
                 // check if it is a web link
@@ -171,55 +163,6 @@ class _HtmlContainerState extends State<HtmlContainer> {
                 }
               }),
       },
-      // onLinkTap: (String? url, RenderContext renderContext,
-      //     Map<String, String> attributes, dom.Element? element) {
-      //   if (isCalledFromThread && url!.contains(
-      //       // check if link points to some post in thread
-      //       "/$tag/res/$threadId.html#")) {
-      //     // get post id placed after # symbol
-      //     int id = int.parse(url.substring(url.indexOf("#") + 1));
-      //     if (findPost(roots!, id) == null) {
-      //       return;
-      //     }
-      //     showDialog(
-      //         context: renderContext.buildContext,
-      //         builder: (BuildContext context) {
-      //           return Dialog(
-      //               child: SingleChildScrollView(
-      //             child: Column(mainAxisSize: MainAxisSize.min, children: [
-      //               PostWidget(
-      //                 node: findPost(roots!, id)!,
-      //                 roots: roots!,
-      //                 threadId: threadId!,
-      //                 tag: tag!,
-      //               )
-      //             ]),
-      //           ));
-      //         });
-
-      //     // check if link is to the post in other thread and maybe in other board
-      //   } else if (url![0] == "/" && url.contains("catalog.html")) {
-      //
-      //   } else if (url[0] == "/" && url.contains("/res/")) {
-      //     String linkTag = url.substring(1, url.indexOf("/res/"));
-      //     int linkThreadId = int.parse(
-      //         url.substring(url.indexOf("/res/") + 5, url.indexOf(".html")));
-      //     Navigator.push(
-      //         context,
-      //         MaterialPageRoute(
-      //           builder: (context) =>
-      //               ThreadScreen(threadId: linkThreadId, tag: linkTag),
-      //
-      //         ));
-      //   }
-
-      //   // check if it is a web link
-      //   else if (url.substring(0, 4) == "http") {
-      //
-      //     tryLaunchUrl(url);
-      //     //launchUrl(Uri.parse(url));
-      //   }
-      // }
     );
   }
 }

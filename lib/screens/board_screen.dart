@@ -39,10 +39,13 @@ class _BoardScreenState extends State<BoardScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DrawerTab currentTab = DrawerTab(
+        type: TabTypes.board, tag: widget.boardTag, prevTab: boardListTab);
     return Scaffold(
       appBar: AppBar(
           title: Text(widget.boardName),
-          leading: GoBackButton(onGoBack: widget.onGoBack)),
+          leading:
+              GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab)),
       body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: FutureBuilder<List<Thread>?>(
@@ -56,6 +59,8 @@ class _BoardScreenState extends State<BoardScreen>
                         thread: snapshot.data?[index],
                         onOpen: widget.onOpen,
                         onGoBack: widget.onGoBack,
+                        boardName: widget.boardName,
+                        boardTag: widget.boardTag,
                       );
                     },
                   );
@@ -74,27 +79,30 @@ class ThreadCard extends StatelessWidget {
   final Thread? thread;
   final Function onOpen;
   final Function onGoBack;
+
+  final String boardName;
+  final String boardTag;
   const ThreadCard(
       {Key? key,
       required this.thread,
       required this.onOpen,
-      required this.onGoBack})
+      required this.onGoBack,
+      required this.boardName,
+      required this.boardTag})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        onOpen(Item(
-            type: ItemTypes.thread,
+        DrawerTab currentTab =
+            DrawerTab(type: TabTypes.board, tag: boardTag, name: boardName);
+        onOpen(DrawerTab(
+            type: TabTypes.thread,
             id: thread!.num_,
             tag: thread!.board!,
-            name: thread!.subject!));
-        // Navigator.push(
-        //     context,
-        //     MaterialPageRoute(
-        //         builder: (context) => ThreadScreen(
-        //             threadId: thread!.num_ ?? 0, tag: thread!.board!)));
+            name: thread!.subject!,
+            prevTab: currentTab));
       },
       child: Card(
         margin: const EdgeInsets.all(2),
