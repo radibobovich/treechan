@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/tab_bar_navigator.dart';
+import '../screens/tab_navigator.dart';
 
 /// A cratch.
 class GoBackButton extends StatelessWidget {
