@@ -1,21 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:treechan/models/board_json.dart';
 import 'package:treechan/screens/thread_screen.dart';
 import 'board_screen.dart';
 import 'board_list_screen.dart';
 
-//final List<GlobalKey> runningTabs = List.empty(growable: true);
-// TODO: add a way to close tabs: bool get wantKeepAlive => runningTabs.where...
-enum ItemTypes { boardList, board, thread }
+enum TabTypes { boardList, board, thread }
 
-class Item {
-  ItemTypes type;
+class DrawerTab {
+  TabTypes type;
   int? id;
   String? name;
   String tag;
+  DrawerTab? prevTab;
+  DrawerTab(
+      {required this.type,
+      this.id,
+      required this.tag,
+      this.name,
+      this.prevTab});
 
-  Item({required this.type, this.id, required this.tag, this.name});
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is DrawerTab &&
+        type == other.type &&
+        id == other.id &&
+        tag == other.tag;
+  }
+
+  @override
+  int get hashCode =>
+      type.hashCode ^ id.hashCode ^ name.hashCode ^ tag.hashCode;
 }
+
+DrawerTab boardListTab =
+    DrawerTab(type: TabTypes.boardList, name: "Доски", tag: "boards");
 
 class AppNavigator extends StatefulWidget {
   const AppNavigator({super.key});
@@ -27,12 +46,12 @@ class _AppNavigatorState extends State<AppNavigator>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TabController? _tabController;
-  final List<Item> _items = List.empty(growable: true);
+  final List<DrawerTab> _tabs = List.empty(growable: true);
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _items.length, vsync: this);
-    _addItem(Item(type: ItemTypes.boardList, name: "Доски", tag: "boards"));
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _addItem(boardListTab);
   }
 
   @override
@@ -41,92 +60,70 @@ class _AppNavigatorState extends State<AppNavigator>
     super.dispose();
   }
 
-  bool compareItems(Item item1, Item item2) {
-    if (item1.type == item2.type &&
-        item1.id == item2.id &&
-        item1.tag == item2.tag) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   int? findBoardItem(String tag) {
-    for (int i = 0; i < _items.length; i++) {
-      if (_items[i].type == ItemTypes.board && _items[i].tag == tag) {
+    for (int i = 0; i < _tabs.length; i++) {
+      if (_tabs[i].type == TabTypes.board && _tabs[i].tag == tag) {
         return i;
       }
     }
     return null;
   }
 
-  void _addItem(Item item, {Item? prevItem}) {
-    if (_items.where((element) => compareItems(element, item)).isEmpty) {
+  void _addItem(DrawerTab tab) {
+    if (!_tabs.contains(tab)) {
       setState(() {
-        if (prevItem != null) {
-          // add new item after prevItem which triggered its opening
-          _items.insert(
-              _items.indexWhere((element) => compareItems(element, prevItem)) +
-                  1,
-              item);
-        } else if (item.type == ItemTypes.thread) {
-          // add new item after the board from which it was opened
-          int? relatedBoardItemId = findBoardItem(item.tag);
-          // relatedBoardItemId is null when there is no related board in the list
-          if (relatedBoardItemId != null &&
-              relatedBoardItemId < _items.length - 1) {
-            _items.insert(relatedBoardItemId + 1, item);
-          } else {
-            _items.add(item);
-          }
-        } else if (item.type == ItemTypes.board && _items.length > 1) {
-          _items.insert(1, item);
-        } else {
-          // TODO: remove because potentially never used
-          _items.add(item);
-        }
+        // if (prevItem != null) {
+        //   // add new item after prevItem which triggered its opening
+        //   _items.insert(_items.indexOf(prevItem) + 1, item);
+        // } else if (item.type == ItemTypes.thread) {
+        //   // add new item after the board from which it was opened
+        //   int? relatedBoardItemId = findBoardItem(item.tag);
+        //   // relatedBoardItemId is null when there is no related board in the list
+        //   if (relatedBoardItemId != null &&
+        //       relatedBoardItemId < _items.length - 1) {
+        //     _items.insert(relatedBoardItemId + 1, item);
+        //   } else {
+        //     _items.add(item);
+        //   }
+        // } else if (item.type == ItemTypes.board && _items.length > 1) {
+        //   _items.insert(1, item);
+        // } else {
+        //   _items.add(item);
+        // }
+        _tabs.add(tab);
 
-        //_items.add(item);
-        _tabController = TabController(length: _items.length, vsync: this);
+        _tabController = TabController(length: _tabs.length, vsync: this);
       });
     }
-    _tabController!
-        .animateTo(_items.indexWhere((element) => compareItems(element, item)));
-    //_scaffoldKey.currentState!.closeEndDrawer();
+    _tabController!.animateTo(_tabs.indexOf(tab));
   }
 
-  void _setSubject(Item item) async {
-    // using addPostFrameCallback to avoid "setState() or markNeedsBuild() called during build" error
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _items[_items.indexWhere((element) => compareItems(element, item))]
-            .name = item.name;
-      });
-    });
-  }
-
-  void _removeItem(Item item) {
+  void _removeItem(DrawerTab tab) {
     setState(() {
-      _items.remove(item);
+      _tabs.remove(tab);
     });
-    // TODO: kill State when removing item
-    _tabController = TabController(length: _items.length, vsync: this);
+    _tabController = TabController(length: _tabs.length, vsync: this);
   }
 
-  void _goBack() {
-    if (_tabController!.index > 0) {
-      _tabController!.animateTo(_tabController!.index - 1);
+  void _goBack(DrawerTab currentTab) {
+    if (currentTab.prevTab == null) return;
+    int prevTabId = _tabs.indexOf(currentTab.prevTab!);
+    if (prevTabId == -1) {
+      if (_tabController!.index > 0) {
+        _tabController!.animateTo(_tabController!.index - 1);
+      }
+    } else {
+      _tabController!.animateTo(prevTabId);
     }
   }
 
-  //TODO: override back button to go back in right place
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
         int currentIndex = _tabController!.index;
         if (currentIndex > 0) {
-          _tabController!.animateTo(currentIndex - 1);
+          _goBack(_tabs[currentIndex]);
           return Future.value(false);
         } else {
           return Future.value(true);
@@ -138,41 +135,40 @@ class _AppNavigatorState extends State<AppNavigator>
           return TabBarView(
             physics: const NeverScrollableScrollPhysics(),
             controller: _tabController,
-            children: _items.map((item) {
-              switch (item.type) {
-                case ItemTypes.boardList:
+            children: _tabs.map((tab) {
+              switch (tab.type) {
+                case TabTypes.boardList:
                   return BoardListScreen(
-                      key: ValueKey(item),
+                      key: ValueKey(tab),
                       title: "Доски",
-                      onOpen: (Item item) {
-                        _addItem(item);
-                        //_scaffoldKey.currentState!.closeDrawer();
+                      onOpen: (DrawerTab newTab) {
+                        _addItem(newTab);
                       },
-                      onGoBack: () => _goBack());
-                case ItemTypes.board:
+                      onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
+                case TabTypes.board:
                   return BoardScreen(
-                      key: ValueKey(item),
-                      boardName: item.name!,
-                      boardTag: item.tag,
-                      onOpen: (Item item) => _addItem(item),
-                      onGoBack: () => _goBack());
-                case ItemTypes.thread:
+                      key: ValueKey(tab),
+                      boardName: tab.name!,
+                      boardTag: tab.tag,
+                      onOpen: (DrawerTab newTab) => _addItem(newTab),
+                      onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
+                case TabTypes.thread:
                   return ThreadScreen(
-                      key: ValueKey(item),
-                      threadId: item.id!,
-                      tag: item.tag,
-                      onOpen: (Item item, {Item? prevItem}) => _addItem(item),
-                      onGoBack: () => _goBack(),
-                      onSetSubject: (Item item) => _setSubject(item));
+                      key: ValueKey(tab),
+                      threadId: tab.id!,
+                      tag: tab.tag,
+                      prevTab: tab.prevTab!,
+                      onOpen: (DrawerTab newTab) => _addItem(newTab),
+                      onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
               }
             }).toList(),
           );
         }),
         drawer: Drawer(
           child: ListView.builder(
-            itemCount: _items.length,
+            itemCount: _tabs.length,
             itemBuilder: (bcontext, index) {
-              Item item = _items[index];
+              DrawerTab item = _tabs[index];
               return ListTile(
                 selected: _tabController!.index == index,
                 textColor: Theme.of(context).textTheme.titleMedium!.color,
@@ -181,7 +177,7 @@ class _AppNavigatorState extends State<AppNavigator>
                   children: [
                     Expanded(
                       child: Text(
-                        (item.type == ItemTypes.board
+                        (item.type == TabTypes.board
                                 ? "/${item.tag}/ - "
                                 : "") +
                             (item.name ?? "Тред"),
@@ -189,19 +185,19 @@ class _AppNavigatorState extends State<AppNavigator>
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    //const Spacer(),
-                    item.type != ItemTypes.boardList
+                    item.type != TabTypes.boardList
                         ? IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () {
                               int currentPosition = _tabController!.index;
-                              _removeItem(item);
-                              if (currentPosition == index) {
+
+                              if (_tabs.indexOf(item) <= currentPosition) {
+                                _removeItem(item);
                                 _tabController!.animateTo(currentPosition - 1);
                               } else {
+                                _removeItem(item);
                                 _tabController!.animateTo(currentPosition);
                               }
-                              //_scaffoldKey.currentState!.closeDrawer();
                             },
                             color:
                                 Theme.of(context).textTheme.titleMedium!.color,

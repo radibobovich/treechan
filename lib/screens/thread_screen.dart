@@ -16,12 +16,12 @@ class ThreadScreen extends StatefulWidget {
       required this.tag,
       required this.onOpen,
       required this.onGoBack,
-      required this.onSetSubject});
+      required this.prevTab});
   final int threadId;
   final String tag;
+  final DrawerTab prevTab;
   final Function onOpen;
   final Function onGoBack;
-  final Function onSetSubject;
   @override
   State<ThreadScreen> createState() => _ThreadScreenState();
 }
@@ -43,10 +43,16 @@ class _ThreadScreenState extends State<ThreadScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DrawerTab currentTab = DrawerTab(
+        type: TabTypes.thread,
+        id: widget.threadId,
+        tag: widget.tag,
+        prevTab: widget.prevTab);
     return Scaffold(
         appBar: AppBar(
           title: const Text("Тред"),
-          leading: GoBackButton(onGoBack: widget.onGoBack),
+          leading:
+              GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab),
           actions: [
             IconButton(
                 onPressed: () async {
@@ -63,17 +69,6 @@ class _ThreadScreenState extends State<ThreadScreen>
                 future: threadContainer,
                 builder: ((context, snapshot) {
                   if (snapshot.hasData) {
-                    // TODO: remove or fix
-                    // if (firstLoad) {
-                    //   Item currentItem = Item(
-                    //       type: ItemTypes.thread,
-                    //       id: snapshot.data!.threadInfo.opPostId,
-                    //       tag: snapshot.data!.threadInfo.board!.id!,
-                    //       name:
-                    //           snapshot.data!.threadInfo.threads!.first.subject);
-                    //   widget.onSetSubject(currentItem);
-                    //   firstLoad = false;
-                    // }
                     setShowLinesProperty(snapshot.data!.roots);
                     return FlexibleTreeView<Post>(
                       scrollable: false,
