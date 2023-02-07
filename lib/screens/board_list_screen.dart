@@ -68,10 +68,14 @@ class _BoardListScreenState extends State<BoardListScreen>
                 itemBuilder: (context, board) {
                   return ListTile(
                     title: Text(board.name),
-                    onTap: () => widget.onOpen(Item(
-                        type: ItemTypes.board,
+                    onTap: () => widget.onOpen(DrawerTab(
+                        type: TabTypes.board,
                         name: board.name,
-                        tag: board.id)),
+                        tag: board.id,
+                        prevTab: DrawerTab(
+                            type: TabTypes.boardList,
+                            name: "Доски",
+                            tag: "boards"))),
 
                     // Navigator.push(
                     //     context,
