@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:treechan/services/board_list_service.dart';
-import 'board_screen.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'tab_bar_navigator.dart';
-//import 'navigator.dart';
+import 'tab_navigator.dart';
 
 class BoardListScreen extends StatefulWidget {
-  //const BoardListScreen({super.key, this.title, this.onOpen, this.onGoBack});
   const BoardListScreen(
       {super.key,
       required this.title,
@@ -76,20 +73,6 @@ class _BoardListScreenState extends State<BoardListScreen>
                             type: TabTypes.boardList,
                             name: "Доски",
                             tag: "boards"))),
-
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => AppNavigator(
-                    //               initialBoardName: board.name,
-                    //               initialBoardTag: board.id,
-                    //             )
-                    //         //  BoardWidget()
-                    //         //   boardName: board.name,
-                    //         //   boardTag: board.id,
-                    //         // ),
-
-                    //         ));
                   );
                 },
               );

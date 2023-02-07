@@ -33,16 +33,17 @@ class DrawerTab {
       type.hashCode ^ id.hashCode ^ name.hashCode ^ tag.hashCode;
 }
 
+/// An initial tab for the drawer. Referenced in goBack of boards.
 DrawerTab boardListTab =
     DrawerTab(type: TabTypes.boardList, name: "Доски", tag: "boards");
 
-class AppNavigator extends StatefulWidget {
-  const AppNavigator({super.key});
+class TabNavigator extends StatefulWidget {
+  const TabNavigator({super.key});
   @override
-  State<AppNavigator> createState() => _AppNavigatorState();
+  State<TabNavigator> createState() => _TabNavigatorState();
 }
 
-class _AppNavigatorState extends State<AppNavigator>
+class _TabNavigatorState extends State<TabNavigator>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TabController? _tabController;
@@ -60,44 +61,18 @@ class _AppNavigatorState extends State<AppNavigator>
     super.dispose();
   }
 
-  int? findBoardItem(String tag) {
-    for (int i = 0; i < _tabs.length; i++) {
-      if (_tabs[i].type == TabTypes.board && _tabs[i].tag == tag) {
-        return i;
-      }
-    }
-    return null;
-  }
-
+  /// Adds new tab to the drawer and opens it.
   void _addItem(DrawerTab tab) {
     if (!_tabs.contains(tab)) {
       setState(() {
-        // if (prevItem != null) {
-        //   // add new item after prevItem which triggered its opening
-        //   _items.insert(_items.indexOf(prevItem) + 1, item);
-        // } else if (item.type == ItemTypes.thread) {
-        //   // add new item after the board from which it was opened
-        //   int? relatedBoardItemId = findBoardItem(item.tag);
-        //   // relatedBoardItemId is null when there is no related board in the list
-        //   if (relatedBoardItemId != null &&
-        //       relatedBoardItemId < _items.length - 1) {
-        //     _items.insert(relatedBoardItemId + 1, item);
-        //   } else {
-        //     _items.add(item);
-        //   }
-        // } else if (item.type == ItemTypes.board && _items.length > 1) {
-        //   _items.insert(1, item);
-        // } else {
-        //   _items.add(item);
-        // }
         _tabs.add(tab);
-
         _tabController = TabController(length: _tabs.length, vsync: this);
       });
     }
     _tabController!.animateTo(_tabs.indexOf(tab));
   }
 
+  /// Closes tab and removes it from the drawer.
   void _removeItem(DrawerTab tab) {
     setState(() {
       _tabs.remove(tab);
@@ -105,6 +80,9 @@ class _AppNavigatorState extends State<AppNavigator>
     _tabController = TabController(length: _tabs.length, vsync: this);
   }
 
+  /// Goes back to the previous tab when user presses back button.
+  /// If there is no previous tab, it goes back to the previous page.
+  /// If there is no previous page, it closes the app.
   void _goBack(DrawerTab currentTab) {
     if (currentTab.prevTab == null) return;
     int prevTabId = _tabs.indexOf(currentTab.prevTab!);
@@ -119,6 +97,7 @@ class _AppNavigatorState extends State<AppNavigator>
 
   @override
   Widget build(BuildContext context) {
+    /// Overrides Android back button to go back to the previous tab.
     return WillPopScope(
       onWillPop: () async {
         int currentIndex = _tabController!.index;
