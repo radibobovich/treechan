@@ -7,7 +7,7 @@ import '../models/tree_service.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/go_back_widget.dart';
-import '../screens/tab_bar_navigator.dart';
+import 'tab_navigator.dart';
 
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen(

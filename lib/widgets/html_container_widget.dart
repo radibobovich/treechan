@@ -5,23 +5,20 @@ import 'package:treechan/models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../screens/thread_screen.dart';
 import '../models/tree_service.dart';
-import '../screens/tab_bar_navigator.dart';
+import '../screens/tab_navigator.dart';
 
-/// Represents post text.
-/// Extracted from PostWidget because of a large onLinkTap function.
-class _StatefulBuilderWrapper extends StatefulWidget {
+/// Represents greyed out text in post text.
+class _SpoilerText extends StatefulWidget {
   final RenderContext node;
   final Widget children;
-  const _StatefulBuilderWrapper(
-      {Key? key, required this.node, required this.children})
+  const _SpoilerText({Key? key, required this.node, required this.children})
       : super(key: key);
 
   @override
-  __StatefulBuilderWrapperState createState() =>
-      __StatefulBuilderWrapperState();
+  _SpoilerTextState createState() => _SpoilerTextState();
 }
 
-class __StatefulBuilderWrapperState extends State<_StatefulBuilderWrapper> {
+class _SpoilerTextState extends State<_SpoilerText> {
   bool _spoilerVisibility = false;
 
   @override
@@ -57,6 +54,8 @@ class __StatefulBuilderWrapperState extends State<_StatefulBuilderWrapper> {
   }
 }
 
+/// Represents post text.
+/// Extracted from PostWidget because of a large onLinkTap function.
 class HtmlContainer extends StatefulWidget {
   const HtmlContainer(
       {Key? key,
@@ -97,7 +96,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     const TextStyle(color: Color.fromARGB(255, 120, 153, 34)),
                 text: node.tree.element!.text);
           } else if (spanClasses.contains("spoiler")) {
-            return _StatefulBuilderWrapper(node: node, children: children);
+            return _SpoilerText(node: node, children: children);
           }
         },
         "a": (node, children) => TextSpan(

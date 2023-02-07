@@ -4,11 +4,10 @@ import '../services/board_service.dart';
 import '../models/board_json.dart';
 import 'thread_screen.dart';
 import '../widgets/image_preview_widget.dart';
-import 'tab_bar_navigator.dart';
+import 'tab_navigator.dart';
 import '../widgets/go_back_widget.dart';
-//import 'navigator.dart';
 
-// screen where you can scroll threads of the board
+/// A screen where you can scroll threads of the board.
 class BoardScreen extends StatefulWidget {
   const BoardScreen(
       {super.key,
