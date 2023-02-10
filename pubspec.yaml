@@ -50,6 +50,7 @@ dependencies:
   url_launcher: ^6.1.8
   easy_refresh:
     git: https://github.com/radeonovich/flutter_easy_refresh.git
+  visibility_detector: ^0.3.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
