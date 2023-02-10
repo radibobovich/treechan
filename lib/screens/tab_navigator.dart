@@ -81,8 +81,6 @@ class _TabNavigatorState extends State<TabNavigator>
   }
 
   /// Goes back to the previous tab when user presses back button.
-  /// If there is no previous tab, it goes back to the previous page.
-  /// If there is no previous page, it closes the app.
   void _goBack(DrawerTab currentTab) {
     if (currentTab.prevTab == null) return;
     int prevTabId = _tabs.indexOf(currentTab.prevTab!);
