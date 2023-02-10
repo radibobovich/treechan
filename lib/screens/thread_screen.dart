@@ -8,6 +8,17 @@ import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/go_back_widget.dart';
 import 'tab_navigator.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+import 'dart:collection';
+
+//List<PostWidget> visiblePosts = List.empty(growable: true);
+Map<int, GlobalKey> visiblePosts = {};
+
+GlobalKey getFirstVisiblePost() {
+  var sortedById = SplayTreeMap<int, GlobalKey>.from(
+      visiblePosts, (key1, key2) => key1.compareTo(key2));
+  return sortedById.values.first;
+}
 
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen(
@@ -22,6 +33,7 @@ class ThreadScreen extends StatefulWidget {
   final DrawerTab prevTab;
   final Function onOpen;
   final Function onGoBack;
+
   @override
   State<ThreadScreen> createState() => _ThreadScreenState();
 }
@@ -31,6 +43,10 @@ class _ThreadScreenState extends State<ThreadScreen>
   @override
   bool get wantKeepAlive => true;
   late Future<ThreadContainer> threadContainer;
+  final ScrollController scrollController = ScrollController();
+
+  // final GlobalKey<_ThreadScreenState> stateKey =
+  //     GlobalKey<_ThreadScreenState>();
   bool showLines = true;
   @override
   void initState() {
@@ -41,6 +57,7 @@ class _ThreadScreenState extends State<ThreadScreen>
 
   @override
   Widget build(BuildContext context) {
+    //visiblePosts.clear();
     super.build(context);
     DrawerTab currentTab = DrawerTab(
         type: TabTypes.thread,
@@ -55,8 +72,16 @@ class _ThreadScreenState extends State<ThreadScreen>
           actions: [
             IconButton(
                 onPressed: () async {
-                  threadContainer = refreshThread(
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    GlobalKey firstVisiblePost = getFirstVisiblePost();
+                    Scrollable.ensureVisible(firstVisiblePost.currentContext!,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut);
+                  });
+
+                  refreshThread(
                       await threadContainer, widget.threadId, widget.tag);
+
                   setShowLinesProperty((await threadContainer).roots);
                   setState(() {});
                 },
@@ -74,6 +99,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                       scrollable: false,
                       indent: 16,
                       showLines: showLines,
+                      scrollController: scrollController,
                       nodes: snapshot.data!.roots!,
                       nodeItemBuilder: (context, node) {
                         return PostWidget(
@@ -117,14 +143,15 @@ class _ThreadScreenState extends State<ThreadScreen>
   }
 }
 
-class PostWidget extends StatelessWidget {
+class PostWidget extends StatefulWidget {
   final TreeNode<Post> node;
   final List<TreeNode<Post>> roots;
   final int threadId;
   final String tag;
   final Function onOpen;
   final Function onGoBack;
-  const PostWidget(
+
+  PostWidget(
       {super.key,
       required this.node,
       required this.roots,
@@ -134,42 +161,69 @@ class PostWidget extends StatelessWidget {
       required this.onGoBack});
 
   @override
+  State<PostWidget> createState() => _PostWidgetState();
+}
+
+class _PostWidgetState extends State<PostWidget> {
+  @override
   Widget build(BuildContext context) {
-    final Post post = node.data;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Tooltip(message: "#${post.id}", child: PostHeader(node: node)),
-              const Divider(
-                thickness: 1,
-              ),
-              post.subject == ""
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text.rich(TextSpan(
-                        text: post.subject,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      )),
-                    ),
-              ImagesPreview(files: post.files),
-              ExcludeSemantics(
-                // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-                child: HtmlContainer(
-                    post: post,
-                    roots: roots,
-                    isCalledFromThread: true,
-                    threadId: threadId,
-                    tag: tag,
-                    onOpen: onOpen,
-                    onGoBack: onGoBack),
-              )
-            ],
+    final gKey = GlobalKey<_PostWidgetState>();
+    // renderObject = context.findRenderObject();
+    // matrix = renderObject?.getTransformTo(null);
+    // scrollOffset =
+    //     context.findRenderObject()?.getTransformTo(null).getTranslation().y;
+    final Post post = widget.node.data;
+    return VisibilityDetector(
+      key: Key(post.id.toString()),
+      onVisibilityChanged: (visibilityInfo) {
+        if (true) {
+          if (visibilityInfo.visibleFraction == 1) {
+            debugPrint("Post ${post.id} is visible, key is $gKey");
+            visiblePosts[post.id!] = gKey;
+          }
+          if (visibilityInfo.visibleFraction == 0) {
+            debugPrint("Post ${post.id} is invisible");
+            visiblePosts.remove(post.id);
+          }
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Tooltip(
+                    message: "#${post.id}",
+                    child: PostHeader(node: widget.node)),
+                const Divider(
+                  thickness: 1,
+                ),
+                post.subject == ""
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text.rich(TextSpan(
+                          text: post.subject,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        )),
+                      ),
+                ImagesPreview(files: post.files),
+                ExcludeSemantics(
+                  // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
+                  child: HtmlContainer(
+                      post: post,
+                      roots: widget.roots,
+                      isCalledFromThread: true,
+                      threadId: widget.threadId,
+                      tag: widget.tag,
+                      onOpen: widget.onOpen,
+                      onGoBack: widget.onGoBack),
+                )
+              ],
+            ),
           ),
         ),
       ),
