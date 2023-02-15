@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/themes.dart';
 import 'screens/tab_navigator.dart';
+import 'deprecated/test.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: AppTheme.nightTheme,
       home: const TabNavigator(),
+      //home: const TestList(),
       initialRoute: '/',
     );
   }
