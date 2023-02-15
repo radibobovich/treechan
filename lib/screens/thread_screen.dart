@@ -11,13 +11,51 @@ import 'tab_navigator.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'dart:collection';
 
-//List<PostWidget> visiblePosts = List.empty(growable: true);
-Map<int, GlobalKey> visiblePosts = {};
+List<PostWidget> visiblePosts = List.empty(growable: true);
+//List<GlobalKey> keys = List.empty(growable: true);
+//Map<int, Key> visiblePosts = {};
 
-GlobalKey getFirstVisiblePost() {
-  var sortedById = SplayTreeMap<int, GlobalKey>.from(
-      visiblePosts, (key1, key2) => key1.compareTo(key2));
-  return sortedById.values.first;
+// GlobalKey getFirstVisiblePost() {
+//   var sortedById = SplayTreeMap<int, GlobalKey>.from(
+//       visiblePosts, (key1, key2) => key1.compareTo(key2));
+//   return sortedById.values.first;
+// }
+PostWidget getFirstVisiblePost() {
+  PostWidget firstVisiblePost = visiblePosts.first;
+  int maxId = firstVisiblePost.node.data.id!;
+  for (var post in visiblePosts) {
+    if (post.node.data.id! < maxId) {
+      maxId = post.node.data.id!;
+      firstVisiblePost = post;
+    }
+  }
+  return firstVisiblePost;
+}
+
+// Key getFirstVisiblePost() {
+//   PostWidget firstVisiblePost = visiblePosts.first;
+//   int maxId = firstVisiblePost.node.data.id!;
+//   for (var post in visiblePosts) {
+//     if (post.node.data.id! < maxId) {
+//       maxId = post.node.data.id!;
+//       firstVisiblePost = post;
+//     }
+//   }
+//   return firstVisiblePost.key!;
+// }
+
+Future<void> scrollToPost(
+    PostWidget post, ScrollController scrollController) async {
+  await Future<void>.delayed(const Duration(milliseconds: 2000));
+  //VisibilityDetectorController.instance.notifyNow;
+  while (!visiblePosts.contains(post)) {
+    VisibilityDetectorController.instance.notifyNow;
+    scrollController.animateTo(scrollController.offset + 50,
+        duration: const Duration(milliseconds: 20), curve: Curves.easeOut);
+    debugPrint(scrollController.offset.toString());
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+  return;
 }
 
 class ThreadScreen extends StatefulWidget {
@@ -72,15 +110,30 @@ class _ThreadScreenState extends State<ThreadScreen>
           actions: [
             IconButton(
                 onPressed: () async {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    GlobalKey firstVisiblePost = getFirstVisiblePost();
-                    Scrollable.ensureVisible(firstVisiblePost.currentContext!,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOut);
-                  });
+                  PostWidget firstVisiblePost = getFirstVisiblePost();
+                  //Key firstVisiblePost = getFirstVisiblePost();
+
+                  // WidgetsBinding.instance.addPostFrameCallback((_) {
+                  //   BuildContext buildContext =
+                  //       (firstVisiblePost as GlobalKey).currentContext!;
+
+                  //   Scrollable.ensureVisible(buildContext,
+                  //       duration: const Duration(milliseconds: 200),
+                  //       curve: Curves.easeOut);
+                  // });
 
                   refreshThread(
                       await threadContainer, widget.threadId, widget.tag);
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    scrollToPost(firstVisiblePost, scrollController);
+                  });
+
+                  // WidgetsBinding.instance.addPostFrameCallback((_) {
+                  //   Scrollable.ensureVisible(keys[20].currentContext!,
+                  //       duration: const Duration(milliseconds: 200),
+                  //       curve: Curves.easeOut);
+                  // });
 
                   setShowLinesProperty((await threadContainer).roots);
                   setState(() {});
@@ -102,7 +155,11 @@ class _ThreadScreenState extends State<ThreadScreen>
                       scrollController: scrollController,
                       nodes: snapshot.data!.roots!,
                       nodeItemBuilder: (context, node) {
+                        //debugPrint("node: ${node.data.id} is built");
+                        //GlobalKey itemKey = GlobalKey();
+                        //keys.add(itemKey);
                         return PostWidget(
+                          //key: itemKey,
                           node: node,
                           roots: snapshot.data!.roots!,
                           threadId: snapshot.data!.threadInfo.opPostId!,
@@ -150,8 +207,8 @@ class PostWidget extends StatefulWidget {
   final String tag;
   final Function onOpen;
   final Function onGoBack;
-
-  PostWidget(
+  //GlobalKey? gKey;
+  const PostWidget(
       {super.key,
       required this.node,
       required this.roots,
@@ -165,25 +222,24 @@ class PostWidget extends StatefulWidget {
 }
 
 class _PostWidgetState extends State<PostWidget> {
+  //final gKey = GlobalKey<_PostWidgetState>();
   @override
   Widget build(BuildContext context) {
-    final gKey = GlobalKey<_PostWidgetState>();
-    // renderObject = context.findRenderObject();
-    // matrix = renderObject?.getTransformTo(null);
-    // scrollOffset =
-    //     context.findRenderObject()?.getTransformTo(null).getTranslation().y;
+    //widget.gKey = GlobalKey<_PostWidgetState>();
     final Post post = widget.node.data;
     return VisibilityDetector(
       key: Key(post.id.toString()),
       onVisibilityChanged: (visibilityInfo) {
         if (true) {
           if (visibilityInfo.visibleFraction == 1) {
-            debugPrint("Post ${post.id} is visible, key is $gKey");
-            visiblePosts[post.id!] = gKey;
+            debugPrint("Post ${post.id} is visible, key is $widget.key");
+            //visiblePosts[post.id!] = widget.key!;
+            visiblePosts.add(widget);
           }
           if (visibilityInfo.visibleFraction == 0) {
             debugPrint("Post ${post.id} is invisible");
-            visiblePosts.remove(post.id);
+            //visiblePosts.remove(post.id);
+            visiblePosts.remove(widget);
           }
         }
       },
