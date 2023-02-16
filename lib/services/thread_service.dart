@@ -2,17 +2,27 @@ import 'package:http/http.dart' as http;
 import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
 import '../models/thread_container.dart';
+import 'package:flutter/services.dart';
 
 /// Sends GET request and gets thread information and list of posts.
 Future<ThreadContainer> getThreadRawData(String tag, int threadId,
     {bool isRefresh = false, int maxNum = 0}) async {
   ThreadContainer threadContainer = ThreadContainer();
   String url;
-  url = (isRefresh && maxNum != 0)
-      ? "https://2ch.hk/api/mobile/v2/after/$tag/$threadId/${maxNum + 1}"
-      : "https://2ch.hk/$tag/res/${threadId.toString()}.json";
+  http.Response response;
 
-  final response = await http.get(Uri.parse(url));
+  if (const String.fromEnvironment('thread') == 'true') {
+    String jsonString = await rootBundle
+        .loadString(isRefresh ? 'assets/new_posts.json' : 'assets/thread.json');
+    response = http.Response(jsonString, 200);
+  } else {
+    // normal behavior
+    url = (isRefresh && maxNum != 0)
+        ? "https://2ch.hk/api/mobile/v2/after/$tag/$threadId/${maxNum + 1}"
+        : "https://2ch.hk/$tag/res/${threadId.toString()}.json";
+
+    response = await http.get(Uri.parse(url));
+  }
   if (response.statusCode == 200) {
     // if it is a refresh request
     if (isRefresh) {
