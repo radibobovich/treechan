@@ -3,6 +3,7 @@ import 'package:treechan/themes.dart';
 import 'screens/tab_navigator.dart';
 import 'deprecated/test.dart';
 
+bool flagDebugThread = false;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
