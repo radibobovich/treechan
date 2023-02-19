@@ -9,7 +9,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../widgets/go_back_widget.dart';
 import 'tab_navigator.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import 'dart:collection';
 
 List<PostWidget> visiblePosts = List.empty(growable: true);
 //List<GlobalKey> keys = List.empty(growable: true);
