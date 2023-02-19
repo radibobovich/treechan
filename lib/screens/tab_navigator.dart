@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:treechan/screens/thread_screen.dart';
 import 'board_screen.dart';
 import 'board_list_screen.dart';
+import 'package:treechan/main.dart';
 
 enum TabTypes { boardList, board, thread }
 
@@ -53,6 +54,16 @@ class _TabNavigatorState extends State<TabNavigator>
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
     _addItem(boardListTab);
+    if (const String.fromEnvironment('thread') == 'true') {
+      debugPrint('debugging thread');
+      DrawerTab debugThreadTab = DrawerTab(
+          type: TabTypes.thread,
+          name: "debug",
+          tag: "b",
+          prevTab: boardListTab,
+          id: 282647314);
+      _addItem(debugThreadTab);
+    }
   }
 
   @override
@@ -62,6 +73,7 @@ class _TabNavigatorState extends State<TabNavigator>
   }
 
   /// Adds new tab to the drawer and opens it.
+  // TODO: rename
   void _addItem(DrawerTab tab) {
     if (!_tabs.contains(tab)) {
       setState(() {
