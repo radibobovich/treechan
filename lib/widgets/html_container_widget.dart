@@ -6,6 +6,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../screens/thread_screen.dart';
 import '../models/tree_service.dart';
 import '../screens/tab_navigator.dart';
+import '../widgets/post_widget.dart';
 
 /// Represents greyed out text in post text.
 class _SpoilerText extends StatefulWidget {
