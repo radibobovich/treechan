@@ -11,49 +11,30 @@ import 'tab_navigator.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 List<PostWidget> visiblePosts = List.empty(growable: true);
-//List<GlobalKey> keys = List.empty(growable: true);
-//Map<int, Key> visiblePosts = {};
 
-// GlobalKey getFirstVisiblePost() {
-//   var sortedById = SplayTreeMap<int, GlobalKey>.from(
-//       visiblePosts, (key1, key2) => key1.compareTo(key2));
-//   return sortedById.values.first;
-// }
 PostWidget getFirstVisiblePost() {
-  PostWidget firstVisiblePost = visiblePosts.first;
-  int maxId = firstVisiblePost.node.data.id!;
-  for (var post in visiblePosts) {
-    if (post.node.data.id! < maxId) {
-      maxId = post.node.data.id!;
-      firstVisiblePost = post;
-    }
-  }
-  return firstVisiblePost;
+  visiblePosts.sort((a, b) => a.yPos!.compareTo(b.yPos!));
+  return visiblePosts.first;
 }
 
-// Key getFirstVisiblePost() {
-//   PostWidget firstVisiblePost = visiblePosts.first;
-//   int maxId = firstVisiblePost.node.data.id!;
-//   for (var post in visiblePosts) {
-//     if (post.node.data.id! < maxId) {
-//       maxId = post.node.data.id!;
-//       firstVisiblePost = post;
-//     }
-//   }
-//   return firstVisiblePost.key!;
-// }
+void scrollToPost(PostWidget post, ScrollController scrollController) {
+  VisibilityDetectorController.instance.notifyNow;
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    RenderObject? obj =
+        (post.key as GlobalKey).currentContext?.findRenderObject(); // null
+    RenderBox? box = obj != null ? obj as RenderBox : null;
+    Offset? position = box?.localToGlobal(Offset.zero);
+    double? y = position?.dy;
+    // while (y == null || y > 200) {
+    //   scrollController.animateTo(scrollController.offset + 50,
+    //       duration: const Duration(milliseconds: 50), curve: Curves.easeOut);
+    //   obj = (post.key as GlobalKey).currentContext?.findRenderObject();
+    //   box = obj != null ? obj as RenderBox : null;
+    //   position = box?.localToGlobal(Offset.zero);
+    //   y = position?.dy;
+    // }
+  });
 
-Future<void> scrollToPost(
-    PostWidget post, ScrollController scrollController) async {
-  await Future<void>.delayed(const Duration(milliseconds: 2000));
-  //VisibilityDetectorController.instance.notifyNow;
-  while (!visiblePosts.contains(post)) {
-    VisibilityDetectorController.instance.notifyNow;
-    scrollController.animateTo(scrollController.offset + 50,
-        duration: const Duration(milliseconds: 20), curve: Curves.easeOut);
-    debugPrint(scrollController.offset.toString());
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-  }
   return;
 }
 
@@ -81,9 +62,6 @@ class _ThreadScreenState extends State<ThreadScreen>
   bool get wantKeepAlive => true;
   late Future<ThreadContainer> threadContainer;
   final ScrollController scrollController = ScrollController();
-
-  // final GlobalKey<_ThreadScreenState> stateKey =
-  //     GlobalKey<_ThreadScreenState>();
   bool showLines = true;
   @override
   void initState() {
@@ -94,7 +72,6 @@ class _ThreadScreenState extends State<ThreadScreen>
 
   @override
   Widget build(BuildContext context) {
-    //visiblePosts.clear();
     super.build(context);
     DrawerTab currentTab = DrawerTab(
         type: TabTypes.thread,
@@ -110,29 +87,12 @@ class _ThreadScreenState extends State<ThreadScreen>
             IconButton(
                 onPressed: () async {
                   PostWidget firstVisiblePost = getFirstVisiblePost();
-                  //Key firstVisiblePost = getFirstVisiblePost();
-
-                  // WidgetsBinding.instance.addPostFrameCallback((_) {
-                  //   BuildContext buildContext =
-                  //       (firstVisiblePost as GlobalKey).currentContext!;
-
-                  //   Scrollable.ensureVisible(buildContext,
-                  //       duration: const Duration(milliseconds: 200),
-                  //       curve: Curves.easeOut);
-                  // });
-
-                  refreshThread(
+                  await refreshThread(
                       await threadContainer, widget.threadId, widget.tag);
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {});
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
                     scrollToPost(firstVisiblePost, scrollController);
                   });
-
-                  // WidgetsBinding.instance.addPostFrameCallback((_) {
-                  //   Scrollable.ensureVisible(keys[20].currentContext!,
-                  //       duration: const Duration(milliseconds: 200),
-                  //       curve: Curves.easeOut);
-                  // });
 
                   setShowLinesProperty((await threadContainer).roots);
                   setState(() {});
@@ -154,11 +114,9 @@ class _ThreadScreenState extends State<ThreadScreen>
                       scrollController: scrollController,
                       nodes: snapshot.data!.roots!,
                       nodeItemBuilder: (context, node) {
-                        //debugPrint("node: ${node.data.id} is built");
-                        //GlobalKey itemKey = GlobalKey();
-                        //keys.add(itemKey);
                         return PostWidget(
                           //key: itemKey,
+                          key: GlobalKey(),
                           node: node,
                           roots: snapshot.data!.roots!,
                           threadId: snapshot.data!.threadInfo.opPostId!,
@@ -206,9 +164,11 @@ class PostWidget extends StatefulWidget {
   final String tag;
   final Function onOpen;
   final Function onGoBack;
+  double? yPos;
   //GlobalKey? gKey;
-  const PostWidget(
+  PostWidget(
       {super.key,
+      this.yPos = 0,
       required this.node,
       required this.roots,
       required this.threadId,
@@ -221,10 +181,11 @@ class PostWidget extends StatefulWidget {
 }
 
 class _PostWidgetState extends State<PostWidget> {
-  //final gKey = GlobalKey<_PostWidgetState>();
   @override
   Widget build(BuildContext context) {
-    //widget.gKey = GlobalKey<_PostWidgetState>();
+    RenderBox? box = context.findRenderObject() as RenderBox?;
+    Offset? position = box?.localToGlobal(Offset.zero);
+    widget.yPos = position?.dy;
     final Post post = widget.node.data;
     return VisibilityDetector(
       key: Key(post.id.toString()),
@@ -232,12 +193,14 @@ class _PostWidgetState extends State<PostWidget> {
         if (true) {
           if (visibilityInfo.visibleFraction == 1) {
             debugPrint("Post ${post.id} is visible, key is $widget.key");
-            //visiblePosts[post.id!] = widget.key!;
             visiblePosts.add(widget);
+            RenderBox? box = context.findRenderObject() as RenderBox?;
+            Offset? position = box?.localToGlobal(Offset.zero);
+            widget.yPos = position?.dy;
           }
-          if (visibilityInfo.visibleFraction == 0) {
+          if (visibilityInfo.visibleFraction < 1 &&
+              visiblePosts.contains(widget)) {
             debugPrint("Post ${post.id} is invisible");
-            //visiblePosts.remove(post.id);
             visiblePosts.remove(widget);
           }
         }
@@ -253,6 +216,7 @@ class _PostWidgetState extends State<PostWidget> {
                 Tooltip(
                     message: "#${post.id}",
                     child: PostHeader(node: widget.node)),
+                Text(post.id.toString()),
                 const Divider(
                   thickness: 1,
                 ),
