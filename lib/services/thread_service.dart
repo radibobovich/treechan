@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
@@ -14,7 +16,9 @@ Future<ThreadContainer> getThreadRawData(String tag, int threadId,
   if (const String.fromEnvironment('thread') == 'true') {
     String jsonString = await rootBundle
         .loadString(isRefresh ? 'assets/new_posts.json' : 'assets/thread.json');
-    response = http.Response(jsonString, 200);
+    response = http.Response(jsonString, 200, headers: {
+      HttpHeaders.contentTypeHeader: 'application/json; charset=utf-8'
+    });
   } else {
     // normal behavior
     url = (isRefresh && maxNum != 0)

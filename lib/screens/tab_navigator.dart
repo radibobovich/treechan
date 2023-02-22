@@ -53,7 +53,7 @@ class _TabNavigatorState extends State<TabNavigator>
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
-    _addItem(boardListTab);
+    _addTab(boardListTab);
     if (const String.fromEnvironment('thread') == 'true') {
       debugPrint('debugging thread');
       DrawerTab debugThreadTab = DrawerTab(
@@ -62,7 +62,7 @@ class _TabNavigatorState extends State<TabNavigator>
           tag: "b",
           prevTab: boardListTab,
           id: 282647314);
-      _addItem(debugThreadTab);
+      _addTab(debugThreadTab);
     }
   }
 
@@ -74,7 +74,7 @@ class _TabNavigatorState extends State<TabNavigator>
 
   /// Adds new tab to the drawer and opens it.
   // TODO: rename
-  void _addItem(DrawerTab tab) {
+  void _addTab(DrawerTab tab) {
     if (!_tabs.contains(tab)) {
       setState(() {
         _tabs.add(tab);
@@ -85,7 +85,7 @@ class _TabNavigatorState extends State<TabNavigator>
   }
 
   /// Closes tab and removes it from the drawer.
-  void _removeItem(DrawerTab tab) {
+  void _removeTab(DrawerTab tab) {
     setState(() {
       _tabs.remove(tab);
     });
@@ -131,7 +131,7 @@ class _TabNavigatorState extends State<TabNavigator>
                       key: ValueKey(tab),
                       title: "Доски",
                       onOpen: (DrawerTab newTab) {
-                        _addItem(newTab);
+                        _addTab(newTab);
                       },
                       onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
                 case TabTypes.board:
@@ -139,7 +139,7 @@ class _TabNavigatorState extends State<TabNavigator>
                       key: ValueKey(tab),
                       boardName: tab.name!,
                       boardTag: tab.tag,
-                      onOpen: (DrawerTab newTab) => _addItem(newTab),
+                      onOpen: (DrawerTab newTab) => _addTab(newTab),
                       onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
                 case TabTypes.thread:
                   return ThreadScreen(
@@ -147,7 +147,7 @@ class _TabNavigatorState extends State<TabNavigator>
                       threadId: tab.id!,
                       tag: tab.tag,
                       prevTab: tab.prevTab!,
-                      onOpen: (DrawerTab newTab) => _addItem(newTab),
+                      onOpen: (DrawerTab newTab) => _addTab(newTab),
                       onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
               }
             }).toList(),
@@ -181,10 +181,10 @@ class _TabNavigatorState extends State<TabNavigator>
                               int currentPosition = _tabController!.index;
 
                               if (_tabs.indexOf(item) <= currentPosition) {
-                                _removeItem(item);
+                                _removeTab(item);
                                 _tabController!.animateTo(currentPosition - 1);
                               } else {
-                                _removeItem(item);
+                                _removeTab(item);
                                 _tabController!.animateTo(currentPosition);
                               }
                             },
