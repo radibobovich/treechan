@@ -75,6 +75,10 @@ class ImagePreview extends StatelessWidget {
       file.thumbnail!,
       height: 140,
       fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        // TODO: set 404 image here
+        return const SizedBox(height: 140, width: 140, child: Text("error"));
+      },
     );
     // return FutureBuilder<ImageProvider>(
     //   future: tryPrecache(context,
