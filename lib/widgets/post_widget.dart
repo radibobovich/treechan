@@ -14,11 +14,11 @@ class PostWidget extends StatefulWidget {
   final String tag;
   final Function onOpen;
   final Function onGoBack;
-  double? yPos;
+  // double? yPos;
   //GlobalKey? gKey;
   PostWidget(
       {super.key,
-      this.yPos = 0,
+      // this.yPos = 0,
       required this.node,
       required this.roots,
       required this.threadId,
@@ -33,9 +33,12 @@ class PostWidget extends StatefulWidget {
 class _PostWidgetState extends State<PostWidget> {
   @override
   Widget build(BuildContext context) {
-    RenderBox? box = context.findRenderObject() as RenderBox?;
-    Offset? position = box?.localToGlobal(Offset.zero);
-    widget.yPos = position?.dy;
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   RenderObject? obj = context.findRenderObject(); // null
+    //   RenderBox? box = obj != null ? obj as RenderBox : null;
+    //   Offset? position = box?.localToGlobal(Offset.zero);
+    //   widget.yPos = position?.dy;
+    // });
     final Post post = widget.node.data;
     return VisibilityDetector(
       key: Key(post.id.toString()),
@@ -43,15 +46,24 @@ class _PostWidgetState extends State<PostWidget> {
         if (true) {
           if (visibilityInfo.visibleFraction == 1) {
             debugPrint("Post ${post.id} is visible, key is $widget.key");
-            visiblePosts.add(widget);
-            RenderBox? box = context.findRenderObject() as RenderBox?;
-            Offset? position = box?.localToGlobal(Offset.zero);
-            widget.yPos = position?.dy;
+            if (!visiblePosts.contains(widget)) {
+              visiblePosts.add(widget);
+            }
           }
           if (visibilityInfo.visibleFraction < 1 &&
               visiblePosts.contains(widget)) {
             debugPrint("Post ${post.id} is invisible");
             visiblePosts.remove(widget);
+          }
+          if (visibilityInfo.visibleFraction < 1 &&
+              !visiblePosts.contains(widget) &&
+              !partiallyVisiblePosts.contains(widget)) {
+            partiallyVisiblePosts.add(widget);
+          }
+          if ((visibilityInfo.visibleFraction == 1 ||
+                  visibilityInfo.visibleFraction == 0) &&
+              partiallyVisiblePosts.contains(widget)) {
+            partiallyVisiblePosts.remove(widget);
           }
         }
       },

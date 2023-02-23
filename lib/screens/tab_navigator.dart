@@ -73,7 +73,6 @@ class _TabNavigatorState extends State<TabNavigator>
   }
 
   /// Adds new tab to the drawer and opens it.
-  // TODO: rename
   void _addTab(DrawerTab tab) {
     if (!_tabs.contains(tab)) {
       setState(() {

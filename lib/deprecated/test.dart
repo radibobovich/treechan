@@ -18,25 +18,34 @@ class _TestListState extends State<TestList> {
         title: const Text("Test List"),
         actions: [
           IconButton(
-              onPressed: () => Scrollable.ensureVisible(
-                  keyList[72].currentContext!,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut),
+              onPressed: () {
+                setState(() {
+                  list.add(125);
+                });
+              },
+              // Scrollable.ensureVisible(
+              //     keyList[72].currentContext!,
+              //     duration: const Duration(milliseconds: 200),
+              //     curve: Curves.easeOut),
               icon: const Icon(Icons.search))
         ],
       ),
-      body: ListView.builder(
-          itemCount: list.length,
-          itemBuilder: (context, index) {
-            GlobalKey itemKey = GlobalKey();
-            if (!keyList.contains(itemKey)) {
-              keyList.add(itemKey);
-            }
-            return ListTile(
-              key: itemKey,
-              title: Text(list[index].toString()),
-            );
-          }),
+      body: StatefulBuilder(
+        builder: (context, setState) {
+          return ListView.builder(
+              itemCount: list.length,
+              itemBuilder: (context, index) {
+                GlobalKey itemKey = GlobalKey();
+                if (!keyList.contains(itemKey)) {
+                  keyList.add(itemKey);
+                }
+                return ListTile(
+                  key: itemKey,
+                  title: Text(list[index].toString() + itemKey.toString()),
+                );
+              });
+        },
+      ),
     );
   }
 }

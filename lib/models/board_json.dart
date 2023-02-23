@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 // Represents JSON response structure of 2ch API.
 
 class Root {
@@ -438,7 +439,7 @@ class Post {
   int? timestamp;
   String? trip;
   int? views;
-
+  GlobalKey? gKey = GlobalKey();
   List<int> parents = List.empty(growable: true);
   Post(
       {this.banned,
@@ -460,7 +461,8 @@ class Post {
       this.tags,
       this.timestamp,
       this.trip,
-      this.views});
+      this.views,
+      this.gKey});
 
   Post.fromJson(Map<String, dynamic> json) {
     banned = json['banned'];
