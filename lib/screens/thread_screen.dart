@@ -58,7 +58,9 @@ Future<void> scrollToPost(PostWidget post, ScrollController scrollController,
   }
   double screenHeight = MediaQuery.of(context).size.height;
   Timer.periodic(const Duration(milliseconds: 20), (timer) {
-    if (currentOffset != null && currentOffset! < initialOffset + 20) {
+    if (currentOffset != null &&
+        (currentOffset! < initialOffset + 20 ||
+            currentOffset! > initialOffset - 20)) {
       timer.cancel();
     }
     if (currentOffset == null) {
