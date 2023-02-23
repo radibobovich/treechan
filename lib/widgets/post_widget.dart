@@ -14,11 +14,8 @@ class PostWidget extends StatefulWidget {
   final String tag;
   final Function onOpen;
   final Function onGoBack;
-  // double? yPos;
-  //GlobalKey? gKey;
-  PostWidget(
+  const PostWidget(
       {super.key,
-      // this.yPos = 0,
       required this.node,
       required this.roots,
       required this.threadId,
@@ -33,12 +30,6 @@ class PostWidget extends StatefulWidget {
 class _PostWidgetState extends State<PostWidget> {
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   RenderObject? obj = context.findRenderObject(); // null
-    //   RenderBox? box = obj != null ? obj as RenderBox : null;
-    //   Offset? position = box?.localToGlobal(Offset.zero);
-    //   widget.yPos = position?.dy;
-    // });
     final Post post = widget.node.data;
     return VisibilityDetector(
       key: Key(post.id.toString()),
@@ -78,7 +69,7 @@ class _PostWidgetState extends State<PostWidget> {
                 Tooltip(
                     message: "#${post.id}",
                     child: PostHeader(node: widget.node)),
-                Text(post.id.toString()),
+                //Text(post.id.toString()),
                 const Divider(
                   thickness: 1,
                 ),
