@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/models/thread_container.dart';
@@ -10,29 +12,66 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../widgets/post_widget.dart';
 
 List<PostWidget> visiblePosts = List.empty(growable: true);
-
+List<PostWidget> partiallyVisiblePosts = List.empty(growable: true);
 PostWidget getFirstVisiblePost() {
-  visiblePosts.sort((a, b) => a.yPos!.compareTo(b.yPos!));
-  return visiblePosts.first;
-}
-
-void scrollToPost(PostWidget post, ScrollController scrollController) {
-  VisibilityDetectorController.instance.notifyNow;
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+  Map<PostWidget, double> posts = {};
+  for (PostWidget post in visiblePosts) {
     RenderObject? obj =
-        (post.key as GlobalKey).currentContext?.findRenderObject(); // null
+        (post.key as GlobalKey).currentContext?.findRenderObject();
     RenderBox? box = obj != null ? obj as RenderBox : null;
     Offset? position = box?.localToGlobal(Offset.zero);
     double? y = position?.dy;
+    if (y != null) {
+      posts[post] = y;
+    }
+  }
+  var sortedByOffset = Map.fromEntries(
+      posts.entries.toList()..sort((e1, e2) => e1.value.compareTo(e2.value)));
+  // for debugging
+  List<String> visibleIds = [];
+  for (PostWidget post in visiblePosts) {
+    visibleIds.add(post.node.data.id!.toString());
+  }
+  if (sortedByOffset.isEmpty) {
+    return partiallyVisiblePosts.first;
+  }
+  return sortedByOffset.keys.first;
+}
 
-    // while (y == null || y > 200) {
-    //   scrollController.animateTo(scrollController.offset + 50,
-    //       duration: const Duration(milliseconds: 50), curve: Curves.easeOut);
-    //   obj = (post.key as GlobalKey).currentContext?.findRenderObject();
-    //   box = obj != null ? obj as RenderBox : null;
-    //   position = box?.localToGlobal(Offset.zero);
-    //   y = position?.dy;
-    // }
+void scrollToPost(PostWidget post, ScrollController scrollController,
+    double initialOffset, BuildContext context) {
+  RenderObject? obj;
+  RenderBox? box;
+  Offset? position;
+  double? currentOffset;
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    obj = (post.key as GlobalKey).currentContext?.findRenderObject(); // null
+    box = obj != null ? obj as RenderBox : null;
+    position = box?.localToGlobal(Offset.zero);
+    currentOffset = position?.dy;
+  });
+  if (currentOffset == initialOffset) {
+    return;
+  }
+  double screenHeight = MediaQuery.of(context).size.height;
+  Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    if (currentOffset != null && currentOffset! < initialOffset + 20) {
+      timer.cancel();
+    }
+    if (currentOffset == null) {
+      scrollController.animateTo(scrollController.offset + screenHeight,
+          duration: const Duration(milliseconds: 50), curve: Curves.easeOut);
+    } else {
+      scrollController.animateTo(
+          scrollController.offset + (currentOffset! - initialOffset),
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut);
+      timer.cancel();
+    }
+    obj = (post.key as GlobalKey).currentContext?.findRenderObject();
+    box = obj != null ? obj as RenderBox : null;
+    position = box?.localToGlobal(Offset.zero);
+    currentOffset = position?.dy;
   });
 
   return;
@@ -85,14 +124,34 @@ class _ThreadScreenState extends State<ThreadScreen>
           leading:
               GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab),
           actions: [
+            // IconButton(
+            //   icon: const Icon(Icons.abc),
+            //   onPressed: () {
+            //     scrollController.jumpTo(8539);
+            //   },
+            // ),
             IconButton(
                 onPressed: () async {
-                  PostWidget firstVisiblePost = getFirstVisiblePost();
+                  PostWidget? firstVisiblePost;
+                  RenderObject? obj;
+                  RenderBox? box;
+                  double? initialOffset;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    firstVisiblePost = getFirstVisiblePost();
+                    obj = (firstVisiblePost!.key as GlobalKey)
+                        .currentContext
+                        ?.findRenderObject(); // null
+                    box = obj != null ? obj as RenderBox : null;
+                    Offset? position = box?.localToGlobal(Offset.zero);
+                    initialOffset = position?.dy;
+                  });
+
                   await refreshThread(
                       await threadContainer, widget.threadId, widget.tag);
                   setState(() {});
                   WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    scrollToPost(firstVisiblePost, scrollController);
+                    scrollToPost(firstVisiblePost!, scrollController,
+                        initialOffset!, context);
                   });
 
                   setShowLinesProperty((await threadContainer).roots);
@@ -117,8 +176,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                       nodes: snapshot.data!.roots!,
                       nodeItemBuilder: (context, node) {
                         return PostWidget(
-                          //key: itemKey,
-                          key: GlobalKey(),
+                          key: node.gKey,
                           node: node,
                           roots: snapshot.data!.roots!,
                           threadId: snapshot.data!.threadInfo.opPostId!,
