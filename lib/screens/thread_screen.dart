@@ -38,18 +38,21 @@ PostWidget getFirstVisiblePost() {
   return sortedByOffset.keys.first;
 }
 
-void scrollToPost(PostWidget post, ScrollController scrollController,
-    double initialOffset, BuildContext context) {
+Future<void> scrollToPost(PostWidget post, ScrollController scrollController,
+    double initialOffset, BuildContext context) async {
   RenderObject? obj;
   RenderBox? box;
   Offset? position;
   double? currentOffset;
+  Completer<void> completer = Completer<void>();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     obj = (post.key as GlobalKey).currentContext?.findRenderObject(); // null
     box = obj != null ? obj as RenderBox : null;
     position = box?.localToGlobal(Offset.zero);
     currentOffset = position?.dy;
+    completer.complete();
   });
+  await completer.future;
   if (currentOffset == initialOffset) {
     return;
   }
@@ -150,7 +153,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                       await threadContainer, widget.threadId, widget.tag);
                   setState(() {});
                   WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    scrollToPost(firstVisiblePost!, scrollController,
+                    await scrollToPost(firstVisiblePost!, scrollController,
                         initialOffset!, context);
                   });
 
