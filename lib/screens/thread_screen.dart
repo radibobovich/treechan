@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/models/thread_container.dart';
@@ -8,7 +7,6 @@ import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/go_back_widget.dart';
 import 'tab_navigator.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import '../widgets/post_widget.dart';
 
 List<PostWidget> visiblePosts = List.empty(growable: true);
@@ -56,6 +54,7 @@ Future<void> scrollToPost(PostWidget post, ScrollController scrollController,
   if (currentOffset == initialOffset) {
     return;
   }
+  // ignore: use_build_context_synchronously
   double screenHeight = MediaQuery.of(context).size.height;
   Timer.periodic(const Duration(milliseconds: 20), (timer) {
     if (currentOffset != null &&
