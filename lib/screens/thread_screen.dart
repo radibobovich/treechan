@@ -63,6 +63,7 @@ Future<void> scrollToPost(PostWidget post, ScrollController scrollController,
       timer.cancel();
     }
     if (currentOffset == null) {
+      // https://stackoverflow.com/questions/49553402/how-to-determine-screen-height-and-width
       scrollController.animateTo(scrollController.offset + screenHeight,
           duration: const Duration(milliseconds: 50), curve: Curves.easeOut);
     } else {
