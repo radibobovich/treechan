@@ -36,19 +36,19 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
   for (var file in files) {
     if (supportedFormats.contains(file.type)) {
       imageLinks.add("https://2ch.hk${file.path ?? ""}");
-      images.add(ImagePreview(
-        imageLinks: [imageLinks.last],
-        file: file,
-        context: context,
-      ));
+      // images.add(ImagePreview(
+      //   imageLinks: [imageLinks.last],
+      //   file: file,
+      //   context: context,
+      // ));
     }
   }
-  // for (var file in files) {
-  //   if (supportedFormats.contains(file.type)) {
-  //     images.add(
-  //         ImagePreview(imageLinks: imageLinks, file: file, context: context));
-  //   }
-  // }
+  for (var file in files) {
+    if (supportedFormats.contains(file.type)) {
+      images.add(
+          ImagePreview(imageLinks: imageLinks, file: file, context: context));
+    }
+  }
   return images;
 }
 
@@ -66,23 +66,10 @@ class ImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final index = imageLinks.indexOf("https://2ch.hk${file.path ?? ""}");
-    final pageController = PageController(initialPage: index);
+    final currentIndex = imageLinks.indexOf("https://2ch.hk${file.path ?? ""}");
+    final pageController = PageController(initialPage: currentIndex);
 
     return GestureDetector(
-  //       onTap: () => imageLinks.isNotEmpty
-  //           ? (SwipeImageGallery(
-  //                   context: context,
-  //                   itemBuilder: (context, index) {
-  //                     return getImageFromNet(index);
-  //                   },
-  //                   itemCount: imageLinks.length)
-  //               .show())
-  //           : () {},
-  //       child: getImagePreviewFromNet());
-  // }
-
-  // Need to do the same as above, but with PhotoViewGallery
               onTap: () => imageLinks.isNotEmpty
                 ? Navigator.push(
                   context,
@@ -90,6 +77,7 @@ class ImagePreview extends StatelessWidget {
                     builder: (context) => Scaffold(
                       appBar: AppBar(),
                       body: PhotoViewGallery.builder(
+                        pageController: pageController,
                         itemCount: imageLinks.length,
                         builder: (context, index) {
                           return PhotoViewGalleryPageOptions(
