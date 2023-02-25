@@ -45,9 +45,10 @@ class _SpoilerTextState extends State<_SpoilerText> {
               : Text(
                   widget.node.tree.element!.text,
                   style: TextStyle(
-                      backgroundColor: Colors.grey[600],
-                      color: Colors.grey[600],
-                      fontSize: 14.5),
+                    backgroundColor: Colors.grey[600],
+                    color: Colors.grey[600],
+                    fontSize: 14.5,
+                  ),
                 ),
         );
       },
