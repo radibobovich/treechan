@@ -70,51 +70,61 @@ class ImagePreview extends StatelessWidget {
     final pageController = PageController(initialPage: currentIndex);
 
     return GestureDetector(
-              onTap: () => imageLinks.isNotEmpty
-                ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(),
-                      body: PhotoViewGallery.builder(
-                        pageController: pageController,
-                        itemCount: imageLinks.length,
-                        builder: (context, index) {
-                          return PhotoViewGalleryPageOptions(
-                            imageProvider: NetworkImage(imageLinks[index]),
-                            initialScale: PhotoViewComputedScale.contained,
-                            minScale: PhotoViewComputedScale.contained * 0.8,
-                            maxScale: PhotoViewComputedScale.covered * 2,
-                          );
-                        },
-                        // Get the index of the image that was tapped
-                        // by finding the index of this ImagePreview in the list of previews
-                        // and then adding 1 to skip the first null value in imageLinks.
-                      ),
+      onTap: () => imageLinks.isNotEmpty
+          ? Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  extendBodyBehindAppBar: true,
+                  appBar: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                  ),
+                  body: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
+                    ),
+                    constraints: BoxConstraints.expand(
+                        height: MediaQuery.of(context).size.height),
+                    child: PhotoViewGallery.builder(
+                      pageController: pageController,
+                      itemCount: imageLinks.length,
+                      builder: (context, index) {
+                        return PhotoViewGalleryPageOptions(
+                          imageProvider: NetworkImage(imageLinks[index]),
+                          initialScale: PhotoViewComputedScale.contained,
+                          minScale: PhotoViewComputedScale.contained * 1,
+                          maxScale: PhotoViewComputedScale.covered * 2,
+                        );
+                      },
+                      // Get the index of the image that was tapped
+                      // by finding the index of this ImagePreview in the list of previews
+                      // and then adding 1 to skip the first null value in imageLinks.
                     ),
                   ),
-                )
-                : () {},
-            child: getImagePreviewFromNet(),
-            );
-        }
+                ),
+              ),
+            )
+          : () {},
+      child: getImagePreviewFromNet(),
+    );
+  }
 
-        Image getImagePreviewFromNet() {
-          return Image.network(
-            file.thumbnail!,
-            height: 140,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return const SizedBox(
-                  height: 140, width: 140, child: Text("error"));
-            },
-          );
-        }
+  Image getImagePreviewFromNet() {
+    return Image.network(
+      file.thumbnail!,
+      height: 140,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return const SizedBox(height: 140, width: 140, child: Text("error"));
+      },
+    );
+  }
 
-        Image getImageFromNet(int index) {
-          return Image.network(imageLinks[index]);
-        }
-      }
+  Image getImageFromNet(int index) {
+    return Image.network(imageLinks[index]);
+  }
+}
 
 // Future<ImageProvider> tryPrecache(
 //   BuildContext context, {
