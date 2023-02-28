@@ -3,7 +3,7 @@ import 'package:treechan/widgets/html_container_widget.dart';
 import '../services/board_service.dart';
 import '../models/board_json.dart';
 import 'thread_screen.dart';
-import '../widgets/image_preview_widget.dart';
+import '../widgets/media_preview_widget.dart';
 import 'tab_navigator.dart';
 import '../widgets/go_back_widget.dart';
 
