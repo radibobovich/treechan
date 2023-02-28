@@ -1,8 +1,9 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:treechan/models/board_json.dart';
-// import 'package:swipe_image_gallery/swipe_image_gallery.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 /// Scrollable horizontal row with image previews.
 class ImagesPreview extends StatelessWidget {
@@ -30,29 +31,24 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
   }
 
   List<Widget> images = List<Widget>.empty(growable: true);
-  List<String> imageLinks = List<String>.empty(growable: true);
+  List<String> fullResLinks = List<String>.empty(growable: true);
   List<int> supportedFormats = [1, 2, 4];
 
   for (var file in files) {
     if (supportedFormats.contains(file.type)) {
-      imageLinks.add("https://2ch.hk${file.path ?? ""}");
-      // images.add(ImagePreview(
-      //   imageLinks: [imageLinks.last],
-      //   file: file,
-      //   context: context,
-      // ));
+      fullResLinks.add("https://2ch.hk${file.path ?? ""}");
     }
   }
   for (var file in files) {
     if (supportedFormats.contains(file.type)) {
       images.add(
-          ImagePreview(imageLinks: imageLinks, file: file, context: context));
+          ImagePreview(imageLinks: fullResLinks, file: file, context: context));
     }
   }
   return images;
 }
 
-class ImagePreview extends StatelessWidget {
+class ImagePreview extends StatefulWidget {
   const ImagePreview(
       {Key? key,
       required this.imageLinks,
@@ -65,54 +61,50 @@ class ImagePreview extends StatelessWidget {
   final BuildContext context;
 
   @override
+  State<ImagePreview> createState() => _ImagePreviewState();
+}
+
+class _ImagePreviewState extends State<ImagePreview>
+    with SingleTickerProviderStateMixin {
+  @override
   Widget build(BuildContext context) {
-    final currentIndex = imageLinks.indexOf("https://2ch.hk${file.path ?? ""}");
-    final pageController = PageController(initialPage: currentIndex);
+    final currentIndex =
+        widget.imageLinks.indexOf("https://2ch.hk${widget.file.path ?? ""}");
+    final pageController = ExtendedPageController(initialPage: currentIndex);
 
     return GestureDetector(
-      onTap: () => imageLinks.isNotEmpty
+      onTap: () => widget.imageLinks.isNotEmpty
           ? Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => Scaffold(
+              PageRouteBuilder(
+                transitionDuration: const Duration(milliseconds: 50),
+                transitionsBuilder: (_, animation, __, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                opaque: false,
+                pageBuilder: (_, __, ___) => Scaffold(
+                  backgroundColor: Colors.transparent,
                   extendBodyBehindAppBar: true,
                   appBar: AppBar(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                   ),
-                  body: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
-                    ),
-                    constraints: BoxConstraints.expand(
-                        height: MediaQuery.of(context).size.height),
-                    child: PhotoViewGallery.builder(
-                      pageController: pageController,
-                      itemCount: imageLinks.length,
-                      builder: (context, index) {
-                        return PhotoViewGalleryPageOptions(
-                          imageProvider: NetworkImage(imageLinks[index]),
-                          initialScale: PhotoViewComputedScale.contained,
-                          minScale: PhotoViewComputedScale.contained * 1,
-                          maxScale: PhotoViewComputedScale.covered * 2,
-                        );
-                      },
-                      // Get the index of the image that was tapped
-                      // by finding the index of this ImagePreview in the list of previews
-                      // and then adding 1 to skip the first null value in imageLinks.
-                    ),
-                  ),
+                  body: SwipeGallery(
+                      widget: widget, pageController: pageController),
                 ),
               ),
             )
           : () {},
-      child: getImagePreviewFromNet(),
+      child: getThumbnail(),
     );
   }
 
-  Image getImagePreviewFromNet() {
+  Image getThumbnail() {
     return Image.network(
-      file.thumbnail!,
+      widget.file.thumbnail!,
       height: 140,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
@@ -121,8 +113,57 @@ class ImagePreview extends StatelessWidget {
     );
   }
 
-  Image getImageFromNet(int index) {
-    return Image.network(imageLinks[index]);
+  Image getFullRes(int index) {
+    return Image.network(widget.imageLinks[index]);
+  }
+}
+
+class SwipeGallery extends StatelessWidget {
+  const SwipeGallery({
+    super.key,
+    required this.widget,
+    required this.pageController,
+  });
+
+  final ImagePreview widget;
+  final ExtendedPageController pageController;
+  @override
+  Widget build(BuildContext context) {
+    return ExtendedImageSlidePage(
+      slideAxis: SlideAxis.vertical,
+      slideType: SlideType.onlyImage,
+      slidePageBackgroundHandler: (offset, pageSize) {
+        double opacity = 0.0;
+        opacity = offset.dy.abs() / (pageSize.width / 2.0);
+        return Colors.black.withOpacity(min(1.0, max(1.0 - opacity, 0.0)));
+      },
+      child: ExtendedImageGesturePageView.builder(
+        itemBuilder: (context, index) {
+          return ExtendedImage.network(
+            widget.imageLinks[index],
+            fit: BoxFit.contain,
+            enableSlideOutPage: true,
+            mode: ExtendedImageMode.gesture,
+            initGestureConfigHandler: (state) {
+              return GestureConfig(
+                inPageView: true,
+                initialScale: 1.0,
+                minScale: 1.0,
+                animationMinScale: 0.7,
+                maxScale: 3.0,
+                animationMaxScale: 3.5,
+                speed: 1.0,
+                inertialSpeed: 100.0,
+                initialAlignment: InitialAlignment.center,
+              );
+            },
+          );
+        },
+        itemCount: widget.imageLinks.length,
+        controller: pageController,
+        scrollDirection: Axis.horizontal,
+      ),
+    );
   }
 }
 
