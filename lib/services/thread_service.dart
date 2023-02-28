@@ -58,9 +58,9 @@ Future<ThreadContainer> getThreadRawData(String tag, int threadId,
 void extendThumbnailLinks(List<Post>? posts) {
   return posts?.forEach((post) {
     if (post.files != null) {
-      for (var element in post.files!) {
-        if (element.thumbnail != null) {
-          element.thumbnail = "http://2ch.hk${element.thumbnail ?? ""}";
+      for (var file in post.files!) {
+        if (file.thumbnail != null) {
+          file.thumbnail = "http://2ch.hk${file.thumbnail ?? ""}";
         }
       }
     }

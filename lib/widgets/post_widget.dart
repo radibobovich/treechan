@@ -4,7 +4,7 @@ import '../models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../widgets/image_preview_widget.dart';
+import 'media_preview_widget.dart';
 import '../widgets/html_container_widget.dart';
 
 class PostWidget extends StatefulWidget {
