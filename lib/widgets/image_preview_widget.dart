@@ -2,8 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:extended_image/extended_image.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
 /// Scrollable horizontal row with image previews.
 class ImagesPreview extends StatelessWidget {
@@ -166,19 +164,3 @@ class SwipeGallery extends StatelessWidget {
     );
   }
 }
-
-// Future<ImageProvider> tryPrecache(
-//   BuildContext context, {
-//   Size? size,
-//   required ImageProvider provider,
-//   required ImageProvider fallback,
-// }) async {
-//   var failed = false;
-//   await precacheImage(
-//     provider,
-//     context,
-//     size: size,
-//     onError: (_, __) => failed = true,
-//   );
-//   return failed ? fallback : provider;
-// }
