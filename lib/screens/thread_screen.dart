@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:treechan/models/thread_container.dart';
-import '../models/tree_service.dart';
-import 'package:treechan/models/board_json.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/go_back_widget.dart';
+
 import 'tab_navigator.dart';
+import '../models/thread_container.dart';
+// import '../models/tree_service.dart';
+import '../services/thread_service.dart';
+import '../models/board_json.dart';
+
 import '../widgets/post_widget.dart';
+import '../widgets/go_back_widget.dart';
 
 List<PostWidget> visiblePosts = List.empty(growable: true);
 List<PostWidget> partiallyVisiblePosts = List.empty(growable: true);
@@ -104,14 +108,17 @@ class _ThreadScreenState extends State<ThreadScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  late Future<ThreadContainer> threadContainer;
+  // late Future<ThreadContainer> threadContainer;
+  late ThreadService threadService;
   final ScrollController scrollController = ScrollController();
   bool showLines = true;
   @override
   void initState() {
     super.initState();
     showLines = true;
-    threadContainer = getThreadContainer(widget.threadId, widget.tag);
+    // threadContainer = getThreadContainer(widget.threadId, widget.tag);
+    threadService =
+        ThreadService(boardTag: widget.tag, threadId: widget.threadId);
   }
 
   GlobalKey treeKey = GlobalKey();
@@ -151,15 +158,14 @@ class _ThreadScreenState extends State<ThreadScreen>
                     initialOffset = position?.dy;
                   });
 
-                  await refreshThread(
-                      await threadContainer, widget.threadId, widget.tag);
+                  await threadService.refreshThread();
                   setState(() {});
                   WidgetsBinding.instance.addPostFrameCallback((_) async {
                     await scrollToPost(firstVisiblePost!, scrollController,
                         initialOffset!, context);
                   });
 
-                  setShowLinesProperty((await threadContainer).roots);
+                  setShowLinesProperty(await threadService.getRoots());
                   setState(() {});
                 },
                 icon: const Icon(Icons.refresh))
@@ -167,25 +173,25 @@ class _ThreadScreenState extends State<ThreadScreen>
         ),
         body: Column(children: [
           Expanded(
-            child: FutureBuilder<ThreadContainer>(
-                future: threadContainer,
+            child: FutureBuilder<List<TreeNode<Post>>?>(
+                future: threadService.getRoots(),
                 builder: ((context, snapshot) {
                   if (snapshot.hasData) {
-                    setShowLinesProperty(snapshot.data!.roots);
+                    setShowLinesProperty(snapshot.data!);
                     return FlexibleTreeView<Post>(
                       key: treeKey,
                       scrollable: false,
                       indent: 16,
                       showLines: showLines,
                       scrollController: scrollController,
-                      nodes: snapshot.data!.roots!,
+                      nodes: snapshot.data!,
                       nodeItemBuilder: (context, node) {
                         return PostWidget(
                           key: node.gKey,
                           node: node,
-                          roots: snapshot.data!.roots!,
-                          threadId: snapshot.data!.threadInfo.opPostId!,
-                          tag: snapshot.data!.threadInfo.board!.id!,
+                          roots: snapshot.data!,
+                          threadId: threadService.getThreadInfo.opPostId!,
+                          tag: threadService.getThreadInfo.board!.id!,
                           onOpen: widget.onOpen,
                           onGoBack: widget.onGoBack,
                         );
