@@ -4,7 +4,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../screens/thread_screen.dart';
-import '../models/tree_service.dart';
+import '../deprecated/tree_service.dart';
 import '../screens/tab_navigator.dart';
 import '../widgets/post_widget.dart';
 

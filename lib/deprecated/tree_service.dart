@@ -1,8 +1,8 @@
-import '../services/thread_service.dart';
+import '../deprecated/thread_service.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
-import 'thread_container.dart';
+import '../models/thread_container.dart';
 
 /// Returns threadContainer with list of comment trees and other info.
 Future<ThreadContainer> getThreadContainer(int threadId, String tag,
@@ -14,7 +14,7 @@ Future<ThreadContainer> getThreadContainer(int threadId, String tag,
     for (var post in threadContainer.posts!) {
       post.parents = _getPostParents(post);
     }
-    threadContainer.roots = _createTreeModel(
+    threadContainer.roots = createTreeModel(
         threadContainer.posts!, threadContainer.threadInfo.opPostId);
   }
   return threadContainer;
@@ -45,7 +45,7 @@ List<int> _getPostParents(Post post) {
 }
 
 /// Creates a list of root trees and connects childs to each.
-List<TreeNode<Post>> _createTreeModel(List<Post> posts, int? opPost) {
+List<TreeNode<Post>> createTreeModel(List<Post> posts, int? opPost) {
   // List of posts which doesn't have parents
   final roots = List<TreeNode<Post>>.empty(growable: true);
   for (var post in posts) {
