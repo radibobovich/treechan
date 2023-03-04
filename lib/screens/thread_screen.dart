@@ -5,8 +5,6 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'tab_navigator.dart';
-import '../models/thread_container.dart';
-// import '../models/tree_service.dart';
 import '../services/thread_service.dart';
 import '../models/board_json.dart';
 
