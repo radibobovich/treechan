@@ -1,11 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:treechan/models/board_json.dart';
+
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import '../screens/thread_screen.dart';
-import '../deprecated/tree_service.dart';
+
+import '../models/board_json.dart';
+import '../models/tree.dart';
 import '../screens/tab_navigator.dart';
+import '../screens/thread_screen.dart';
 import '../widgets/post_widget.dart';
 
 /// Represents greyed out text in post text.
@@ -114,7 +116,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     "/${widget.tag}/res/${widget.threadId}.html#")) {
                   // get post id placed after # symbol
                   int id = int.parse(url.substring(url.indexOf("#") + 1));
-                  if (findPost(widget.roots!, id) == null) {
+                  if (TreeService.findPost(widget.roots!, id) == null) {
                     return;
                   }
                   showDialog(
@@ -125,7 +127,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                           child:
                               Column(mainAxisSize: MainAxisSize.min, children: [
                             PostWidget(
-                              node: findPost(widget.roots!, id)!,
+                              node: TreeService.findPost(widget.roots!, id)!,
                               roots: widget.roots!,
                               threadId: widget.threadId!,
                               tag: widget.tag!,
