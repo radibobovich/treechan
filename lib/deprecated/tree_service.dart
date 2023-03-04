@@ -2,7 +2,7 @@ import '../deprecated/thread_service.dart';
 import 'package:treechan/models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
-import '../models/thread_container.dart';
+import 'thread_container.dart';
 
 /// Returns threadContainer with list of comment trees and other info.
 Future<ThreadContainer> getThreadContainer(int threadId, String tag,

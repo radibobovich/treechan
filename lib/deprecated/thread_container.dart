@@ -1,4 +1,4 @@
-import 'board_json.dart';
+import '../models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 
 class ThreadContainer {
