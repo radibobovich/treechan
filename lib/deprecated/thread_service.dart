@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
-import '../models/thread_container.dart';
+import 'thread_container.dart';
 import 'package:flutter/services.dart';
 
 /// Sends GET request and gets thread information and list of posts.
