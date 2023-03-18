@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import '../screens/thread_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../models/thread_bloc.dart';
 import '../models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../services/scroll_service.dart';
 import 'media_preview_widget.dart';
 import '../widgets/html_container_widget.dart';
 
@@ -14,6 +16,7 @@ class PostWidget extends StatefulWidget {
   final String tag;
   final Function onOpen;
   final Function onGoBack;
+  final ScrollService? scrollService;
   const PostWidget(
       {super.key,
       required this.node,
@@ -21,7 +24,8 @@ class PostWidget extends StatefulWidget {
       required this.threadId,
       required this.tag,
       required this.onOpen,
-      required this.onGoBack});
+      required this.onGoBack,
+      this.scrollService});
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -31,6 +35,11 @@ class _PostWidgetState extends State<PostWidget> {
   @override
   Widget build(BuildContext context) {
     final Post post = widget.node.data;
+    List<PostWidget> visiblePosts =
+        widget.scrollService?.visiblePosts ?? List.empty(growable: true);
+    List<PostWidget> partiallyVisiblePosts =
+        widget.scrollService?.partiallyVisiblePosts ??
+            List.empty(growable: true);
     return VisibilityDetector(
       key: Key(post.id.toString()),
       onVisibilityChanged: (visibilityInfo) {
@@ -92,7 +101,8 @@ class _PostWidgetState extends State<PostWidget> {
                       threadId: widget.threadId,
                       tag: widget.tag,
                       onOpen: widget.onOpen,
-                      onGoBack: widget.onGoBack),
+                      onGoBack: widget.onGoBack,
+                      scrollService: widget.scrollService),
                 )
               ],
             ),

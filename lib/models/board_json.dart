@@ -21,6 +21,7 @@ class Root {
   int? uniquePosters;
 
   int? opPostId;
+  bool? showLines;
   Root(
       {this.advertMobileImage,
       this.advertMobileLink,
@@ -39,7 +40,8 @@ class Root {
       this.uniquePosters,
       this.filter,
       this.threads,
-      this.opPostId});
+      this.opPostId,
+      this.showLines});
 
   Root.fromJson(Map<String, dynamic> json) {
     advertMobileImage = json['advert_mobile_image'];
