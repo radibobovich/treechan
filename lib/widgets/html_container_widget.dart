@@ -7,7 +7,8 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import '../models/board_json.dart';
 import '../models/tree.dart';
 import '../screens/tab_navigator.dart';
-import '../screens/thread_screen.dart';
+import '../deprecated/thread_screen.dart';
+import '../services/scroll_service.dart';
 import '../widgets/post_widget.dart';
 
 /// Represents greyed out text in post text.
@@ -69,7 +70,8 @@ class HtmlContainer extends StatefulWidget {
       this.threadId,
       required this.isCalledFromThread,
       required this.onOpen,
-      required this.onGoBack})
+      required this.onGoBack,
+      this.scrollService})
       : super(key: key);
 
   final dynamic post;
@@ -79,6 +81,7 @@ class HtmlContainer extends StatefulWidget {
   final bool isCalledFromThread;
   final Function onOpen;
   final Function onGoBack;
+  final ScrollService? scrollService;
   @override
   State<HtmlContainer> createState() => _HtmlContainerState();
 }
@@ -133,6 +136,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                               tag: widget.tag!,
                               onOpen: widget.onOpen,
                               onGoBack: widget.onGoBack,
+                              scrollService: widget.scrollService,
                             )
                           ]),
                         ));

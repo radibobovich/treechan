@@ -74,6 +74,8 @@ class ThreadService {
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
     _extendThumbnailLinks(_posts);
     _roots = TreeService(posts: _posts, threadInfo: _threadInfo).getRoots;
+    _threadInfo.showLines = true;
+    _setShowLinesProperty(_roots);
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
@@ -104,6 +106,7 @@ class ThreadService {
         _roots!.add(newRoot);
       }
     }
+    _setShowLinesProperty(_roots);
   }
 
   /// Extends image thumbnail links to a full link so it can be loaded directly.
@@ -117,5 +120,26 @@ class ThreadService {
         }
       }
     });
+  }
+
+  /// Sets showLines property to false when there are nodes with depth >=16.
+  void _setShowLinesProperty(List<TreeNode<Post>>? roots) {
+    for (var root in roots!) {
+      for (var child in root.children) {
+        _checkDepth(child);
+      }
+    }
+  }
+
+  /// Called recursively.
+  void _checkDepth(TreeNode<Post> node) {
+    if (node.depth >= 16) {
+      _threadInfo.showLines = false;
+      return;
+    }
+
+    for (var element in node.children) {
+      _checkDepth(element);
+    }
   }
 }

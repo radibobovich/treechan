@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/themes.dart';
+import 'models/thread_bloc.dart';
 import 'screens/tab_navigator.dart';
 import 'deprecated/test.dart';
+import 'services/thread_service.dart';
 
 bool flagDebugThread = false;
 void main() {
