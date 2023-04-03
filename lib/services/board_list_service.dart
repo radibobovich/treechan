@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
-import '../screens/board_list_screen_new.dart'; //TODO: move class to models
+import '../screens/board_list_screen.dart'; //TODO: move class to models
 
 /// Returns a list of available boards saved in device memory, otherwise downloads it.
 Future<List<Board>?> getBoards() async {

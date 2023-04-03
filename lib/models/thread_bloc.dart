@@ -6,7 +6,6 @@ import 'board_json.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ThreadService threadService;
-  // late final ScrollService scrollService;
   ThreadBloc({required this.threadService}) : super(ThreadInitialState()) {
     on<LoadThreadEvent>(
       (event, emit) async {
@@ -17,11 +16,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
             roots: roots,
             threadInfo: threadInfo,
           ));
-          if (event.isRefresh) {
-            // SchedulerBinding.instance.addPostFrameCallback((_) {
-            //   scrollService.updateScrollPosition();
-            // });
-          }
+          if (event.isRefresh) {}
         } catch (e) {
           emit(ThreadErrorState(e.toString()));
         }
@@ -56,7 +51,6 @@ class ThreadInitialState extends ThreadState {}
 class ThreadLoadedState extends ThreadState {
   late final List<TreeNode<Post>>? roots;
   late final Root? threadInfo;
-  // late final ScrollController scrollController;
   ThreadLoadedState({required this.roots, required this.threadInfo});
 }
 

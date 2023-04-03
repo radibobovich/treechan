@@ -34,7 +34,6 @@ class _ThreadScreenState extends State<ThreadScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  late ThreadBloc _threadBloc;
   late ScrollController scrollController;
   late ScrollService scrollService;
   GlobalKey treeKey = GlobalKey();
@@ -50,7 +49,6 @@ class _ThreadScreenState extends State<ThreadScreen>
   @override
   void dispose() {
     super.dispose();
-    _threadBloc.close();
   }
 
   @override
@@ -68,13 +66,6 @@ class _ThreadScreenState extends State<ThreadScreen>
           leading:
               GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab),
           actions: [
-            // IconButton(
-            //   icon: const Icon(Icons.abc),
-            //   onPressed: () {
-            //     scrollController.jumpTo(8539);
-            //   },
-            // ),
-
             IconButton(
                 onPressed: () async {
                   scrollService.saveCurrentScrollInfo();

@@ -1,14 +1,36 @@
+import '../models/board_json.dart';
 import 'package:http/http.dart' as http;
-import 'package:treechan/models/board_json.dart';
 import 'dart:convert';
 
-Future<List<Thread>?> getThreadsByBump(String tag) async {
-  String url = "https://2ch.hk/$tag/catalog.json";
+class BoardService {
+  BoardService({required this.boardTag});
 
-  final response = await http.get(Uri.parse(url));
-  if (response.statusCode == 200) {
-    List<Thread> threadList = Root.fromJson(jsonDecode(response.body)).threads!;
+  final String boardTag;
 
+  List<Thread>? _threads;
+
+  Future<List<Thread>?> getThreads() async {
+    if (_threads == null) {
+      await _getThreadsByBump();
+    }
+    return _threads;
+  }
+
+  // TODO: add refresh
+  Future<void> _getThreadsByBump() async {
+    String url = "https://2ch.hk/$boardTag/catalog.json";
+
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      _threads = Root.fromJson(jsonDecode(response.body)).threads!;
+      _threads = _extendThumbnailLinks(_threads!);
+    } else {
+      throw Exception('Failed to load board, error ${response.statusCode}');
+    }
+    return;
+  }
+
+  static List<Thread> _extendThumbnailLinks(List<Thread> threadList) {
     for (var thread in threadList) {
       if (thread.files != null) {
         thread.files?.forEach((element) {
@@ -20,7 +42,5 @@ Future<List<Thread>?> getThreadsByBump(String tag) async {
       }
     }
     return threadList;
-  } else {
-    throw Exception('Failed to load board, error ${response.statusCode}');
   }
 }
