@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/screens/thread_screen.dart';
+import 'package:treechan/services/board_service.dart';
+import '../models/board_bloc.dart';
 import '../models/thread_bloc.dart';
-import '../services/scroll_service.dart';
 import '../services/thread_service.dart';
-import 'board_screen.dart';
-import 'board_list_screen_new.dart';
+import '../screens/board_screen.dart';
+import 'board_list_screen.dart';
 
 enum TabTypes { boardList, board, thread }
 
@@ -137,12 +138,18 @@ class _TabNavigatorState extends State<TabNavigator>
                       },
                       onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
                 case TabTypes.board:
-                  return BoardScreen(
-                      key: ValueKey(tab),
-                      boardName: tab.name!,
-                      boardTag: tab.tag,
-                      onOpen: (DrawerTab newTab) => _addTab(newTab),
-                      onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
+                  return BlocProvider(
+                    create: (context) =>
+                        BoardBloc(boardService: BoardService(boardTag: tab.tag))
+                          ..add(LoadBoardEvent()),
+                    child: BoardScreen(
+                        key: ValueKey(tab),
+                        boardName: tab.name!,
+                        boardTag: tab.tag,
+                        onOpen: (DrawerTab newTab) => _addTab(newTab),
+                        onGoBack: (DrawerTab currentTab) =>
+                            _goBack(currentTab)),
+                  );
                 case TabTypes.thread:
                   return BlocProvider(
                     create: (blocContext) => ThreadBloc(

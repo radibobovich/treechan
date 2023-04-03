@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:treechan/models/board_bloc.dart';
 import 'package:treechan/widgets/html_container_widget.dart';
+import '../deprecated/board_service.dart';
 import '../models/board_json.dart';
 import '../widgets/media_preview_widget.dart';
-import 'tab_navigator.dart';
+import '../screens/tab_navigator.dart';
 import '../widgets/go_back_widget.dart';
 
+/// A screen where you can scroll threads of the board.
 class BoardScreen extends StatefulWidget {
   const BoardScreen(
       {super.key,
@@ -26,6 +26,18 @@ class _BoardScreenState extends State<BoardScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+  late Future<List<Thread>?> threadList;
+  @override
+  void initState() {
+    super.initState();
+    threadList = getThreadsByBump(widget.boardTag);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
 // List of threads
   @override
   Widget build(BuildContext context) {
@@ -38,31 +50,29 @@ class _BoardScreenState extends State<BoardScreen>
           leading:
               GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab)),
       body: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-          child: BlocBuilder<BoardBloc, BoardState>(
-            builder: (context, state) {
-              if (state is BoardLoadedState) {
-                return ListView.builder(
-                  itemCount: state.threads!.length,
-                  itemBuilder: (context, index) {
-                    return ThreadCard(
-                      thread: state.threads![index],
-                      onOpen: widget.onOpen,
-                      onGoBack: widget.onGoBack,
-                      boardName: widget.boardName,
-                      boardTag: widget.boardTag,
-                    );
-                  },
-                );
-              } else if (state is BoardErrorState) {
-                return Center(
-                  child: Text(state.errorMessage),
-                );
-              } else {
+          padding: const EdgeInsets.all(16.0),
+          child: FutureBuilder<List<Thread>?>(
+              future: threadList,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                    itemCount: snapshot.data?.length,
+                    itemBuilder: (context, index) {
+                      return ThreadCard(
+                        thread: snapshot.data?[index],
+                        onOpen: widget.onOpen,
+                        onGoBack: widget.onGoBack,
+                        boardName: widget.boardName,
+                        boardTag: widget.boardTag,
+                      );
+                    },
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('${snapshot.error}');
+                }
+
                 return const Center(child: CircularProgressIndicator());
-              }
-            },
-          )),
+              })),
     );
   }
 }

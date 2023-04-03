@@ -16,8 +16,6 @@ class ScrollService {
   PostWidget? _firstVisiblePost;
   double? _initialOffset;
 
-  // ScrollController get getScrollController => _scrollController;
-
   /// Saves current first visible post and its offset before thread refresh.
   void saveCurrentScrollInfo() async {
     _firstVisiblePost = _getFirstVisiblePost();
