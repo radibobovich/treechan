@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../models/thread_bloc.dart';
 import '../models/board_json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -35,11 +33,14 @@ class _PostWidgetState extends State<PostWidget> {
   @override
   Widget build(BuildContext context) {
     final Post post = widget.node.data;
+
     List<PostWidget> visiblePosts =
         widget.scrollService?.visiblePosts ?? List.empty(growable: true);
+
     List<PostWidget> partiallyVisiblePosts =
         widget.scrollService?.partiallyVisiblePosts ??
             List.empty(growable: true);
+
     return VisibilityDetector(
       key: Key(post.id.toString()),
       onVisibilityChanged: (visibilityInfo) {
