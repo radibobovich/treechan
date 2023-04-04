@@ -139,9 +139,10 @@ class _TabNavigatorState extends State<TabNavigator>
                       onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
                 case TabTypes.board:
                   return BlocProvider(
-                    create: (context) =>
-                        BoardBloc(boardService: BoardService(boardTag: tab.tag))
-                          ..add(LoadBoardEvent()),
+                    create: (context) => BoardBloc(
+                        boardService: BoardService(
+                            boardTag: tab.tag, sortType: SortBy.page))
+                      ..add(LoadBoardEvent()),
                     child: BoardScreen(
                         key: ValueKey(tab),
                         boardName: tab.name!,

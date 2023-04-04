@@ -74,6 +74,7 @@ class HtmlContainer extends StatefulWidget {
       this.scrollService})
       : super(key: key);
 
+  // data can be Post or Thread object
   final dynamic post;
   final List<TreeNode<Post>>? roots;
   final String? tag;

@@ -32,9 +32,18 @@ class _BoardScreenState extends State<BoardScreen>
         type: TabTypes.board, tag: widget.boardTag, prevTab: boardListTab);
     return Scaffold(
       appBar: AppBar(
-          title: Text(widget.boardName),
-          leading:
-              GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab)),
+        title: Text(widget.boardName),
+        leading:
+            GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              BlocProvider.of<BoardBloc>(context).add(RefreshBoardEvent());
+            },
+          )
+        ],
+      ),
       body: Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
           child: BlocBuilder<BoardBloc, BoardState>(
