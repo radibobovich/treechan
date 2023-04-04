@@ -13,7 +13,7 @@ class BoardService {
   int currentPage;
   List<Thread>? _threads;
 
-  Future<List<Thread>?> getThreads(SortBy sortType, {int? page}) async {
+  Future<List<Thread>?> getThreads() async {
     if (_threads == null) {
       await loadBoard();
     }
@@ -44,13 +44,23 @@ class BoardService {
   Future<void> loadBoard() async {
     http.Response response = await _getBoardResponse();
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
-    fixThreadInfo();
+    _threads = _fixThreadInfo(_threads!);
     _threads = _extendThumbnailLinks(_threads!);
   }
 
-  void fixThreadInfo() {
+  Future<void> refreshBoard() async {
+    currentPage += 1;
+    http.Response response = await _getBoardResponse();
+    List<Thread>? newThreads =
+        Root.fromJson(jsonDecode(response.body)).threads!;
+    newThreads = _fixThreadInfo(newThreads);
+    newThreads = _extendThumbnailLinks(newThreads);
+    _threads = _threads! + newThreads;
+  }
+
+  List<Thread> _fixThreadInfo(List<Thread> threads) {
     if (sortType == SortBy.page) {
-      for (var thread in _threads!) {
+      for (var thread in threads) {
         thread.comment = thread.posts![0].comment;
         thread.subject = thread.posts![0].subject;
         thread.num_ = thread.posts![0].id;
@@ -61,15 +71,7 @@ class BoardService {
         thread.files = thread.posts![0].files;
       }
     }
-  }
-
-  Future<void> refreshBoard() async {
-    currentPage += 1;
-    http.Response response = await _getBoardResponse();
-    List<Thread>? newThreads =
-        Root.fromJson(jsonDecode(response.body)).threads!;
-    newThreads = _extendThumbnailLinks(newThreads);
-    _threads = _threads! + newThreads;
+    return threads;
   }
 
   static List<Thread> _extendThumbnailLinks(List<Thread> threadList) {
