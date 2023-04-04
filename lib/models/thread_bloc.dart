@@ -25,6 +25,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
     on<RefreshThreadEvent>(
       (event, emit) async {
         try {
+          // await?
           threadService.refreshThread();
           add(LoadThreadEvent(isRefresh: true));
         } catch (e) {
