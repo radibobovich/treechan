@@ -9,7 +9,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   BoardBloc({required this.boardService}) : super(BoardInitialState()) {
     on<LoadBoardEvent>((event, emit) async {
       try {
-        final List<Thread>? threads = await boardService.getThreads();
+        final List<Thread>? threads =
+            await boardService.getThreads(SortBy.page, page: 0);
         emit(BoardLoadedState(threads: threads));
       } catch (e) {
         emit(BoardErrorState(e.toString()));
