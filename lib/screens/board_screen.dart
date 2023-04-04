@@ -39,7 +39,8 @@ class _BoardScreenState extends State<BoardScreen>
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              BlocProvider.of<BoardBloc>(context).add(RefreshBoardEvent());
+              BlocProvider.of<BoardBloc>(context)
+                  .add(RefreshBoardEvent(refreshFromScratch: true));
             },
           )
         ],

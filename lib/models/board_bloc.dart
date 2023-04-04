@@ -9,17 +9,24 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   BoardBloc({required this.boardService}) : super(BoardInitialState()) {
     on<LoadBoardEvent>((event, emit) async {
       try {
-        final List<Thread>? threads =
-            await boardService.getThreads(SortBy.page, page: 0);
+        final List<Thread>? threads = await boardService.getThreads();
         emit(BoardLoadedState(threads: threads));
       } catch (e) {
         emit(BoardErrorState(e.toString()));
       }
     });
-    // TODO: make proper refresh
     on<RefreshBoardEvent>(
       (event, emit) async {
-        add(LoadBoardEvent());
+        try {
+          if (event.refreshFromScratch) {
+            await boardService.loadBoard();
+          } else {
+            await boardService.refreshBoard();
+          }
+          add(LoadBoardEvent());
+        } catch (e) {
+          emit(BoardErrorState(e.toString()));
+        }
       },
     );
   }
@@ -29,7 +36,10 @@ abstract class BoardEvent {}
 
 class LoadBoardEvent extends BoardEvent {}
 
-class RefreshBoardEvent extends BoardEvent {}
+class RefreshBoardEvent extends BoardEvent {
+  RefreshBoardEvent({this.refreshFromScratch = false});
+  bool refreshFromScratch;
+}
 
 abstract class BoardState {}
 
