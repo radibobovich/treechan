@@ -78,7 +78,7 @@ class _PostWidgetState extends State<PostWidget> {
               children: [
                 Tooltip(
                     message: "#${post.id}",
-                    child: PostHeader(node: widget.node)),
+                    child: _PostHeader(node: widget.node)),
                 //Text(post.id.toString()),
                 const Divider(
                   thickness: 1,
@@ -114,8 +114,8 @@ class _PostWidgetState extends State<PostWidget> {
   }
 }
 
-class PostHeader extends StatelessWidget {
-  const PostHeader({Key? key, required this.node}) : super(key: key);
+class _PostHeader extends StatelessWidget {
+  const _PostHeader({Key? key, required this.node}) : super(key: key);
   final TreeNode<Post> node;
   @override
   Widget build(BuildContext context) {

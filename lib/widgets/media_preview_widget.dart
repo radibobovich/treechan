@@ -46,7 +46,7 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
     }
   }
   for (var file in files) {
-    media.add(MediaPreview(
+    media.add(_MediaPreview(
         imageLinks: fullResLinks,
         file: file,
         context: context,
@@ -55,8 +55,9 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
   return media;
 }
 
-class MediaPreview extends StatefulWidget {
-  const MediaPreview(
+/// Represents one specific media item in a row.
+class _MediaPreview extends StatefulWidget {
+  const _MediaPreview(
       {Key? key,
       required this.imageLinks,
       required this.file,
@@ -69,10 +70,10 @@ class MediaPreview extends StatefulWidget {
   final BuildContext context;
   final int type;
   @override
-  State<MediaPreview> createState() => _MediaPreviewState();
+  State<_MediaPreview> createState() => _MediaPreviewState();
 }
 
-class _MediaPreviewState extends State<MediaPreview>
+class _MediaPreviewState extends State<_MediaPreview>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
