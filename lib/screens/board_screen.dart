@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:treechan/models/board_bloc.dart';
+import 'package:treechan/models/bloc/board_bloc.dart';
 import '../widgets/thread_card.dart';
 import 'tab_navigator.dart';
 import '../widgets/go_back_widget.dart';
