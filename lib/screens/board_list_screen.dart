@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/category.dart';
 import '../models/json/json.dart';
 import '../services/board_list_service.dart';
 import 'tab_navigator.dart';
-
-class Category {
-  // TODO: move to models
-  Category({required this.categoryName, required this.boards});
-  final String categoryName;
-  final List<Board> boards;
-}
 
 class BoardListScreen extends StatefulWidget {
   const BoardListScreen(
