@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 
-import "../models/board_json.dart";
+import '../models/json/json.dart';
 import "../screens/tab_navigator.dart";
 import "html_container_widget.dart";
 import "media_preview_widget.dart";

@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/models/board_json.dart';
+import '../models/json/json.dart';
 import 'dart:convert';
 import '../screens/board_list_screen.dart'; //TODO: move class to models
 

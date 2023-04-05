@@ -1,4 +1,4 @@
-import 'package:treechan/models/board_json.dart';
+import '../models/json/json.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;

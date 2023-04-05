@@ -1,9 +1,8 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../models/board_json.dart';
+import '../models/json/json.dart';
 
 import 'package:video_player/video_player.dart';
 

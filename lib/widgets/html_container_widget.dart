@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../models/board_json.dart';
+import '../models/json/json.dart';
 import '../models/tree.dart';
 import '../screens/tab_navigator.dart';
-import '../deprecated/thread_screen.dart';
 import '../services/scroll_service.dart';
 import '../widgets/post_widget.dart';
 
@@ -172,5 +172,12 @@ class _HtmlContainerState extends State<HtmlContainer> {
               }),
       },
     );
+  }
+
+  Future<void> tryLaunchUrl(String url) async {
+    if (!await launchUrl(Uri.parse(url),
+        mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
   }
 }

@@ -2,7 +2,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../services/thread_service.dart';
-import 'board_json.dart';
+import '../models/json/json.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ThreadService threadService;
