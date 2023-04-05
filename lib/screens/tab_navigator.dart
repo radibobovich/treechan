@@ -51,13 +51,13 @@ class TabNavigator extends StatefulWidget {
 class _TabNavigatorState extends State<TabNavigator>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  TabController? _tabController;
-  final List<DrawerTab> _tabs = List.empty(growable: true);
+  TabController? tabController;
+  final List<DrawerTab> tabs = List.empty(growable: true);
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
-    _addTab(boardListTab);
+    tabController = TabController(length: tabs.length, vsync: this);
+    addTab(boardListTab);
     if (const String.fromEnvironment('thread') == 'true') {
       debugPrint('debugging thread');
       DrawerTab debugThreadTab = DrawerTab(
@@ -66,45 +66,45 @@ class _TabNavigatorState extends State<TabNavigator>
           tag: "b",
           prevTab: boardListTab,
           id: 282647314);
-      _addTab(debugThreadTab);
+      addTab(debugThreadTab);
     }
   }
 
   @override
   void dispose() {
-    _tabController!.dispose();
+    tabController!.dispose();
     super.dispose();
   }
 
   /// Adds new tab to the drawer and opens it.
-  void _addTab(DrawerTab tab) {
-    if (!_tabs.contains(tab)) {
+  void addTab(DrawerTab tab) {
+    if (!tabs.contains(tab)) {
       setState(() {
-        _tabs.add(tab);
-        _tabController = TabController(length: _tabs.length, vsync: this);
+        tabs.add(tab);
+        tabController = TabController(length: tabs.length, vsync: this);
       });
     }
-    _tabController!.animateTo(_tabs.indexOf(tab));
+    tabController!.animateTo(tabs.indexOf(tab));
   }
 
   /// Closes tab and removes it from the drawer.
-  void _removeTab(DrawerTab tab) {
+  void removeTab(DrawerTab tab) {
     setState(() {
-      _tabs.remove(tab);
+      tabs.remove(tab);
     });
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    tabController = TabController(length: tabs.length, vsync: this);
   }
 
   /// Goes back to the previous tab when user presses back button.
-  void _goBack(DrawerTab currentTab) {
+  void goBack(DrawerTab currentTab) {
     if (currentTab.prevTab == null) return;
-    int prevTabId = _tabs.indexOf(currentTab.prevTab!);
+    int prevTabId = tabs.indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
-      if (_tabController!.index > 0) {
-        _tabController!.animateTo(_tabController!.index - 1);
+      if (tabController!.index > 0) {
+        tabController!.animateTo(tabController!.index - 1);
       }
     } else {
-      _tabController!.animateTo(prevTabId);
+      tabController!.animateTo(prevTabId);
     }
   }
 
@@ -113,9 +113,9 @@ class _TabNavigatorState extends State<TabNavigator>
     /// Overrides Android back button to go back to the previous tab.
     return WillPopScope(
       onWillPop: () async {
-        int currentIndex = _tabController!.index;
+        int currentIndex = tabController!.index;
         if (currentIndex > 0) {
-          _goBack(_tabs[currentIndex]);
+          goBack(tabs[currentIndex]);
           return Future.value(false);
         } else {
           return Future.value(true);
@@ -126,17 +126,17 @@ class _TabNavigatorState extends State<TabNavigator>
         body: Builder(builder: (sontext) {
           return TabBarView(
             physics: const NeverScrollableScrollPhysics(),
-            controller: _tabController,
-            children: _tabs.map((tab) {
+            controller: tabController,
+            children: tabs.map((tab) {
               switch (tab.type) {
                 case TabTypes.boardList:
                   return BoardListScreen(
                       key: ValueKey(tab),
                       title: "Доски",
                       onOpen: (DrawerTab newTab) {
-                        _addTab(newTab);
+                        addTab(newTab);
                       },
-                      onGoBack: (DrawerTab currentTab) => _goBack(currentTab));
+                      onGoBack: (DrawerTab currentTab) => goBack(currentTab));
                 case TabTypes.board:
                   return BlocProvider(
                     create: (context) => BoardBloc(
@@ -147,9 +147,8 @@ class _TabNavigatorState extends State<TabNavigator>
                         key: ValueKey(tab),
                         boardName: tab.name!,
                         boardTag: tab.tag,
-                        onOpen: (DrawerTab newTab) => _addTab(newTab),
-                        onGoBack: (DrawerTab currentTab) =>
-                            _goBack(currentTab)),
+                        onOpen: (DrawerTab newTab) => addTab(newTab),
+                        onGoBack: (DrawerTab currentTab) => goBack(currentTab)),
                   );
                 case TabTypes.thread:
                   return BlocProvider(
@@ -162,9 +161,8 @@ class _TabNavigatorState extends State<TabNavigator>
                         threadId: tab.id!,
                         tag: tab.tag,
                         prevTab: tab.prevTab!,
-                        onOpen: (DrawerTab newTab) => _addTab(newTab),
-                        onGoBack: (DrawerTab currentTab) =>
-                            _goBack(currentTab)),
+                        onOpen: (DrawerTab newTab) => addTab(newTab),
+                        onGoBack: (DrawerTab currentTab) => goBack(currentTab)),
                   );
               }
             }).toList(),
@@ -172,11 +170,11 @@ class _TabNavigatorState extends State<TabNavigator>
         }),
         drawer: Drawer(
           child: ListView.builder(
-            itemCount: _tabs.length,
+            itemCount: tabs.length,
             itemBuilder: (bcontext, index) {
-              DrawerTab item = _tabs[index];
+              DrawerTab item = tabs[index];
               return ListTile(
-                selected: _tabController!.index == index,
+                selected: tabController!.index == index,
                 textColor: Theme.of(context).textTheme.titleMedium!.color,
                 selectedColor: Theme.of(context).secondaryHeaderColor,
                 title: Row(
@@ -195,14 +193,14 @@ class _TabNavigatorState extends State<TabNavigator>
                         ? IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () {
-                              int currentPosition = _tabController!.index;
+                              int currentPosition = tabController!.index;
 
-                              if (_tabs.indexOf(item) <= currentPosition) {
-                                _removeTab(item);
-                                _tabController!.animateTo(currentPosition - 1);
+                              if (tabs.indexOf(item) <= currentPosition) {
+                                removeTab(item);
+                                tabController!.animateTo(currentPosition - 1);
                               } else {
-                                _removeTab(item);
-                                _tabController!.animateTo(currentPosition);
+                                removeTab(item);
+                                tabController!.animateTo(currentPosition);
                               }
                             },
                             color:
@@ -212,7 +210,7 @@ class _TabNavigatorState extends State<TabNavigator>
                   ],
                 ),
                 onTap: () {
-                  _tabController!.animateTo(index);
+                  tabController!.animateTo(index);
                   _scaffoldKey.currentState!.closeDrawer();
                 },
               );
