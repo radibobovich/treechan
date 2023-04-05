@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/services/board_service.dart';
 
-import 'board_json.dart';
+import '../models/json/json.dart';
 
 class BoardBloc extends Bloc<BoardEvent, BoardState> {
   // final String boardTag;

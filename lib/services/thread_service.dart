@@ -1,4 +1,4 @@
-import '../models/board_json.dart';
+import '../models/json/json.dart';
 
 import '../models/tree.dart';
 

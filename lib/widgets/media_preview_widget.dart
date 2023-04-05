@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:treechan/models/board_json.dart';
+import '../models/json/json.dart';
 import 'package:extended_image/extended_image.dart';
 
 import 'image_gallery_widget.dart';
