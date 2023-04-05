@@ -1,4 +1,4 @@
-import '../models/board_json.dart';
+import '../models/json/json.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

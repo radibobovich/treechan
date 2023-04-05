@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/board_json.dart';
+import '../models/json/json.dart';
 import '../services/board_list_service.dart';
 import 'tab_navigator.dart';
 
