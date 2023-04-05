@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/category.dart';
 import '../models/json/json.dart';
 import 'dart:convert';
-import '../screens/board_list_screen.dart'; //TODO: move class to models
 
 /// Returns a list of available boards saved in device memory, otherwise downloads it.
 Future<List<Board>?> getBoards() async {

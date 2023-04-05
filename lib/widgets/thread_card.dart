@@ -25,16 +25,7 @@ class ThreadCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        DrawerTab currentTab =
-            DrawerTab(type: TabTypes.board, tag: boardTag, name: boardName);
-        onOpen(DrawerTab(
-            type: TabTypes.thread,
-            id: thread!.num_,
-            tag: thread!.board!,
-            name: thread!.subject!,
-            prevTab: currentTab));
-      },
+      onTap: openThread,
       child: Card(
         margin: const EdgeInsets.all(2),
         child: Column(
@@ -47,7 +38,7 @@ class ThreadCard extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 8, 8, 16),
-                    child: CardHeader(thread: thread),
+                    child: _CardHeader(thread: thread),
                   ),
                   Text.rich(TextSpan(
                     text: thread!.subject,
@@ -63,17 +54,28 @@ class ThreadCard extends StatelessWidget {
               onOpen: onOpen,
               onGoBack: onGoBack,
             ),
-            CardFooter(thread: thread)
+            _CardFooter(thread: thread)
           ],
         ),
       ),
     );
   }
+
+  void openThread() {
+    DrawerTab currentTab =
+        DrawerTab(type: TabTypes.board, tag: boardTag, name: boardName);
+    onOpen(DrawerTab(
+        type: TabTypes.thread,
+        id: thread!.num_,
+        tag: thread!.board!,
+        name: thread!.subject!,
+        prevTab: currentTab));
+  }
 }
 
 // contains username and date
-class CardHeader extends StatelessWidget {
-  const CardHeader({
+class _CardHeader extends StatelessWidget {
+  const _CardHeader({
     Key? key,
     required this.thread,
   }) : super(key: key);
@@ -91,8 +93,8 @@ class CardHeader extends StatelessWidget {
   }
 }
 
-class CardFooter extends StatelessWidget {
-  const CardFooter({
+class _CardFooter extends StatelessWidget {
+  const _CardFooter({
     Key? key,
     required this.thread,
   }) : super(key: key);

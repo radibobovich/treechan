@@ -17,7 +17,6 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: AppTheme.nightTheme,
       home: const TabNavigator(),
-      // home: const TestList(),
       initialRoute: '/',
     );
   }
