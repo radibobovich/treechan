@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:treechan/screens/thread_screen.dart';
 import 'package:treechan/services/board_service.dart';
-import '../models/board_bloc.dart';
-import '../models/thread_bloc.dart';
+import '../models/bloc/board_bloc.dart';
+import '../models/bloc/thread_bloc.dart';
 import '../services/thread_service.dart';
 import '../screens/board_screen.dart';
 import 'board_list_screen.dart';

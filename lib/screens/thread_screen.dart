@@ -6,7 +6,7 @@ import 'dart:ui';
 import 'package:treechan/screens/tab_navigator.dart';
 
 import '../models/json/json.dart';
-import '../models/thread_bloc.dart';
+import '../models/bloc/thread_bloc.dart';
 
 import '../services/scroll_service.dart';
 import '../widgets/go_back_widget.dart';
