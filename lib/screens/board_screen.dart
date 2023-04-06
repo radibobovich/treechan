@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+
 import 'package:treechan/models/bloc/board_bloc.dart';
+import '../widgets/refresh_custom_footer.dart';
 import '../widgets/thread_card.dart';
 import 'tab_navigator.dart';
 import '../widgets/go_back_widget.dart';
@@ -30,6 +33,7 @@ class _BoardScreenState extends State<BoardScreen>
     super.build(context);
     DrawerTab currentTab = DrawerTab(
         type: TabTypes.board, tag: widget.boardTag, prevTab: boardListTab);
+    RefreshController controller = RefreshController();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.boardName),
@@ -50,22 +54,40 @@ class _BoardScreenState extends State<BoardScreen>
           child: BlocBuilder<BoardBloc, BoardState>(
             builder: (context, state) {
               if (state is BoardLoadedState) {
-                return ListView.builder(
-                  itemCount: state.threads!.length,
-                  itemBuilder: (context, index) {
-                    return ThreadCard(
-                      thread: state.threads![index],
-                      onOpen: widget.onOpen,
-                      onGoBack: widget.onGoBack,
-                      boardName: widget.boardName,
-                      boardTag: widget.boardTag,
-                    );
+                if (state.completeRefresh) {
+                  controller.resetNoData();
+                  controller.refreshCompleted();
+                  controller.loadComplete();
+                } else {
+                  controller.loadNoData();
+                }
+                return SmartRefresher(
+                  controller: controller,
+                  enablePullUp: true,
+                  onRefresh: () {
+                    BlocProvider.of<BoardBloc>(context)
+                        .add(RefreshBoardEvent(refreshFromScratch: true));
                   },
+                  onLoading: () {
+                    BlocProvider.of<BoardBloc>(context)
+                        .add(RefreshBoardEvent());
+                  },
+                  footer: RefreshCustomFooter(controller: controller),
+                  child: ListView.builder(
+                    itemCount: state.threads!.length,
+                    itemBuilder: (context, index) {
+                      return ThreadCard(
+                        thread: state.threads![index],
+                        onOpen: widget.onOpen,
+                        onGoBack: widget.onGoBack,
+                        boardName: widget.boardName,
+                        boardTag: widget.boardTag,
+                      );
+                    },
+                  ),
                 );
               } else if (state is BoardErrorState) {
-                return Center(
-                  child: Text(state.errorMessage),
-                );
+                return const Center(child: CircularProgressIndicator());
               } else {
                 return const Center(child: CircularProgressIndicator());
               }

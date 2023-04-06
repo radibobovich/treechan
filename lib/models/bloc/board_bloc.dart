@@ -10,7 +10,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     on<LoadBoardEvent>((event, emit) async {
       try {
         final List<Thread>? threads = await boardService.getThreads();
-        emit(BoardLoadedState(threads: threads));
+        emit(BoardLoadedState(
+            threads: threads, completeRefresh: event.refreshCompleted));
       } catch (e) {
         emit(BoardErrorState(e.toString()));
       }
@@ -25,7 +26,9 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
           }
           add(LoadBoardEvent());
         } catch (e) {
-          emit(BoardErrorState(e.toString()));
+          boardService.currentPage -= 1;
+          // emit(BoardErrorState(e.toString()));
+          add(LoadBoardEvent(refreshCompleted: false));
         }
       },
     );
@@ -34,7 +37,10 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
 
 abstract class BoardEvent {}
 
-class LoadBoardEvent extends BoardEvent {}
+class LoadBoardEvent extends BoardEvent {
+  LoadBoardEvent({this.refreshCompleted = true});
+  final bool refreshCompleted;
+}
 
 class RefreshBoardEvent extends BoardEvent {
   RefreshBoardEvent({this.refreshFromScratch = false});
@@ -47,8 +53,13 @@ class BoardInitialState extends BoardState {}
 
 class BoardLoadedState extends BoardState {
   final List<Thread>? threads;
-  BoardLoadedState({required this.threads});
+  final bool completeRefresh;
+  BoardLoadedState({required this.threads, this.completeRefresh = true});
 }
+
+// class RefreshCompletedState extends BoardState {
+//   RefreshCompletedState();
+// }
 
 class BoardErrorState extends BoardState {
   final String errorMessage;
