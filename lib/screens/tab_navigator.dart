@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/screens/thread_screen.dart';
 import 'package:treechan/services/board_service.dart';
 import '../models/bloc/board_bloc.dart';
+import '../models/bloc/board_list_bloc.dart';
 import '../models/bloc/thread_bloc.dart';
+import '../services/board_list_service.dart';
 import '../services/thread_service.dart';
 import '../screens/board_screen.dart';
 import 'board_list_screen.dart';
@@ -131,13 +133,18 @@ class _TabNavigatorState extends State<TabNavigator>
             children: tabs.map((tab) {
               switch (tab.type) {
                 case TabTypes.boardList:
-                  return BoardListScreen(
-                      key: ValueKey(tab),
-                      title: "Доски",
-                      onOpen: (DrawerTab newTab) {
-                        addTab(newTab);
-                      },
-                      onGoBack: (DrawerTab currentTab) => goBack(currentTab));
+                  return BlocProvider(
+                    create: (context) =>
+                        BoardListBloc(boardListService: BoardListService())
+                          ..add(LoadBoardListEvent()),
+                    child: BoardListScreen(
+                        key: ValueKey(tab),
+                        title: "Доски",
+                        onOpen: (DrawerTab newTab) {
+                          addTab(newTab);
+                        },
+                        onGoBack: (DrawerTab currentTab) => goBack(currentTab)),
+                  );
                 case TabTypes.board:
                   return BlocProvider(
                     create: (context) => BoardBloc(
