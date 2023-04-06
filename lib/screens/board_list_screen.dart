@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../models/bloc/board_list_bloc.dart';
 import '../models/category.dart';
-import '../models/json/json.dart';
-import '../services/board_list_service.dart';
 import 'tab_navigator.dart';
 
 class BoardListScreen extends StatefulWidget {
@@ -29,25 +29,24 @@ class _BoardListScreenState extends State<BoardListScreen>
     super.build(context);
     return Scaffold(
         appBar: AppBar(title: Text(widget.title)),
-        body: FutureBuilder<List<Category>>(
-          future: getCategories(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
+        body: BlocBuilder<BoardListBloc, BoardListState>(
+          builder: (context, state) {
+            if (state is BoardListLoadedState) {
               return ListView.builder(
-                itemCount: snapshot.data!.length,
+                itemCount: state.categories.length,
                 itemBuilder: (context, index) {
-                  if (snapshot.data![index].categoryName !=
+                  if (state.categories[index].categoryName !=
                       "Пользовательские") {
                     return CategoryWidget(
                         onOpen: widget.onOpen,
-                        category: snapshot.data![index],
+                        category: state.categories[index],
                         showDivider: index != 0);
                   }
                   return const SizedBox();
                 },
               );
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
+            } else if (state is BoardListErrorState) {
+              return Center(child: Text(state.errorMessage));
             }
             return const Center(child: CircularProgressIndicator());
           },
