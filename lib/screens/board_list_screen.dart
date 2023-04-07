@@ -68,39 +68,7 @@ class _BoardListScreenState extends State<BoardListScreen>
   }
 }
 
-class IconCompleteReorder extends StatelessWidget {
-  const IconCompleteReorder({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.done),
-      onPressed: () {
-        BlocProvider.of<BoardListBloc>(context)
-            .add(EditFavoritesEvent(action: FavoriteListAction.toggleReorder));
-      },
-    );
-  }
-}
-
-class IconRefreshBoards extends StatelessWidget {
-  const IconRefreshBoards({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.refresh),
-      onPressed: () {
-        BlocProvider.of<BoardListBloc>(context).add(RefreshBoardListEvent());
-      },
-    );
-  }
-}
-
+/// Appears at the top of the screen.
 class FavoriteBoardsList extends StatefulWidget {
   const FavoriteBoardsList({
     super.key,
@@ -160,6 +128,7 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
     );
   }
 
+  /// Calls when user reorder favorite boards.
   void onReorder(int oldIndex, int newIndex) {
     List<Board> favorites = widget.favorites;
     setState(() {
@@ -193,6 +162,7 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
   }
 }
 
+/// List of categories. Each category contains a list of boards.
 class CategoriesList extends StatelessWidget {
   const CategoriesList({
     super.key,
@@ -220,6 +190,39 @@ class CategoriesList extends StatelessWidget {
                           .isNotEmpty));
         }
         return const SizedBox();
+      },
+    );
+  }
+}
+
+class IconCompleteReorder extends StatelessWidget {
+  const IconCompleteReorder({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.done),
+      onPressed: () {
+        BlocProvider.of<BoardListBloc>(context)
+            .add(EditFavoritesEvent(action: FavoriteListAction.toggleReorder));
+      },
+    );
+  }
+}
+
+class IconRefreshBoards extends StatelessWidget {
+  const IconRefreshBoards({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.refresh),
+      onPressed: () {
+        BlocProvider.of<BoardListBloc>(context).add(RefreshBoardListEvent());
       },
     );
   }
