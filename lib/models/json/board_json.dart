@@ -42,6 +42,19 @@ class Board {
   String? name;
   int? threadsPerPage;
 
+  //position in favorite list
+  int? position;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Board && id == other.id && name == other.name;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode;
+
   Board({
     this.bumpLimit,
     this.category,
@@ -67,6 +80,8 @@ class Board {
     this.maxPages,
     this.name,
     this.threadsPerPage,
+    required description,
+    this.position,
   });
 
   Board.fromJson(Map<String, dynamic> json) {
@@ -94,6 +109,7 @@ class Board {
     maxPages = json['max_pages'];
     name = json['name'];
     threadsPerPage = json['threads_per_page'];
+    position = json['position'];
   }
 
   Map<String, dynamic> toJson() {
@@ -122,6 +138,7 @@ class Board {
     data['max_pages'] = maxPages;
     data['name'] = name;
     data['threads_per_page'] = threadsPerPage;
+    data['position'] = position;
     return data;
   }
 }
