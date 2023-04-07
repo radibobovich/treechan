@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:treechan/main.dart';
 import '../models/category.dart';
 import '../models/json/json.dart';
 import 'dart:convert';
@@ -7,17 +8,24 @@ class BoardListService {
   BoardListService();
 
   List<Category> _categories = List.empty(growable: true);
+  List<Board> _favoriteBoards = List.empty(growable: true);
 
-  Future<List<Category>> getBoardList() async {
+  Future<List<Category>> getCategories() async {
     if (_categories.isEmpty) {
       await _getCategories();
     }
     return _categories;
   }
 
+  List<Board> getFavoriteBoards() {
+    if (_favoriteBoards.isEmpty) {
+      _getFavoriteBoards();
+    }
+    return _favoriteBoards;
+  }
+
   Future<void> refreshBoardList() async {
     _categories = [];
-    _getCategories();
   }
 
   static Future<String?> _downloadBoards() async {
@@ -54,5 +62,35 @@ class BoardListService {
             .add(Category(categoryName: board.category!, boards: [board]));
       }
     }
+  }
+
+  void _getFavoriteBoards() {
+    String jsonBoards = sharedPreferences.getString("favoriteBoards") ?? "";
+    if (jsonBoards == "") {
+      return;
+    }
+    _favoriteBoards = boardListFromJson(jsonDecode(jsonBoards))!;
+  }
+
+  void saveFavoriteBoards(List<Board> boards) {
+    String jsonBoards = jsonEncode(boards);
+    sharedPreferences.setString("favoriteBoards", jsonBoards);
+  }
+
+  void addToFavorites(Board board) {
+    if (_favoriteBoards.contains(board)) {
+      return;
+    }
+    board.position = _favoriteBoards.length;
+    _favoriteBoards.add(board);
+    saveFavoriteBoards(_favoriteBoards);
+  }
+
+  void removeFromFavorites(Board board) {
+    if (!_favoriteBoards.contains(board)) {
+      return;
+    }
+    _favoriteBoards.remove(board);
+    saveFavoriteBoards(_favoriteBoards);
   }
 }
