@@ -34,12 +34,10 @@ class _BoardScreenState extends State<BoardScreen>
     RefreshController controller = RefreshController();
     return Scaffold(
       appBar: AppBar(
-        title: Expanded(
-          child: Text(
-            widget.currentTab.name ?? "Загрузка...",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+        title: Text(
+          widget.currentTab.name ?? "Загрузка...",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         leading: GoBackButton(
             onGoBack: widget.onGoBack, currentTab: widget.currentTab),
@@ -86,16 +84,15 @@ class _BoardScreenState extends State<BoardScreen>
                     itemBuilder: (context, index) {
                       return ThreadCard(
                         thread: state.threads![index],
+                        currentTab: widget.currentTab,
                         onOpen: widget.onOpen,
                         onGoBack: widget.onGoBack,
-                        boardName: widget.currentTab.name!,
-                        boardTag: widget.currentTab.tag,
                       );
                     },
                   ),
                 );
               } else if (state is BoardErrorState) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: Text("404 - доска не найдена"));
               } else {
                 return const Center(child: CircularProgressIndicator());
               }
