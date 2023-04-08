@@ -1,6 +1,20 @@
 # Treechan
 
 2ch клиент с древовидной системой постов. 
-Сейчас в разработке, на данный момент уже можно пользоваться ридонли.
+Еще в разработке, но уже можно пользоваться ридонли.
 
-TODO список: [Trello](https://trello.com/b/JxlUBxC0/todo "Trello")
+TODO: [Trello](https://trello.com/b/JxlUBxC0/todo "Trello")
+
+
+<p float="left">
+  <img src="demo-pics/1.jpg" width="200" />
+  <img src="demo-pics/2.jpg" width="200" /> 
+</p>
+<p float="left">
+  <img src="demo-pics/3.jpg" width="200" />
+  <img src="demo-pics/4.jpg" width="200" />
+</p>
+
+
+
+
