@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:treechan/screens/thread_screen.dart';
 import 'package:treechan/services/board_service.dart';
+import '../widgets/search_bar_widget.dart';
 import '../models/bloc/board_bloc.dart';
 import '../models/bloc/board_list_bloc.dart';
 import '../models/bloc/thread_bloc.dart';
@@ -90,6 +91,14 @@ class _TabNavigatorState extends State<TabNavigator>
     tabController!.animateTo(tabs.indexOf(tab));
   }
 
+  void setName(DrawerTab tab, String name) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        tab.name = name;
+      });
+    });
+  }
+
   /// Closes tab and removes it from the drawer.
   void removeTab(DrawerTab tab) {
     setState(() {
@@ -153,10 +162,12 @@ class _TabNavigatorState extends State<TabNavigator>
                       ..add(LoadBoardEvent()),
                     child: BoardScreen(
                         key: ValueKey(tab),
-                        boardName: tab.name!,
-                        boardTag: tab.tag,
+                        currentTab: tab,
                         onOpen: (DrawerTab newTab) => addTab(newTab),
-                        onGoBack: (DrawerTab currentTab) => goBack(currentTab)),
+                        onGoBack: (DrawerTab currentTab) => goBack(currentTab),
+                        onSetName: (String name) {
+                          setName(tab, name);
+                        }),
                   );
                 case TabTypes.thread:
                   return BlocProvider(
@@ -166,63 +177,89 @@ class _TabNavigatorState extends State<TabNavigator>
                     )..add(LoadThreadEvent()),
                     child: ThreadScreen(
                         key: ValueKey(tab),
-                        threadId: tab.id!,
-                        tag: tab.tag,
+                        currentTab: tab,
                         prevTab: tab.prevTab!,
                         onOpen: (DrawerTab newTab) => addTab(newTab),
-                        onGoBack: (DrawerTab currentTab) => goBack(currentTab)),
+                        onGoBack: (DrawerTab currentTab) => goBack(currentTab),
+                        onSetName: (String name) {
+                          setName(tab, name);
+                        }),
                   );
               }
             }).toList(),
           );
         }),
         drawer: Drawer(
-          child: ListView.builder(
-            itemCount: tabs.length,
-            itemBuilder: (bcontext, index) {
-              DrawerTab item = tabs[index];
-              return ListTile(
-                selected: tabController!.index == index,
-                textColor: Theme.of(context).textTheme.titleMedium!.color,
-                selectedColor: Theme.of(context).secondaryHeaderColor,
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        (item.type == TabTypes.board
-                                ? "/${item.tag}/ - "
-                                : "") +
-                            (item.name ?? "Тред"),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    item.type != TabTypes.boardList
-                        ? IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () {
-                              int currentPosition = tabController!.index;
+          child: Column(
+            children: [
+              SearchBar(
+                onOpen: (DrawerTab newTab) => addTab(newTab),
+                onCloseDrawer: () => _scaffoldKey.currentState!.closeDrawer(),
+              ),
+              const Divider(
+                thickness: 1,
+              ),
+              Expanded(
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeTop: true,
+                  child: ListView.builder(
+                    itemCount: tabs.length,
+                    itemBuilder: (bcontext, index) {
+                      DrawerTab item = tabs[index];
+                      return ListTile(
+                        selected: tabController!.index == index,
+                        textColor:
+                            Theme.of(context).textTheme.titleMedium!.color,
+                        selectedColor: Theme.of(context).secondaryHeaderColor,
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                (item.type == TabTypes.board
+                                        ? "/${item.tag}/ - "
+                                        : "") +
+                                    (item.name ?? "Тред"),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            item.type != TabTypes.boardList
+                                ? IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () {
+                                      int currentPosition =
+                                          tabController!.index;
 
-                              if (tabs.indexOf(item) <= currentPosition) {
-                                removeTab(item);
-                                tabController!.animateTo(currentPosition - 1);
-                              } else {
-                                removeTab(item);
-                                tabController!.animateTo(currentPosition);
-                              }
-                            },
-                            color:
-                                Theme.of(context).textTheme.titleMedium!.color,
-                          )
-                        : const SizedBox.shrink()
-                  ],
+                                      if (tabs.indexOf(item) <=
+                                          currentPosition) {
+                                        removeTab(item);
+                                        tabController!
+                                            .animateTo(currentPosition - 1);
+                                      } else {
+                                        removeTab(item);
+                                        tabController!
+                                            .animateTo(currentPosition);
+                                      }
+                                    },
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .color,
+                                  )
+                                : const SizedBox.shrink()
+                          ],
+                        ),
+                        onTap: () {
+                          tabController!.animateTo(index);
+                          _scaffoldKey.currentState!.closeDrawer();
+                        },
+                      );
+                    },
+                  ),
                 ),
-                onTap: () {
-                  tabController!.animateTo(index);
-                  _scaffoldKey.currentState!.closeDrawer();
-                },
-              );
-            },
+              ),
+            ],
           ),
         ),
       ),
