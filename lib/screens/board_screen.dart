@@ -11,14 +11,14 @@ import '../widgets/go_back_widget.dart';
 class BoardScreen extends StatefulWidget {
   const BoardScreen(
       {super.key,
-      required this.boardName,
-      required this.boardTag,
+      required this.currentTab,
       required this.onOpen,
-      required this.onGoBack});
-  final String boardName;
-  final String boardTag;
+      required this.onGoBack,
+      required this.onSetName});
+  final DrawerTab currentTab;
   final Function onOpen;
   final Function onGoBack;
+  final Function onSetName;
   @override
   State<BoardScreen> createState() => _BoardScreenState();
 }
@@ -31,14 +31,18 @@ class _BoardScreenState extends State<BoardScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    DrawerTab currentTab = DrawerTab(
-        type: TabTypes.board, tag: widget.boardTag, prevTab: boardListTab);
     RefreshController controller = RefreshController();
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.boardName),
-        leading:
-            GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab),
+        title: Expanded(
+          child: Text(
+            widget.currentTab.name ?? "Загрузка...",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        leading: GoBackButton(
+            onGoBack: widget.onGoBack, currentTab: widget.currentTab),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -54,6 +58,10 @@ class _BoardScreenState extends State<BoardScreen>
           child: BlocBuilder<BoardBloc, BoardState>(
             builder: (context, state) {
               if (state is BoardLoadedState) {
+                if (widget.currentTab.name == null) {
+                  widget.onSetName(state.boardName);
+                  widget.currentTab.name = state.boardName;
+                }
                 if (state.completeRefresh) {
                   controller.resetNoData();
                   controller.refreshCompleted();
@@ -80,8 +88,8 @@ class _BoardScreenState extends State<BoardScreen>
                         thread: state.threads![index],
                         onOpen: widget.onOpen,
                         onGoBack: widget.onGoBack,
-                        boardName: widget.boardName,
-                        boardTag: widget.boardTag,
+                        boardName: widget.currentTab.name!,
+                        boardTag: widget.currentTab.tag,
                       );
                     },
                   ),

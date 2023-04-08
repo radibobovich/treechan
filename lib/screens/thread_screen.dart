@@ -15,17 +15,16 @@ import '../widgets/post_widget.dart';
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen(
       {super.key,
-      required this.threadId,
-      required this.tag,
       required this.onOpen,
       required this.onGoBack,
-      required this.prevTab});
-  final int threadId;
-  final String tag;
+      required this.currentTab,
+      required this.prevTab,
+      required this.onSetName});
+  final DrawerTab currentTab;
   final DrawerTab prevTab;
   final Function onOpen;
   final Function onGoBack;
-
+  final Function onSetName;
   @override
   State<ThreadScreen> createState() => _ThreadScreenState();
 }
@@ -54,17 +53,17 @@ class _ThreadScreenState extends State<ThreadScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
-    DrawerTab currentTab = DrawerTab(
-        type: TabTypes.thread,
-        id: widget.threadId,
-        tag: widget.tag,
-        prevTab: widget.prevTab);
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Тред"),
-          leading:
-              GoBackButton(onGoBack: widget.onGoBack, currentTab: currentTab),
+          title: Expanded(
+            child: Text(
+              widget.currentTab.name ?? "Загрузка...",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          leading: GoBackButton(
+              onGoBack: widget.onGoBack, currentTab: widget.currentTab),
           actions: [
             IconButton(
                 onPressed: () async {
@@ -83,6 +82,10 @@ class _ThreadScreenState extends State<ThreadScreen>
         body: BlocBuilder<ThreadBloc, ThreadState>(
           builder: (context, state) {
             if (state is ThreadLoadedState) {
+              if (widget.currentTab.name == null) {
+                widget.onSetName(state.threadInfo!.title!);
+                widget.currentTab.name = state.threadInfo!.title!;
+              }
               return FlexibleTreeView<Post>(
                 key: treeKey,
                 scrollable: false,
