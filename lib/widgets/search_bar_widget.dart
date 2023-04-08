@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../services/search_bar_service.dart';
 
 class SearchBar extends StatefulWidget {
-  const SearchBar(
-      {super.key, required this.onOpen, required this.onCloseDrawer});
+  const SearchBar({
+    super.key,
+    required this.onOpen,
+    required this.onCloseDrawer,
+  });
   final Function onOpen;
   final Function onCloseDrawer;
   @override
@@ -37,8 +40,11 @@ class _SearchBarState extends State<SearchBar> {
                   widget.onCloseDrawer();
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
+                    // TODO: make it appear above drawer
                     const SnackBar(
                       content: Text("Неверная ссылка"),
+                      behavior: SnackBarBehavior.floating,
+                      elevation: 0,
                     ),
                   );
                 }
