@@ -55,12 +55,10 @@ class _ThreadScreenState extends State<ThreadScreen>
     super.build(context);
     return Scaffold(
         appBar: AppBar(
-          title: Expanded(
-            child: Text(
-              widget.currentTab.name ?? "Загрузка...",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          title: Text(
+            widget.currentTab.name ?? "Загрузка...",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           leading: GoBackButton(
               onGoBack: widget.onGoBack, currentTab: widget.currentTab),
@@ -107,7 +105,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                 },
               );
             } else if (state is ThreadErrorState) {
-              return Center(child: Text(state.errorMessage));
+              return const Center(child: Text("404 - доска не найдена"));
             } else {
               return const Center(child: CircularProgressIndicator());
             }
