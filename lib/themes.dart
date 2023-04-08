@@ -24,5 +24,6 @@ class AppTheme {
       scaffoldBackgroundColor: const Color.fromARGB(255, 21, 32, 43),
       textTheme: const TextTheme(
           titleMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
-          bodyMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204))));
+          bodyMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204))),
+      hintColor: const Color.fromARGB(255, 125, 125, 125));
 }
