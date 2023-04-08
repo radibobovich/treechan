@@ -11,7 +11,9 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       try {
         final List<Thread>? threads = await boardService.getThreads();
         emit(BoardLoadedState(
-            threads: threads, completeRefresh: event.refreshCompleted));
+            boardName: boardService.boardName,
+            threads: threads,
+            completeRefresh: event.refreshCompleted));
       } catch (e) {
         emit(BoardErrorState(e.toString()));
       }
@@ -52,9 +54,11 @@ abstract class BoardState {}
 class BoardInitialState extends BoardState {}
 
 class BoardLoadedState extends BoardState {
+  final String boardName;
   final List<Thread>? threads;
   final bool completeRefresh;
-  BoardLoadedState({required this.threads, this.completeRefresh = true});
+  BoardLoadedState(
+      {required this.boardName, this.threads, this.completeRefresh = true});
 }
 
 // class RefreshCompletedState extends BoardState {
