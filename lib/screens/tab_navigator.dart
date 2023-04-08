@@ -133,133 +133,141 @@ class _TabNavigatorState extends State<TabNavigator>
           return Future.value(true);
         }
       },
-      child: Scaffold(
-        key: _scaffoldKey,
-        body: Builder(builder: (sontext) {
-          return TabBarView(
-            physics: const NeverScrollableScrollPhysics(),
-            controller: tabController,
-            children: tabs.map((tab) {
-              switch (tab.type) {
-                case TabTypes.boardList:
-                  return BlocProvider(
-                    create: (context) =>
-                        BoardListBloc(boardListService: BoardListService())
-                          ..add(LoadBoardListEvent()),
-                    child: BoardListScreen(
-                        key: ValueKey(tab),
-                        title: "Доски",
-                        onOpen: (DrawerTab newTab) {
-                          addTab(newTab);
-                        },
-                        onGoBack: (DrawerTab currentTab) => goBack(currentTab)),
-                  );
-                case TabTypes.board:
-                  return BlocProvider(
-                    create: (context) => BoardBloc(
-                        boardService: BoardService(
-                            boardTag: tab.tag, sortType: SortBy.page))
-                      ..add(LoadBoardEvent()),
-                    child: BoardScreen(
-                        key: ValueKey(tab),
-                        currentTab: tab,
-                        onOpen: (DrawerTab newTab) => addTab(newTab),
-                        onGoBack: (DrawerTab currentTab) => goBack(currentTab),
-                        onSetName: (String name) {
-                          setName(tab, name);
-                        }),
-                  );
-                case TabTypes.thread:
-                  return BlocProvider(
-                    create: (blocContext) => ThreadBloc(
-                      threadService:
-                          ThreadService(boardTag: tab.tag, threadId: tab.id!),
-                    )..add(LoadThreadEvent()),
-                    child: ThreadScreen(
-                        key: ValueKey(tab),
-                        currentTab: tab,
-                        prevTab: tab.prevTab!,
-                        onOpen: (DrawerTab newTab) => addTab(newTab),
-                        onGoBack: (DrawerTab currentTab) => goBack(currentTab),
-                        onSetName: (String name) {
-                          setName(tab, name);
-                        }),
-                  );
-              }
-            }).toList(),
-          );
-        }),
-        drawer: Drawer(
-          child: Column(
-            children: [
-              SearchBar(
-                onOpen: (DrawerTab newTab) => addTab(newTab),
-                onCloseDrawer: () => _scaffoldKey.currentState!.closeDrawer(),
-              ),
-              const Divider(
-                thickness: 1,
-              ),
-              Expanded(
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  child: ListView.builder(
-                    itemCount: tabs.length,
-                    itemBuilder: (bcontext, index) {
-                      DrawerTab item = tabs[index];
-                      return ListTile(
-                        selected: tabController!.index == index,
-                        textColor:
-                            Theme.of(context).textTheme.titleMedium!.color,
-                        selectedColor: Theme.of(context).secondaryHeaderColor,
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                (item.type == TabTypes.board
-                                        ? "/${item.tag}/ - "
-                                        : "") +
-                                    (item.name ?? "Тред"),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+      child: ScaffoldMessenger(
+        child: Scaffold(
+          key: _scaffoldKey,
+          body: Builder(builder: (sontext) {
+            return TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: tabController,
+              children: tabs.map((tab) {
+                switch (tab.type) {
+                  case TabTypes.boardList:
+                    return BlocProvider(
+                      create: (context) =>
+                          BoardListBloc(boardListService: BoardListService())
+                            ..add(LoadBoardListEvent()),
+                      child: BoardListScreen(
+                          key: ValueKey(tab),
+                          title: "Доски",
+                          onOpen: (DrawerTab newTab) {
+                            addTab(newTab);
+                          },
+                          onGoBack: (DrawerTab currentTab) =>
+                              goBack(currentTab)),
+                    );
+                  case TabTypes.board:
+                    return BlocProvider(
+                      create: (context) => BoardBloc(
+                          boardService: BoardService(
+                              boardTag: tab.tag, sortType: SortBy.page))
+                        ..add(LoadBoardEvent()),
+                      child: BoardScreen(
+                          key: ValueKey(tab),
+                          currentTab: tab,
+                          onOpen: (DrawerTab newTab) => addTab(newTab),
+                          onGoBack: (DrawerTab currentTab) =>
+                              goBack(currentTab),
+                          onSetName: (String name) {
+                            setName(tab, name);
+                          }),
+                    );
+                  case TabTypes.thread:
+                    return BlocProvider(
+                      create: (blocContext) => ThreadBloc(
+                        threadService:
+                            ThreadService(boardTag: tab.tag, threadId: tab.id!),
+                      )..add(LoadThreadEvent()),
+                      child: ThreadScreen(
+                          key: ValueKey(tab),
+                          currentTab: tab,
+                          prevTab: tab.prevTab!,
+                          onOpen: (DrawerTab newTab) => addTab(newTab),
+                          onGoBack: (DrawerTab currentTab) =>
+                              goBack(currentTab),
+                          onSetName: (String name) {
+                            setName(tab, name);
+                          }),
+                    );
+                }
+              }).toList(),
+            );
+          }),
+          drawer: Drawer(
+            child: Column(
+              children: [
+                SearchBar(
+                  onOpen: (DrawerTab newTab) => addTab(newTab),
+                  onCloseDrawer: () => _scaffoldKey.currentState!.closeDrawer(),
+                ),
+                const Divider(
+                  thickness: 1,
+                ),
+                Expanded(
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: ListView.builder(
+                      itemCount: tabs.length,
+                      itemBuilder: (bcontext, index) {
+                        DrawerTab item = tabs[index];
+                        return ListTile(
+                          selected: tabController!.index == index,
+                          textColor:
+                              Theme.of(context).textTheme.titleMedium!.color,
+                          selectedColor: Theme.of(context).secondaryHeaderColor,
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  (item.type == TabTypes.board
+                                          ? "/${item.tag}/ - "
+                                          : "") +
+                                      (item.name ??
+                                          (item.type == TabTypes.board
+                                              ? "Доска"
+                                              : "Тред")),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            item.type != TabTypes.boardList
-                                ? IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () {
-                                      int currentPosition =
-                                          tabController!.index;
+                              item.type != TabTypes.boardList
+                                  ? IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () {
+                                        int currentPosition =
+                                            tabController!.index;
 
-                                      if (tabs.indexOf(item) <=
-                                          currentPosition) {
-                                        removeTab(item);
-                                        tabController!
-                                            .animateTo(currentPosition - 1);
-                                      } else {
-                                        removeTab(item);
-                                        tabController!
-                                            .animateTo(currentPosition);
-                                      }
-                                    },
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium!
-                                        .color,
-                                  )
-                                : const SizedBox.shrink()
-                          ],
-                        ),
-                        onTap: () {
-                          tabController!.animateTo(index);
-                          _scaffoldKey.currentState!.closeDrawer();
-                        },
-                      );
-                    },
+                                        if (tabs.indexOf(item) <=
+                                            currentPosition) {
+                                          removeTab(item);
+                                          tabController!
+                                              .animateTo(currentPosition - 1);
+                                        } else {
+                                          removeTab(item);
+                                          tabController!
+                                              .animateTo(currentPosition);
+                                        }
+                                      },
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .color,
+                                    )
+                                  : const SizedBox.shrink()
+                            ],
+                          ),
+                          onTap: () {
+                            tabController!.animateTo(index);
+                            _scaffoldKey.currentState!.closeDrawer();
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
