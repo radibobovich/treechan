@@ -9,6 +9,7 @@ class BoardService {
       {required this.boardTag, required this.sortType, this.currentPage = 0});
 
   final String boardTag;
+  late final String boardName;
   SortBy sortType;
   int currentPage;
   List<Thread>? _threads;
@@ -43,6 +44,7 @@ class BoardService {
 
   Future<void> loadBoard() async {
     http.Response response = await _getBoardResponse();
+    boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
     _threads = _fixThreadInfo(_threads!);
     _threads = _extendThumbnailLinks(_threads!);
