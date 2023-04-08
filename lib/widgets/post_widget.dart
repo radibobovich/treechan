@@ -34,39 +34,14 @@ class _PostWidgetState extends State<PostWidget> {
   Widget build(BuildContext context) {
     final Post post = widget.node.data;
 
-    List<PostWidget> visiblePosts =
-        widget.scrollService?.visiblePosts ?? List.empty(growable: true);
-
-    List<PostWidget> partiallyVisiblePosts =
-        widget.scrollService?.partiallyVisiblePosts ??
-            List.empty(growable: true);
-
     return VisibilityDetector(
       key: Key(post.id.toString()),
       onVisibilityChanged: (visibilityInfo) {
-        if (true) {
-          if (visibilityInfo.visibleFraction == 1) {
-            debugPrint("Post ${post.id} is visible, key is $widget.key");
-            if (!visiblePosts.contains(widget)) {
-              visiblePosts.add(widget);
-            }
-          }
-          if (visibilityInfo.visibleFraction < 1 &&
-              visiblePosts.contains(widget)) {
-            debugPrint("Post ${post.id} is invisible");
-            visiblePosts.remove(widget);
-          }
-          if (visibilityInfo.visibleFraction < 1 &&
-              !visiblePosts.contains(widget) &&
-              !partiallyVisiblePosts.contains(widget)) {
-            partiallyVisiblePosts.add(widget);
-          }
-          if ((visibilityInfo.visibleFraction == 1 ||
-                  visibilityInfo.visibleFraction == 0) &&
-              partiallyVisiblePosts.contains(widget)) {
-            partiallyVisiblePosts.remove(widget);
-          }
-        }
+        widget.scrollService?.checkVisibility(
+          widget: widget,
+          visibilityInfo: visibilityInfo,
+          post: post,
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -79,7 +54,6 @@ class _PostWidgetState extends State<PostWidget> {
                 Tooltip(
                     message: "#${post.id}",
                     child: _PostHeader(node: widget.node)),
-                //Text(post.id.toString()),
                 const Divider(
                   thickness: 1,
                 ),
