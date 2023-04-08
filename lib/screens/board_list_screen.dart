@@ -108,14 +108,7 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
                     )
                   : const SizedBox.shrink(),
               onTap: () {
-                widget.onOpen(DrawerTab(
-                    type: TabTypes.board,
-                    name: board.name,
-                    tag: board.id!,
-                    prevTab: DrawerTab(
-                        type: TabTypes.boardList,
-                        name: "Доски",
-                        tag: "boards")));
+                openBoard(board);
               },
               onLongPress: () {
                 showContextMenu(context, board);
@@ -126,6 +119,15 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
         ),
       ],
     );
+  }
+
+  openBoard(Board board) {
+    widget.onOpen(DrawerTab(
+        type: TabTypes.board,
+        name: board.name,
+        tag: board.id!,
+        prevTab:
+            DrawerTab(type: TabTypes.boardList, name: "Доски", tag: "boards")));
   }
 
   /// Calls when user reorder favorite boards.
