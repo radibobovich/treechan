@@ -8,19 +8,17 @@ import "media_preview_widget.dart";
 // Represents thread in list of threads
 class ThreadCard extends StatelessWidget {
   final Thread? thread;
+  final DrawerTab currentTab;
   final Function onOpen;
   final Function onGoBack;
 
-  final String boardName;
-  final String boardTag;
-  const ThreadCard(
-      {Key? key,
-      required this.thread,
-      required this.onOpen,
-      required this.onGoBack,
-      required this.boardName,
-      required this.boardTag})
-      : super(key: key);
+  const ThreadCard({
+    Key? key,
+    required this.thread,
+    required this.currentTab,
+    required this.onOpen,
+    required this.onGoBack,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -62,8 +60,6 @@ class ThreadCard extends StatelessWidget {
   }
 
   void openThread() {
-    DrawerTab currentTab =
-        DrawerTab(type: TabTypes.board, tag: boardTag, name: boardName);
     onOpen(DrawerTab(
         type: TabTypes.thread,
         id: thread!.num_,
