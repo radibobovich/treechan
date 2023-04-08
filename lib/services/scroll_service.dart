@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
+import '../models/json/post_json.dart';
 import '../widgets/post_widget.dart';
 
 /// A service generally to scroll to a post after thread refresh.
@@ -105,5 +107,33 @@ class ScrollService {
     });
 
     return;
+  }
+
+  void checkVisibility(
+      {required PostWidget widget,
+      required VisibilityInfo visibilityInfo,
+      required Post post}) {
+    if (true) {
+      if (visibilityInfo.visibleFraction == 1) {
+        debugPrint("Post ${post.id} is visible, key is $widget.key");
+        if (!visiblePosts.contains(widget)) {
+          visiblePosts.add(widget);
+        }
+      }
+      if (visibilityInfo.visibleFraction < 1 && visiblePosts.contains(widget)) {
+        debugPrint("Post ${post.id} is invisible");
+        visiblePosts.remove(widget);
+      }
+      if (visibilityInfo.visibleFraction < 1 &&
+          !visiblePosts.contains(widget) &&
+          !partiallyVisiblePosts.contains(widget)) {
+        partiallyVisiblePosts.add(widget);
+      }
+      if ((visibilityInfo.visibleFraction == 1 ||
+              visibilityInfo.visibleFraction == 0) &&
+          partiallyVisiblePosts.contains(widget)) {
+        partiallyVisiblePosts.remove(widget);
+      }
+    }
   }
 }

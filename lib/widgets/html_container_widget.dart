@@ -144,6 +144,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                       });
 
                   // check if link is to the post in other thread and maybe in other board
+                  // TODO: rewrite using Uri.parse
                 } else if (url[0] == "/" && url.contains("catalog.html")) {
                   // TODO: go to catalog
                 } else if (url[0] == "/" && url.contains("/res/")) {
