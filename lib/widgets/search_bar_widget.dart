@@ -25,6 +25,7 @@ class _SearchBarState extends State<SearchBar> {
       child: Row(
         children: [
           Expanded(
+            // TODO: make enter key work
             child: TextField(
               controller: _controller,
               decoration: const InputDecoration(
