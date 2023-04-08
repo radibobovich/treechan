@@ -8,6 +8,7 @@ class SearchBarService {
   late Uri parsedUrl;
   late DrawerTab tab;
   DrawerTab parseInput(String url) {
+    List<String> allowedHosts = ["2ch.hk", "2ch.life"];
     if (url == "") {
       throw Exception("Empty url");
     }
@@ -20,8 +21,10 @@ class SearchBarService {
     }
 
     if (parsedUrl.host.isNotEmpty) {
-      debugPrint("Host: ${parsedUrl.host}");
-    } else if (parsedUrl.pathSegments[0] == "2ch.hk") {
+      if (!allowedHosts.contains(parsedUrl.host)) {
+        throw Exception("Host not allowed");
+      }
+    } else if (allowedHosts.contains(parsedUrl.pathSegments[0])) {
       // fix if the user entered a link without the protocol
       parsedUrl = Uri.parse("https://$url");
       debugPrint("Fixed protocol: ");
@@ -29,6 +32,7 @@ class SearchBarService {
         debugPrint(segment);
       }
     }
+
     // TODO: add arch support
     if (parsedUrl.pathSegments.isNotEmpty) {
       tab = DrawerTab(
