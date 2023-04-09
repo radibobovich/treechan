@@ -1,3 +1,5 @@
+import 'package:treechan/main.dart';
+
 import '../models/json/json.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
@@ -59,12 +61,13 @@ class TreeService {
           _hasExternalReferences(posts!, post.parents)) {
         // find posts which are replies to the OP-post
         TreeNode<Post> node = TreeNode<Post>(
-            data: post,
-            id: post.id,
-            children: post.id != threadInfo!.opPostId
-                ? _attachChildren(post.id, posts!)
-                : [],
-            expanded: true);
+          expanded: !prefs.getBool("postsCollapsed")!,
+          data: post,
+          id: post.id,
+          children: post.id != threadInfo!.opPostId
+              ? _attachChildren(post.id, posts!)
+              : [],
+        );
         _roots.add(node);
       }
     }
@@ -81,7 +84,7 @@ class TreeService {
       childrenToAdd.add(TreeNode(
           data: post,
           children: _attachChildren(post.id, posts),
-          expanded: true));
+          expanded: !prefs.getBool("postsCollapsed")!));
     }
     return childrenToAdd;
   }
