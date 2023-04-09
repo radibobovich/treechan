@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:treechan/screens/tab_navigator.dart';
 
+import '../main.dart';
 import '../models/json/json.dart';
 import '../models/bloc/thread_bloc.dart';
 
@@ -86,7 +87,7 @@ class _ThreadScreenState extends State<ThreadScreen>
               }
               return FlexibleTreeView<Post>(
                 key: treeKey,
-                scrollable: false,
+                scrollable: prefs.getBool('2dscroll')!,
                 indent: 16,
                 showLines: state.threadInfo!.showLines!,
                 scrollController: scrollController,
