@@ -1,4 +1,5 @@
 import 'package:treechan/exceptions.dart';
+import 'package:treechan/main.dart';
 
 import '../models/json/json.dart';
 
@@ -130,6 +131,10 @@ class ThreadService {
 
   /// Sets showLines property to false when there are nodes with depth >=16.
   void _setShowLinesProperty(List<TreeNode<Post>>? roots) {
+    if (prefs.getBool('2dscroll')!) {
+      // 2d scroll is enabled so lines wont cross with the posts
+      return;
+    }
     for (var root in roots!) {
       for (var child in root.children) {
         _checkDepth(child);
