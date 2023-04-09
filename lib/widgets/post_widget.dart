@@ -42,41 +42,46 @@ class _PostWidgetState extends State<PostWidget> {
           post: post,
         );
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Tooltip(
-                    message: "#${post.id}",
-                    child: _PostHeader(node: widget.node)),
-                const Divider(
-                  thickness: 1,
-                ),
-                post.subject == ""
-                    ? const SizedBox.shrink()
-                    : Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text.rich(TextSpan(
-                          text: post.subject,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        )),
-                      ),
-                ImagesPreview(files: post.files),
-                ExcludeSemantics(
-                  // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-                  child: HtmlContainer(
-                      post: post,
-                      roots: widget.roots,
-                      currentTab: widget.currentTab,
-                      onOpen: widget.onOpen,
-                      onGoBack: widget.onGoBack,
-                      scrollService: widget.scrollService),
-                )
-              ],
+      child: InkWell(
+        onTap: () {
+          widget.node.expanded = !widget.node.expanded;
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Tooltip(
+                      message: "#${post.id}",
+                      child: _PostHeader(node: widget.node)),
+                  const Divider(
+                    thickness: 1,
+                  ),
+                  post.subject == ""
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text.rich(TextSpan(
+                            text: post.subject,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          )),
+                        ),
+                  ImagesPreview(files: post.files),
+                  ExcludeSemantics(
+                    // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
+                    child: HtmlContainer(
+                        post: post,
+                        roots: widget.roots,
+                        currentTab: widget.currentTab,
+                        onOpen: widget.onOpen,
+                        onGoBack: widget.onGoBack,
+                        scrollService: widget.scrollService),
+                  )
+                ],
+              ),
             ),
           ),
         ),
