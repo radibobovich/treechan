@@ -11,6 +11,7 @@ import '../services/board_list_service.dart';
 import '../services/thread_service.dart';
 import '../screens/board_screen.dart';
 import 'board_list_screen.dart';
+import 'settings_screen.dart';
 
 enum TabTypes { boardList, board, thread }
 
@@ -46,6 +47,8 @@ class DrawerTab {
 DrawerTab boardListTab =
     DrawerTab(type: TabTypes.boardList, name: "Доски", tag: "boards");
 
+/// Root widget of the app.
+/// Controls tabs and creates a drawer with tabs.
 class TabNavigator extends StatefulWidget {
   const TabNavigator({super.key});
   @override
@@ -55,8 +58,9 @@ class TabNavigator extends StatefulWidget {
 class _TabNavigatorState extends State<TabNavigator>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  TabController? tabController;
+  late TabController tabController;
   final List<DrawerTab> tabs = List.empty(growable: true);
+
   @override
   void initState() {
     super.initState();
@@ -76,7 +80,7 @@ class _TabNavigatorState extends State<TabNavigator>
 
   @override
   void dispose() {
-    tabController!.dispose();
+    tabController.dispose();
     super.dispose();
   }
 
@@ -88,9 +92,10 @@ class _TabNavigatorState extends State<TabNavigator>
         tabController = TabController(length: tabs.length, vsync: this);
       });
     }
-    tabController!.animateTo(tabs.indexOf(tab));
+    tabController.animateTo(tabs.indexOf(tab));
   }
 
+  /// Sets name of the tab if it was created with null name.
   void setName(DrawerTab tab, String name) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
@@ -112,11 +117,11 @@ class _TabNavigatorState extends State<TabNavigator>
     if (currentTab.prevTab == null) return;
     int prevTabId = tabs.indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
-      if (tabController!.index > 0) {
-        tabController!.animateTo(tabController!.index - 1);
+      if (tabController.index > 0) {
+        tabController.animateTo(tabController.index - 1);
       }
     } else {
-      tabController!.animateTo(prevTabId);
+      tabController.animateTo(prevTabId);
     }
   }
 
@@ -125,7 +130,7 @@ class _TabNavigatorState extends State<TabNavigator>
     /// Overrides Android back button to go back to the previous tab.
     return WillPopScope(
       onWillPop: () async {
-        int currentIndex = tabController!.index;
+        int currentIndex = tabController.index;
         if (currentIndex > 0) {
           goBack(tabs[currentIndex]);
           return Future.value(false);
@@ -138,6 +143,8 @@ class _TabNavigatorState extends State<TabNavigator>
           key: _scaffoldKey,
           body: Builder(builder: (sontext) {
             return TabBarView(
+              // you cant scroll horizontally between tabs because it would
+              // conflict with the drawer opening gesture
               physics: const NeverScrollableScrollPhysics(),
               controller: tabController,
               children: tabs.map((tab) {
@@ -203,72 +210,111 @@ class _TabNavigatorState extends State<TabNavigator>
                 const Divider(
                   thickness: 1,
                 ),
-                Expanded(
-                  child: MediaQuery.removePadding(
-                    context: context,
-                    removeTop: true,
-                    child: ListView.builder(
-                      itemCount: tabs.length,
-                      itemBuilder: (bcontext, index) {
-                        DrawerTab item = tabs[index];
-                        return ListTile(
-                          selected: tabController!.index == index,
-                          textColor:
-                              Theme.of(context).textTheme.titleMedium!.color,
-                          selectedColor: Theme.of(context).secondaryHeaderColor,
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  (item.type == TabTypes.board
-                                          ? "/${item.tag}/ - "
-                                          : "") +
-                                      (item.name ??
-                                          (item.type == TabTypes.board
-                                              ? "Доска"
-                                              : "Тред")),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              item.type != TabTypes.boardList
-                                  ? IconButton(
-                                      icon: const Icon(Icons.close),
-                                      onPressed: () {
-                                        int currentPosition =
-                                            tabController!.index;
-
-                                        if (tabs.indexOf(item) <=
-                                            currentPosition) {
-                                          removeTab(item);
-                                          tabController!
-                                              .animateTo(currentPosition - 1);
-                                        } else {
-                                          removeTab(item);
-                                          tabController!
-                                              .animateTo(currentPosition);
-                                        }
-                                      },
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium!
-                                          .color,
-                                    )
-                                  : const SizedBox.shrink()
-                            ],
-                          ),
-                          onTap: () {
-                            tabController!.animateTo(index);
-                            _scaffoldKey.currentState!.closeDrawer();
-                          },
-                        );
-                      },
-                    ),
-                  ),
+                TabsList(
+                    tabs: tabs,
+                    tabController: tabController,
+                    addTab: addTab,
+                    removeTab: removeTab,
+                    setName: setName,
+                    scaffoldKey: _scaffoldKey),
+                const Divider(
+                  thickness: 1,
                 ),
+                ListTile(
+                    leading: const Icon(Icons.settings),
+                    title: const Text("Настройки"),
+                    textColor: Theme.of(context).textTheme.titleMedium!.color,
+                    iconColor: Theme.of(context).iconTheme.color,
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SettingsScreen()));
+                    }),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A list of opened tabs. Placed in the drawer.
+class TabsList extends StatefulWidget {
+  const TabsList(
+      {super.key,
+      required this.tabs,
+      required this.tabController,
+      required this.addTab,
+      required this.removeTab,
+      required this.setName,
+      required this.scaffoldKey});
+
+  final List<DrawerTab> tabs;
+  final TabController tabController;
+  final Function(DrawerTab) addTab;
+  final Function(DrawerTab) removeTab;
+  final Function(DrawerTab, String) setName;
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
+  @override
+  State<TabsList> createState() => _TabsListState();
+}
+
+class _TabsListState extends State<TabsList> {
+  @override
+  Widget build(BuildContext context) {
+    List<DrawerTab> tabs = widget.tabs;
+    TabController? tabController = widget.tabController;
+    return Expanded(
+      child: MediaQuery.removePadding(
+        context: context,
+        removeTop: true,
+        child: ListView.builder(
+          itemCount: tabs.length,
+          itemBuilder: (bcontext, index) {
+            DrawerTab item = tabs[index];
+            return ListTile(
+              selected: tabController.index == index,
+              textColor: Theme.of(context).textTheme.titleMedium!.color,
+              selectedColor: Theme.of(context).secondaryHeaderColor,
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      (item.type == TabTypes.board ? "/${item.tag}/ - " : "") +
+                          (item.name ??
+                              (item.type == TabTypes.board ? "Доска" : "Тред")),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  item.type != TabTypes.boardList
+                      ? IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            int currentPosition = tabController.index;
+
+                            if (tabs.indexOf(item) <= currentPosition) {
+                              widget.removeTab(item);
+                              tabController.animateTo(currentPosition - 1);
+                            } else {
+                              widget.removeTab(item);
+                              tabController.animateTo(currentPosition);
+                            }
+                          },
+                          color: Theme.of(context).textTheme.titleMedium!.color,
+                        )
+                      : const SizedBox.shrink()
+                ],
+              ),
+              onTap: () {
+                tabController.animateTo(index);
+                widget.scaffoldKey.currentState!.closeDrawer();
+              },
+            );
+          },
         ),
       ),
     );
