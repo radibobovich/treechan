@@ -3,6 +3,7 @@ import '../models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../screens/tab_navigator.dart';
 import '../services/scroll_service.dart';
 import 'media_preview_widget.dart';
 import '../widgets/html_container_widget.dart';
@@ -10,8 +11,7 @@ import '../widgets/html_container_widget.dart';
 class PostWidget extends StatefulWidget {
   final TreeNode<Post> node;
   final List<TreeNode<Post>> roots;
-  final int threadId;
-  final String tag;
+  final DrawerTab currentTab;
   final Function onOpen;
   final Function onGoBack;
   final ScrollService? scrollService;
@@ -19,8 +19,7 @@ class PostWidget extends StatefulWidget {
       {super.key,
       required this.node,
       required this.roots,
-      required this.threadId,
-      required this.tag,
+      required this.currentTab,
       required this.onOpen,
       required this.onGoBack,
       this.scrollService});
@@ -72,9 +71,7 @@ class _PostWidgetState extends State<PostWidget> {
                   child: HtmlContainer(
                       post: post,
                       roots: widget.roots,
-                      isCalledFromThread: true,
-                      threadId: widget.threadId,
-                      tag: widget.tag,
+                      currentTab: widget.currentTab,
                       onOpen: widget.onOpen,
                       onGoBack: widget.onGoBack,
                       scrollService: widget.scrollService),
