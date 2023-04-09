@@ -13,7 +13,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
   await initializePreferences();
-
   runApp(const MyApp());
 }
 
@@ -42,9 +41,9 @@ Future<void> initializePreferences() async {
 
   if (!hasInitialized) {
     await prefs.setStringList('themes', ['Makaba Night', 'Makaba Classic']);
-    await prefs.setString('theme', 'Makaba Night');
+    await prefs.setString('theme', 'Makaba Classic');
     await prefs.setBool('postsCollapsed', false);
-    theme.add("Makaba Night");
+    theme.add("Makaba Classic");
     await prefs.setBool('initialized', true);
   }
   return;
@@ -57,5 +56,5 @@ ThemeData getTheme(String theme) {
     case 'Makaba Classic':
       return AppTheme.makabaClassic;
   }
-  return AppTheme.makabaNight;
+  return AppTheme.makabaClassic;
 }
