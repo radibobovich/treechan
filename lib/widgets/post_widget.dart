@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/main.dart';
 import '../models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -109,7 +110,11 @@ class _PostHeader extends StatelessWidget {
                 : const TextStyle(),
           ),
           const Spacer(),
-          (node.depth % 16 <= 9 && node.depth % 16 != 0 || node.depth == 0)
+          // don't show date for deep nodes to prevent overflow.
+          // but show date in 2d scroll mode no matter how deep the node is.
+          (node.depth % 16 <= 9 && node.depth % 16 != 0 ||
+                  node.depth == 0 ||
+                  prefs.getBool('2dscroll')!)
               ? Text(post.date!)
               : const SizedBox.shrink(),
           node.hasNodes
