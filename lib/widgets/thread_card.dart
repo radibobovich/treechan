@@ -48,7 +48,7 @@ class ThreadCard extends StatelessWidget {
             ImagesPreview(files: thread!.files),
             HtmlContainer(
               post: thread!,
-              isCalledFromThread: false,
+              currentTab: currentTab,
               onOpen: onOpen,
               onGoBack: onGoBack,
             ),
