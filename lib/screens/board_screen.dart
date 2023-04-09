@@ -92,7 +92,7 @@ class _BoardScreenState extends State<BoardScreen>
                   ),
                 );
               } else if (state is BoardErrorState) {
-                return const Center(child: Text("404 - доска не найдена"));
+                return Center(child: Text(state.errorMessage));
               } else {
                 return const Center(child: CircularProgressIndicator());
               }

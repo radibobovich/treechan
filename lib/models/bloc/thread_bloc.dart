@@ -1,5 +1,6 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/exceptions.dart';
 
 import '../../services/thread_service.dart';
 import '../../models/json/json.dart';
@@ -17,8 +18,10 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
             threadInfo: threadInfo,
           ));
           if (event.isRefresh) {}
-        } catch (e) {
-          emit(ThreadErrorState(e.toString()));
+        } on ThreadNotFoundException {
+          emit(ThreadErrorState("404 - Тред не найден"));
+        } on Exception {
+          emit(ThreadErrorState("Неизвестная ошибка"));
         }
       },
     );
@@ -28,8 +31,10 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           // await?
           threadService.refreshThread();
           add(LoadThreadEvent(isRefresh: true));
-        } catch (e) {
-          emit(ThreadErrorState(e.toString()));
+        } on ThreadNotFoundException {
+          emit(ThreadErrorState("404 - Тред умер"));
+        } on Exception {
+          emit(ThreadErrorState("Неизвестная ошибка"));
         }
       },
     );

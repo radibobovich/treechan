@@ -1,3 +1,5 @@
+import 'package:treechan/exceptions.dart';
+
 import '../models/json/json.dart';
 
 import '../models/tree.dart';
@@ -58,8 +60,12 @@ class ThreadService {
     }
     if (response.statusCode == 200) {
       return response;
+    } else if (response.statusCode == 404) {
+      throw ThreadNotFoundException(
+          message: "404 ", tag: boardTag, id: threadId);
     } else {
-      throw Exception('Failed to load thread, error ${response.statusCode}');
+      throw Exception(
+          "Failed to load thread $boardTag/$threadId. Status code: ${response.statusCode}");
     }
   }
 
