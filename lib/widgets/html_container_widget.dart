@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:treechan/services/search_bar_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/json/json.dart';
@@ -66,20 +67,16 @@ class HtmlContainer extends StatefulWidget {
       {Key? key,
       required this.post,
       this.roots,
-      this.tag,
-      this.threadId,
-      required this.isCalledFromThread,
+      required this.currentTab,
       required this.onOpen,
       required this.onGoBack,
       this.scrollService})
       : super(key: key);
-
   // data can be Post or Thread object
   final dynamic post;
   final List<TreeNode<Post>>? roots;
-  final String? tag;
-  final int? threadId;
-  final bool isCalledFromThread;
+  final DrawerTab currentTab;
+
   final Function onOpen;
   final Function onGoBack;
   final ScrollService? scrollService;
@@ -91,7 +88,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
   @override
   Widget build(BuildContext context) {
     return Html(
-      style: widget.isCalledFromThread
+      style: widget.currentTab.type == TabTypes.thread
           ? {}
           : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
       data: widget.post.comment,
@@ -115,64 +112,50 @@ class _HtmlContainerState extends State<HtmlContainer> {
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 String url = node.tree.element!.attributes['href']!;
-                if (widget.isCalledFromThread && url.contains(
+                if (widget.currentTab.type == TabTypes.thread && url.contains(
                     // check if link points to some post in thread
-                    "/${widget.tag}/res/${widget.threadId}.html#")) {
+                    "/${widget.currentTab.tag}/res/${widget.currentTab.id}.html#")) {
                   // get post id placed after # symbol
                   int id = int.parse(url.substring(url.indexOf("#") + 1));
                   if (TreeService.findPost(widget.roots!, id) == null) {
                     return;
                   }
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Dialog(
-                            child: SingleChildScrollView(
-                          child:
-                              Column(mainAxisSize: MainAxisSize.min, children: [
-                            PostWidget(
-                              node: TreeService.findPost(widget.roots!, id)!,
-                              roots: widget.roots!,
-                              threadId: widget.threadId!,
-                              tag: widget.tag!,
-                              onOpen: widget.onOpen,
-                              onGoBack: widget.onGoBack,
-                              scrollService: widget.scrollService,
-                            )
-                          ]),
-                        ));
-                      });
+                  openPostPreview(context, id);
 
                   // check if link is to the post in other thread and maybe in other board
-                  // TODO: rewrite using Uri.parse
-                } else if (url[0] == "/" && url.contains("catalog.html")) {
-                  // TODO: go to catalog
-                } else if (url[0] == "/" && url.contains("/res/")) {
-                  String linkTag = url.substring(1, url.indexOf("/res/"));
-                  int linkThreadId = int.parse(url.substring(
-                      url.indexOf("/res/") + 5, url.indexOf(".html")));
-                  DrawerTab currentTab = DrawerTab(
-                      type: TabTypes.thread,
-                      tag: widget.tag!,
-                      id: widget.threadId);
-                  DrawerTab newTab = DrawerTab(
-                      type: TabTypes.thread,
-                      tag: linkTag,
-                      id: linkThreadId,
-                      prevTab: currentTab);
-                  widget.onOpen(newTab);
-                  // TODO: add postId to show concrete post in new page
-                }
-
-                // check if it is a web link
-                else if (url.substring(0, 4) == "http") {
-                  // TODO: add check if it is a full link but on 2ch
-                  tryLaunchUrl(url);
-                  //launchUrl(Uri.parse(url));
+                } else {
+                  SearchBarService searchBarService =
+                      SearchBarService(currentTab: widget.currentTab);
+                  try {
+                    DrawerTab newTab = searchBarService.parseInput(url);
+                    widget.onOpen(newTab);
+                  } catch (e) {
+                    tryLaunchUrl(url);
+                  }
                 }
               }),
       },
     );
+  }
+
+  Future<dynamic> openPostPreview(BuildContext context, int id) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+              child: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              PostWidget(
+                node: TreeService.findPost(widget.roots!, id)!,
+                roots: widget.roots!,
+                currentTab: widget.currentTab,
+                onOpen: widget.onOpen,
+                onGoBack: widget.onGoBack,
+                scrollService: widget.scrollService,
+              )
+            ]),
+          ));
+        });
   }
 
   Future<void> tryLaunchUrl(String url) async {
