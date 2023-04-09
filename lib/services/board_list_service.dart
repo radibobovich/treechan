@@ -65,7 +65,7 @@ class BoardListService {
   }
 
   void _getFavoriteBoards() {
-    String jsonBoards = sharedPreferences.getString("favoriteBoards") ?? "";
+    String jsonBoards = prefs.getString("favoriteBoards") ?? "";
     if (jsonBoards == "") {
       return;
     }
@@ -74,7 +74,7 @@ class BoardListService {
 
   void saveFavoriteBoards(List<Board> boards) {
     String jsonBoards = jsonEncode(boards);
-    sharedPreferences.setString("favoriteBoards", jsonBoards);
+    prefs.setString("favoriteBoards", jsonBoards);
   }
 
   void addToFavorites(Board board) {
