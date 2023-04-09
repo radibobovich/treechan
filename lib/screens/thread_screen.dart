@@ -104,7 +104,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                 },
               );
             } else if (state is ThreadErrorState) {
-              return const Center(child: Text("404 - доска не найдена"));
+              return Center(child: Text(state.errorMessage));
             } else {
               return const Center(child: CircularProgressIndicator());
             }

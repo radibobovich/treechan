@@ -1,3 +1,4 @@
+import '../exceptions.dart';
 import '../models/json/json.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -37,8 +38,11 @@ class BoardService {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       return response;
+    } else if (response.statusCode == 404) {
+      throw BoardNotFoundException(message: 'Failed to load board.');
     } else {
-      throw Exception('Failed to load board, error ${response.statusCode}');
+      throw Exception(
+          'Failed to load board $boardTag. Error code: ${response.statusCode}');
     }
   }
 

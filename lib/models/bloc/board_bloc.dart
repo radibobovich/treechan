@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/exceptions.dart';
 import 'package:treechan/services/board_service.dart';
 
 import '../json/json.dart';
@@ -14,8 +15,10 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
             boardName: boardService.boardName,
             threads: threads,
             completeRefresh: event.refreshCompleted));
-      } catch (e) {
-        emit(BoardErrorState(e.toString()));
+      } on BoardNotFoundException {
+        emit(BoardErrorState("404 - Доска не найдена"));
+      } on Exception {
+        emit(BoardErrorState("Неизвестная ошибка"));
       }
     });
     on<RefreshBoardEvent>(
