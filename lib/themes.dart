@@ -5,9 +5,41 @@ class AppTheme {
   static final ThemeData flutterTheme =
       ThemeData(primarySwatch: Colors.blue, secondaryHeaderColor: Colors.blue);
 
-  static final ThemeData classicTheme = ThemeData(primarySwatch: Colors.grey);
+  static final ThemeData makabaClassic = ThemeData(
+    colorScheme: const ColorScheme(
+        primary: Color.fromARGB(255, 255, 102, 0),
+        onPrimary: Colors.white,
+        // I don't know what colors to use
+        secondary: Colors.red,
+        onSecondary: Colors.blue,
+        error: Colors.black,
+        onError: Colors.white,
+        background: Color.fromARGB(255, 25, 250, 52),
+        onBackground: Colors.orange,
+        surface: Color.fromARGB(255, 25, 39, 52),
+        onSurface: Colors.black,
+        brightness: Brightness.light),
+    scaffoldBackgroundColor: const Color.fromARGB(255, 238, 238, 238),
+    appBarTheme: const AppBarTheme(color: Color.fromARGB(255, 255, 102, 0)),
+    secondaryHeaderColor: const Color.fromARGB(255, 255, 102, 0),
+    brightness: Brightness.light,
+  );
 
-  static final ThemeData nightTheme = ThemeData(
+  static final ThemeData makabaNight = ThemeData(
+      colorScheme: const ColorScheme(
+          primary: Color.fromARGB(255, 195, 103, 42),
+          onPrimary: Color.fromARGB(255, 204, 204, 204),
+          // I don't know what colors to use
+          secondary: Colors.red,
+          onSecondary: Colors.blue,
+          error: Colors.black,
+          onError: Colors.white,
+          background: Color.fromARGB(255, 25, 250, 52),
+          onBackground: Colors.orange,
+          surface: Color.fromARGB(255, 25, 39, 52),
+          onSurface: Colors.white,
+          brightness: Brightness.dark),
+      brightness: Brightness.dark,
       primaryColor: Colors.blueGrey.shade900,
       secondaryHeaderColor: const Color.fromARGB(255, 195, 103, 42),
       appBarTheme: const AppBarTheme(color: Color.fromARGB(255, 25, 39, 52)),
