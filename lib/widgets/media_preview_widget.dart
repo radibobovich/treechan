@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/services/image_download_service.dart';
 
 import '../models/json/json.dart';
 import 'package:extended_image/extended_image.dart';
@@ -75,6 +76,8 @@ class _MediaPreview extends StatefulWidget {
 
 class _MediaPreviewState extends State<_MediaPreview>
     with SingleTickerProviderStateMixin {
+  ImageDownloadService imageDownloadService = ImageDownloadService();
+
   @override
   Widget build(BuildContext context) {
     final currentIndex =
@@ -102,11 +105,23 @@ class _MediaPreviewState extends State<_MediaPreview>
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.save),
+                    onPressed: () {
+                      imageDownloadService.downloadImage();
+                    },
+                  )
+                ],
               ),
               body: (_galleryTypes.contains(widget.type))
                   ? SwipeGallery(
                       imageLinks: widget.imageLinks,
-                      pageController: pageController)
+                      pageController: pageController,
+                      onDownloadImage: (imageUrl, fileName) {
+                        imageDownloadService.setUrl(url: imageUrl);
+                      },
+                    )
                   : VideoPlayer(file: widget.file)),
         ),
       ),
