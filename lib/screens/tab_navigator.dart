@@ -230,7 +230,7 @@ class _TabNavigatorState extends State<TabNavigator>
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => SettingsScreen()));
+                              builder: (context) => const SettingsScreen()));
                     }),
               ],
             ),
@@ -295,15 +295,7 @@ class _TabsListState extends State<TabsList> {
                       ? IconButton(
                           icon: const Icon(Icons.close),
                           onPressed: () {
-                            int currentPosition = tabController.index;
                             widget.removeTab(item);
-                            // if (tabs.indexOf(item) <= currentPosition) {
-                            //   widget.removeTab(item);
-                            //   tabController.animateTo(currentPosition - 1);
-                            // } else {
-                            //   widget.removeTab(item);
-                            //   tabController.animateTo(currentPosition);
-                            // }
                           },
                           color: Theme.of(context).textTheme.titleMedium!.color,
                         )
