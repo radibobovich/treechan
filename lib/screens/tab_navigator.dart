@@ -110,6 +110,7 @@ class _TabNavigatorState extends State<TabNavigator>
       tabs.remove(tab);
     });
     tabController = TabController(length: tabs.length, vsync: this);
+    tabController.animateTo(tabs.indexOf(tab.prevTab ?? boardListTab));
   }
 
   /// Goes back to the previous tab when user presses back button.
@@ -295,14 +296,14 @@ class _TabsListState extends State<TabsList> {
                           icon: const Icon(Icons.close),
                           onPressed: () {
                             int currentPosition = tabController.index;
-
-                            if (tabs.indexOf(item) <= currentPosition) {
-                              widget.removeTab(item);
-                              tabController.animateTo(currentPosition - 1);
-                            } else {
-                              widget.removeTab(item);
-                              tabController.animateTo(currentPosition);
-                            }
+                            widget.removeTab(item);
+                            // if (tabs.indexOf(item) <= currentPosition) {
+                            //   widget.removeTab(item);
+                            //   tabController.animateTo(currentPosition - 1);
+                            // } else {
+                            //   widget.removeTab(item);
+                            //   tabController.animateTo(currentPosition);
+                            // }
                           },
                           color: Theme.of(context).textTheme.titleMedium!.color,
                         )
