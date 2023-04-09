@@ -63,7 +63,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       prefs.setBool('postsCollapsed', value);
                     });
                   },
-                )
+                ),
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.swap_horiz),
+                  title: const Text('Горизонтальная прокрутка треда'),
+                  description: const Text(
+                      'Альтернативное отображение треда. Ветви будут уходить вправо сколько угодно.'),
+                  initialValue: prefs.getBool('2dscroll')!,
+                  onToggle: (value) {
+                    setState(() {
+                      prefs.setBool('2dscroll', value);
+                    });
+                  },
+                ),
               ])
         ],
       ),
