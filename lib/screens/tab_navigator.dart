@@ -106,11 +106,39 @@ class _TabNavigatorState extends State<TabNavigator>
 
   /// Closes tab and removes it from the drawer.
   void removeTab(DrawerTab tab) {
+    int currentIndex = tabController.index;
+    int removingTabIndex = tabs.indexOf(tab);
+
     setState(() {
       tabs.remove(tab);
     });
     tabController = TabController(length: tabs.length, vsync: this);
-    tabController.animateTo(tabs.indexOf(tab.prevTab ?? boardListTab));
+
+    if (currentIndex == removingTabIndex) {
+      // if you close the current tab
+      try {
+        // if you have a previous tab that still exists, go to it.
+        // if it doesn't exist, you will get an assertion error (indexOf returns -1)
+        // so you go to the board list.
+        // if you don't have previous tab, you go to the board list.
+        tabController.animateTo(tabs.indexOf(tab.prevTab ?? boardListTab));
+        return;
+      } on AssertionError {
+        // if prevTab was closed before this tab
+        tabController.animateTo(tabs.indexOf(boardListTab));
+        return;
+      }
+    }
+    // else if you close a tab that is not the current tab
+    if (currentIndex > removingTabIndex) {
+      // if current tab is after the removed tab, go to the previous tab
+      // because the current tab id will decrease by 1
+      tabController.animateTo(currentIndex - 1);
+      return;
+    }
+    // else if current tab is before the removed tab, just restore currentIndex in controller
+    // because the tabController resets its index to 0 after recreating.
+    tabController.animateTo(currentIndex);
   }
 
   /// Goes back to the previous tab when user presses back button.
