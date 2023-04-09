@@ -111,6 +111,7 @@ class _MediaPreviewState extends State<_MediaPreview>
                     onPressed: () {
                       imageDownloadService.downloadImage();
                     },
+                    // add a notification here to show that the image is downloaded
                   )
                 ],
               ),
