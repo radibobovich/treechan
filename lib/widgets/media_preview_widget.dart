@@ -110,6 +110,16 @@ class _MediaPreviewState extends State<_MediaPreview>
                     icon: const Icon(Icons.save),
                     onPressed: () {
                       imageDownloadService.downloadImage();
+                      // fix infinite duration
+
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(
+                      //     content: Text("Загружено"),
+                      //     behavior: SnackBarBehavior.floating,
+                      //     duration: Duration(seconds: 3),
+                      //     elevation: 0,
+                      //   ),
+                      // );
                     },
                     // add a notification here to show that the image is downloaded
                   )
