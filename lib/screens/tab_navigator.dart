@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -66,7 +67,7 @@ class _TabNavigatorState extends State<TabNavigator>
     super.initState();
     tabController = TabController(length: tabs.length, vsync: this);
     addTab(boardListTab);
-    if (const String.fromEnvironment('thread') == 'true') {
+    if (kDebugMode && const String.fromEnvironment('thread') == 'true') {
       debugPrint('debugging thread');
       DrawerTab debugThreadTab = DrawerTab(
           type: TabTypes.thread,
