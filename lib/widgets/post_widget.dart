@@ -73,6 +73,7 @@ class _PostWidgetState extends State<PostWidget> {
                   ImagesPreview(files: post.files),
                   ExcludeSemantics(
                     // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
+                    // TODO: better use InhetiredWidget
                     child: HtmlContainer(
                         post: post,
                         roots: widget.roots,
