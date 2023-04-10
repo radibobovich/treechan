@@ -1,7 +1,7 @@
 import "json.dart";
 
-List<Board>? boardListFromJson(List<dynamic> json) {
-  List<Board>? boardList = List.empty(growable: true);
+List<Board> boardListFromJson(List<dynamic> json) {
+  List<Board> boardList = List.empty(growable: true);
   for (var boardItem in json) {
     boardList.add(Board.fromJson(boardItem));
   }

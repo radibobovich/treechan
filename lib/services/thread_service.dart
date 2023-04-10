@@ -80,7 +80,7 @@ class ThreadService {
     _threadInfo.opPostId = _posts!.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
     _extendThumbnailLinks(_posts);
-    _roots = TreeService(posts: _posts, threadInfo: _threadInfo).getRoots;
+    _roots = TreeService(posts: _posts!, threadInfo: _threadInfo).getRoots;
     _threadInfo.showLines = true;
     _setShowLinesProperty(_roots);
   }
