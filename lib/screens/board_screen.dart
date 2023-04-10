@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -39,8 +41,15 @@ class _BoardScreenState extends State<BoardScreen>
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        leading: GoBackButton(
-            onGoBack: widget.onGoBack, currentTab: widget.currentTab),
+        leading: !Platform.isWindows
+            ? GoBackButton(
+                onGoBack: widget.onGoBack, currentTab: widget.currentTab)
+            : IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
