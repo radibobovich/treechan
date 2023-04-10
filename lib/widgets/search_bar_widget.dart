@@ -40,18 +40,23 @@ class _SearchBarState extends State<SearchBar> {
                   widget.onOpen(searchBarService.parseInput(_controller.text));
                   widget.onCloseDrawer();
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    // TODO: make it appear above drawer
-                    const SnackBar(
-                      content: Text("Неверная ссылка"),
-                      behavior: SnackBarBehavior.floating,
-                      elevation: 0,
-                    ),
-                  );
+                  // fix infinite duration
+
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   // TODO: make it appear above drawer
+                  //   const SnackBar(
+                  //     content: Text("Неверная ссылка"),
+                  //     behavior: SnackBarBehavior.floating,
+                  //     duration: Duration(seconds: 2),
+                  //     elevation: 0,
+                  //   ),
+                  // );
                 }
               })
         ],
       ),
     );
   }
+
+  void showErrorSnackBar() {}
 }
