@@ -3,14 +3,15 @@ import 'package:extended_image/extended_image.dart';
 import 'dart:math';
 
 class SwipeGallery extends StatelessWidget {
-  const SwipeGallery({
-    super.key,
-    required this.imageLinks,
-    required this.pageController,
-  });
+  const SwipeGallery(
+      {super.key,
+      required this.imageLinks,
+      required this.pageController,
+      required this.onDownloadImage});
 
   final List<String> imageLinks;
   final ExtendedPageController pageController;
+  final Function onDownloadImage;
   @override
   Widget build(BuildContext context) {
     return ExtendedImageSlidePage(
@@ -23,6 +24,7 @@ class SwipeGallery extends StatelessWidget {
       },
       child: ExtendedImageGesturePageView.builder(
         itemBuilder: (context, index) {
+          onDownloadImage(imageLinks[index], index);
           return ExtendedImage.network(
             imageLinks[index],
             fit: BoxFit.contain,
