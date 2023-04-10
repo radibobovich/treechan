@@ -88,6 +88,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
   @override
   Widget build(BuildContext context) {
     return Html(
+      // limit text on BoardScreen
       style: widget.currentTab.type == TabTypes.thread
           ? {}
           : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
@@ -96,6 +97,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
         "span": (node, children) {
           List<String> spanClasses = node.tree.elementClasses;
           if (spanClasses.contains("unkfunc")) {
+            // greentext cite
             return TextSpan(
                 style:
                     const TextStyle(color: Color.fromARGB(255, 120, 153, 34)),
@@ -105,37 +107,39 @@ class _HtmlContainerState extends State<HtmlContainer> {
           }
         },
         "a": (node, children) => TextSpan(
+            // custom link color render
             style: TextStyle(
                 color: Theme.of(context).secondaryHeaderColor,
                 decoration: TextDecoration.underline),
             text: node.tree.element!.text,
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                String url = node.tree.element!.attributes['href']!;
-                if (widget.currentTab.type == TabTypes.thread && url.contains(
-                    // check if link points to some post in thread
-                    "/${widget.currentTab.tag}/res/${widget.currentTab.id}.html#")) {
-                  // get post id placed after # symbol
-                  int id = int.parse(url.substring(url.indexOf("#") + 1));
-                  if (TreeService.findPost(widget.roots!, id) == null) {
-                    return;
-                  }
-                  openPostPreview(context, id);
-
-                  // check if link is to the post in other thread and maybe in other board
-                } else {
-                  SearchBarService searchBarService =
-                      SearchBarService(currentTab: widget.currentTab);
-                  try {
-                    DrawerTab newTab = searchBarService.parseInput(url);
-                    widget.onOpen(newTab);
-                  } catch (e) {
-                    tryLaunchUrl(url);
-                  }
-                }
-              }),
+            recognizer: TapGestureRecognizer()..onTap = () => openLink(node)),
       },
     );
+  }
+
+  void openLink(RenderContext node) {
+    String url = node.tree.element!.attributes['href']!;
+    if (widget.currentTab.type == TabTypes.thread && url.contains(
+        // check if link points to some post in thread
+        "/${widget.currentTab.tag}/res/${widget.currentTab.id}.html#")) {
+      // get post id placed after # symbol
+      int id = int.parse(url.substring(url.indexOf("#") + 1));
+      if (TreeService.findPost(widget.roots!, id) == null) {
+        return;
+      }
+      openPostPreview(context, id);
+
+      // check if link is external relative to this thread
+    } else {
+      SearchBarService searchBarService =
+          SearchBarService(currentTab: widget.currentTab);
+      try {
+        DrawerTab newTab = searchBarService.parseInput(url);
+        widget.onOpen(newTab);
+      } catch (e) {
+        tryLaunchUrl(url);
+      }
+    }
   }
 
   Future<dynamic> openPostPreview(BuildContext context, int id) {
