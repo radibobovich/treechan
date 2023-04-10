@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,8 +63,15 @@ class _ThreadScreenState extends State<ThreadScreen>
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          leading: GoBackButton(
-              onGoBack: widget.onGoBack, currentTab: widget.currentTab),
+          leading: !Platform.isWindows
+              ? GoBackButton(
+                  onGoBack: widget.onGoBack, currentTab: widget.currentTab)
+              : IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
           actions: [
             IconButton(
                 onPressed: () async {
