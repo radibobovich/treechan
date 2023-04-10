@@ -47,7 +47,7 @@ class BoardListService {
     }
     List<Board>? boardList = boardListFromJson(jsonDecode(downloadedBoards));
 
-    for (Board board in boardList!) {
+    for (Board board in boardList) {
       if (board.category == "") {
         board.category = "Скрытые";
       }
@@ -69,7 +69,7 @@ class BoardListService {
     if (jsonBoards == "") {
       return;
     }
-    _favoriteBoards = boardListFromJson(jsonDecode(jsonBoards))!;
+    _favoriteBoards = boardListFromJson(jsonDecode(jsonBoards));
   }
 
   void saveFavoriteBoards(List<Board> boards) {

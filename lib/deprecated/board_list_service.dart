@@ -12,7 +12,7 @@ Future<List<Board>?> getBoards() async {
   String? boards = prefs.getString('boards');
 
   if (boards != null) {
-    List<Board> boardList = boardListFromJson(jsonDecode(boards))!;
+    List<Board> boardList = boardListFromJson(jsonDecode(boards));
     return boardList;
   }
   String? downloadedBoards = await downloadBoards();
@@ -44,7 +44,7 @@ Future<List<Category>> getCategories() async {
   List<Board>? boardList = boardListFromJson(jsonDecode(downloadedBoards));
 
   List<Category> categories = [];
-  for (Board board in boardList!) {
+  for (Board board in boardList) {
     if (board.category == "") {
       board.category = "Скрытые";
     }

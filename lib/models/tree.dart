@@ -7,15 +7,13 @@ import 'package:html/parser.dart' as html;
 
 class TreeService {
   TreeService({required this.posts, required this.threadInfo}) {
-    if (posts != null) {
-      _addPostParents();
-      _createTreeModel();
-    }
+    _addPostParents();
+    _createTreeModel();
   }
 
-  final List<Post>? posts;
+  final List<Post> posts;
 
-  final Root? threadInfo;
+  final Root threadInfo;
 
   /// Contains all comment tree roots.
   ///
@@ -30,7 +28,7 @@ class TreeService {
 
   /// Adds a list of parent posts to each post based on the comment html.
   void _addPostParents() {
-    for (var post in posts!) {
+    for (var post in posts) {
       //take post comment
       final postCommentHtml = html.parse(post.comment);
       // find <a> tags which contains data-num attribute
@@ -55,17 +53,17 @@ class TreeService {
   }
 
   void _createTreeModel() {
-    for (var post in posts!) {
+    for (var post in posts) {
       if (post.parents.isEmpty ||
-          post.parents.contains(threadInfo!.opPostId) ||
-          _hasExternalReferences(posts!, post.parents)) {
+          post.parents.contains(threadInfo.opPostId) ||
+          _hasExternalReferences(posts, post.parents)) {
         // find posts which are replies to the OP-post
         TreeNode<Post> node = TreeNode<Post>(
           expanded: !prefs.getBool("postsCollapsed")!,
           data: post,
           id: post.id,
-          children: post.id != threadInfo!.opPostId
-              ? _attachChildren(post.id, posts!)
+          children: post.id != threadInfo.opPostId
+              ? _attachChildren(post.id, posts)
               : [],
         );
         _roots.add(node);
