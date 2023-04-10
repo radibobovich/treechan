@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:image_downloader/image_downloader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/themes.dart';
 import 'screens/tab_navigator.dart';
@@ -55,6 +56,9 @@ Future<void> initializePreferences() async {
   }
   if (prefs.getBool('2dscroll') == null) {
     await prefs.setBool('2dscroll', false);
+  }
+  if (prefs.getString('androidDestinationType') == null) {
+    await prefs.setString('androidDestinationType', 'directoryDownloads');
   }
 
   return;
