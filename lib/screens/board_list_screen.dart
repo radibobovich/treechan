@@ -30,19 +30,27 @@ class _BoardListScreenState extends State<BoardListScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-        appBar: AppBar(title: Text(widget.title), actions: [
-          BlocBuilder<BoardListBloc, BoardListState>(
-            builder: (context, state) {
-              if (state is BoardListLoadedState) {
-                return state.allowReorder
-                    ? const IconCompleteReorder()
-                    : const IconRefreshBoards();
-              } else {
-                return const IconRefreshBoards();
-              }
-            },
-          )
-        ]),
+        appBar: AppBar(
+            title: Text(widget.title),
+            leading: IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+            actions: [
+              BlocBuilder<BoardListBloc, BoardListState>(
+                builder: (context, state) {
+                  if (state is BoardListLoadedState) {
+                    return state.allowReorder
+                        ? const IconCompleteReorder()
+                        : const IconRefreshBoards();
+                  } else {
+                    return const IconRefreshBoards();
+                  }
+                },
+              )
+            ]),
         body: BlocBuilder<BoardListBloc, BoardListState>(
           builder: (context, state) {
             if (state is BoardListLoadedState) {
