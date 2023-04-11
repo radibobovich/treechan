@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../models/json/post_json.dart';
-import '../widgets/post_widget.dart';
+import '../widgets/thread/post_widget.dart';
 
 /// A service generally to scroll to a post after thread refresh.
 class ScrollService {

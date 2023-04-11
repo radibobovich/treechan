@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../models/bloc/board_list_bloc.dart';
-import '../models/category.dart';
-import '../screens/tab_navigator.dart';
+import '../../models/bloc/board_list_bloc.dart';
+import '../../models/category.dart';
+import '../../screens/tab_navigator.dart';
 import 'package:treechan/models/json/board_json.dart';
 
 /// Used in BoardListScreen to display a list of board categories..

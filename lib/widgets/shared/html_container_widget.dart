@@ -6,11 +6,11 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/services/search_bar_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../models/json/json.dart';
-import '../models/tree.dart';
-import '../screens/tab_navigator.dart';
-import '../services/scroll_service.dart';
-import '../widgets/post_widget.dart';
+import '../../models/json/json.dart';
+import '../../models/tree.dart';
+import '../../screens/tab_navigator.dart';
+import '../../services/scroll_service.dart';
+import '../thread/post_widget.dart';
 
 /// Represents greyed out text in post text.
 class _SpoilerText extends StatefulWidget {

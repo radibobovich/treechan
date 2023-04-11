@@ -12,8 +12,8 @@ import '../models/json/json.dart';
 import '../models/bloc/thread_bloc.dart';
 
 import '../services/scroll_service.dart';
-import '../widgets/go_back_widget.dart';
-import '../widgets/post_widget.dart';
+import '../widgets/shared/go_back_widget.dart';
+import '../widgets/thread/post_widget.dart';
 
 class ThreadScreen extends StatefulWidget {
   const ThreadScreen(
