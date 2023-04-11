@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:extended_image/extended_image.dart';
 import 'dart:math';
 
+/// A gallery that opens when user tap on image preview.
 class SwipeGallery extends StatelessWidget {
   const SwipeGallery(
       {super.key,

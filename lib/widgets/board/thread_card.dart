@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
 
-import '../models/json/json.dart';
-import "../screens/tab_navigator.dart";
-import "html_container_widget.dart";
-import "media_preview_widget.dart";
+import '../../models/json/json.dart';
+import '../../screens/tab_navigator.dart';
+import '../shared/html_container_widget.dart';
+import '../shared/media_preview_widget.dart';
 
 // Represents thread in list of threads
 class ThreadCard extends StatelessWidget {
@@ -45,7 +45,7 @@ class ThreadCard extends StatelessWidget {
                 ],
               ),
             ),
-            ImagesPreview(files: thread!.files),
+            MediaPreview(files: thread!.files),
             HtmlContainer(
               post: thread!,
               currentTab: currentTab,

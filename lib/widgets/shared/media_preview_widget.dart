@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/services/image_download_service.dart';
 
-import '../models/json/json.dart';
+import '../../models/json/json.dart';
 import 'package:extended_image/extended_image.dart';
 
 import 'image_gallery_widget.dart';
 import 'video_player_widget.dart';
 
 /// Scrollable horizontal row with image previews.
-class ImagesPreview extends StatelessWidget {
-  const ImagesPreview({Key? key, required this.files}) : super(key: key);
+class MediaPreview extends StatelessWidget {
+  const MediaPreview({Key? key, required this.files}) : super(key: key);
   final List<File>? files;
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
     }
   }
   for (var file in files) {
-    media.add(_MediaPreview(
+    media.add(_MediaItemPreview(
         imageLinks: fullResLinks,
         file: file,
         context: context,
@@ -57,8 +57,8 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
 }
 
 /// Represents one specific media item in a row.
-class _MediaPreview extends StatefulWidget {
-  const _MediaPreview(
+class _MediaItemPreview extends StatefulWidget {
+  const _MediaItemPreview(
       {Key? key,
       required this.imageLinks,
       required this.file,
@@ -71,10 +71,10 @@ class _MediaPreview extends StatefulWidget {
   final BuildContext context;
   final int type;
   @override
-  State<_MediaPreview> createState() => _MediaPreviewState();
+  State<_MediaItemPreview> createState() => _MediaItemPreviewState();
 }
 
-class _MediaPreviewState extends State<_MediaPreview>
+class _MediaItemPreviewState extends State<_MediaItemPreview>
     with SingleTickerProviderStateMixin {
   ImageDownloadService imageDownloadService = ImageDownloadService();
 
