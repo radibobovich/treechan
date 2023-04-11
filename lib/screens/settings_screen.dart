@@ -10,7 +10,6 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-// TODO: BLOC
 class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
@@ -78,6 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 SettingsTile.navigation(
+                  leading: const Icon(Icons.download),
                   title: const Text('Место сохранения медиа'),
                   value: Text(getDestinationName(
                       prefs.getString('androidDestinationType')!)),
