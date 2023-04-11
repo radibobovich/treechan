@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/main.dart';
-import '../models/json/json.dart';
+import '../../models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../screens/tab_navigator.dart';
-import '../services/scroll_service.dart';
-import 'media_preview_widget.dart';
-import '../widgets/html_container_widget.dart';
+import '../../screens/tab_navigator.dart';
+import '../../services/scroll_service.dart';
+import '../shared/media_preview_widget.dart';
+import '../shared/html_container_widget.dart';
 
 class PostWidget extends StatefulWidget {
   final TreeNode<Post> node;
@@ -70,7 +70,7 @@ class _PostWidgetState extends State<PostWidget> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           )),
                         ),
-                  ImagesPreview(files: post.files),
+                  MediaPreview(files: post.files),
                   ExcludeSemantics(
                     // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
                     // TODO: better use InhetiredWidget
