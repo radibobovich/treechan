@@ -13,12 +13,14 @@ TODO: [Trello](https://trello.com/b/JxlUBxC0/todo "Trello")
 
 
 <p float="left">
-  <img src="demo-pics/1.jpg" width="200" />
-  <img src="demo-pics/2.jpg" width="200" /> 
+  <img src="demo-pics/01.jpg" width="200" />
+  <img src="demo-pics/02.jpg" width="200" /> 
+  <img src="demo-pics/03.jpg" width="200" /> 
 </p>
 <p float="left">
-  <img src="demo-pics/3.jpg" width="200" />
-  <img src="demo-pics/4.jpg" width="200" />
+  <img src="demo-pics/04.jpg" width="200" />
+  <img src="demo-pics/05.jpg" width="200" />
+  <img src="demo-pics/06.jpg" width="200" /> 
 </p>
 
 
