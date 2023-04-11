@@ -40,8 +40,7 @@ class DrawerTab {
   }
 
   @override
-  int get hashCode =>
-      type.hashCode ^ id.hashCode ^ name.hashCode ^ tag.hashCode;
+  int get hashCode => type.hashCode ^ id.hashCode ^ tag.hashCode;
 }
 
 /// An initial tab for the drawer. Referenced in goBack of boards.
@@ -112,8 +111,8 @@ class _TabNavigatorState extends State<TabNavigator>
 
     setState(() {
       tabs.remove(tab);
+      tabController = TabController(length: tabs.length, vsync: this);
     });
-    tabController = TabController(length: tabs.length, vsync: this);
 
     if (currentIndex == removingTabIndex) {
       // if you close the current tab
@@ -181,11 +180,11 @@ class _TabNavigatorState extends State<TabNavigator>
                 switch (tab.type) {
                   case TabTypes.boardList:
                     return BlocProvider(
+                      key: ValueKey(tab),
                       create: (context) =>
                           BoardListBloc(boardListService: BoardListService())
                             ..add(LoadBoardListEvent()),
                       child: BoardListScreen(
-                          key: ValueKey(tab),
                           title: "Доски",
                           onOpen: (DrawerTab newTab) {
                             addTab(newTab);
@@ -195,12 +194,12 @@ class _TabNavigatorState extends State<TabNavigator>
                     );
                   case TabTypes.board:
                     return BlocProvider(
+                      key: ValueKey(tab),
                       create: (context) => BoardBloc(
                           boardService: BoardService(
                               boardTag: tab.tag, sortType: SortBy.page))
                         ..add(LoadBoardEvent()),
                       child: BoardScreen(
-                          key: ValueKey(tab),
                           currentTab: tab,
                           onOpen: (DrawerTab newTab) => addTab(newTab),
                           onGoBack: (DrawerTab currentTab) =>
@@ -211,12 +210,12 @@ class _TabNavigatorState extends State<TabNavigator>
                     );
                   case TabTypes.thread:
                     return BlocProvider(
+                      key: ValueKey(tab),
                       create: (blocContext) => ThreadBloc(
                         threadService:
                             ThreadService(boardTag: tab.tag, threadId: tab.id!),
                       )..add(LoadThreadEvent()),
                       child: ThreadScreen(
-                          key: ValueKey(tab),
                           currentTab: tab,
                           prevTab: tab.prevTab!,
                           onOpen: (DrawerTab newTab) => addTab(newTab),
@@ -296,7 +295,7 @@ class _TabsListState extends State<TabsList> {
   @override
   Widget build(BuildContext context) {
     List<DrawerTab> tabs = widget.tabs;
-    TabController? tabController = widget.tabController;
+    TabController tabController = widget.tabController;
     return Expanded(
       child: MediaQuery.removePadding(
         context: context,
@@ -305,40 +304,66 @@ class _TabsListState extends State<TabsList> {
           itemCount: tabs.length,
           itemBuilder: (bcontext, index) {
             DrawerTab item = tabs[index];
-            return ListTile(
-              selected: tabController.index == index,
-              textColor: Theme.of(context).textTheme.titleMedium!.color,
-              selectedColor: Theme.of(context).secondaryHeaderColor,
-              title: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      (item.type == TabTypes.board ? "/${item.tag}/ - " : "") +
-                          (item.name ??
-                              (item.type == TabTypes.board ? "Доска" : "Тред")),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  item.type != TabTypes.boardList
-                      ? IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            widget.removeTab(item);
-                          },
-                          color: Theme.of(context).textTheme.titleMedium!.color,
-                        )
-                      : const SizedBox.shrink()
-                ],
-              ),
-              onTap: () {
-                tabController.animateTo(index);
-                widget.scaffoldKey.currentState!.closeDrawer();
-              },
-            );
+            return TabTile(
+                tabController: tabController,
+                item: item,
+                onRemoveTab: widget.removeTab,
+                scaffoldKey: widget.scaffoldKey,
+                index: index);
           },
         ),
       ),
+    );
+  }
+}
+
+class TabTile extends StatelessWidget {
+  const TabTile({
+    super.key,
+    required this.tabController,
+    required this.item,
+    required this.onRemoveTab,
+    required this.scaffoldKey,
+    required this.index,
+  });
+
+  final TabController tabController;
+  final DrawerTab item;
+  final Function(DrawerTab) onRemoveTab;
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  final int index;
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      selected: tabController.index == index,
+      textColor: Theme.of(context).textTheme.titleMedium!.color,
+      selectedColor: Theme.of(context).secondaryHeaderColor,
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              (item.type == TabTypes.board ? "/${item.tag}/ - " : "") +
+                  (item.name ??
+                      (item.type == TabTypes.board ? "Доска" : "Тред")),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          item.type != TabTypes.boardList
+              ? IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    onRemoveTab(item);
+                  },
+                  color: Theme.of(context).textTheme.titleMedium!.color,
+                )
+              : const SizedBox.shrink()
+        ],
+      ),
+      onTap: () {
+        tabController.animateTo(index);
+        scaffoldKey.currentState!.closeDrawer();
+      },
     );
   }
 }
