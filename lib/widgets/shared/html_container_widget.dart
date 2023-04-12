@@ -87,33 +87,36 @@ class HtmlContainer extends StatefulWidget {
 class _HtmlContainerState extends State<HtmlContainer> {
   @override
   Widget build(BuildContext context) {
-    return Html(
-      // limit text on BoardScreen
-      style: widget.currentTab.type == TabTypes.thread
-          ? {}
-          : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
-      data: widget.post.comment,
-      customRender: {
-        "span": (node, children) {
-          List<String> spanClasses = node.tree.elementClasses;
-          if (spanClasses.contains("unkfunc")) {
-            // greentext cite
-            return TextSpan(
-                style:
-                    const TextStyle(color: Color.fromARGB(255, 120, 153, 34)),
-                text: node.tree.element!.text);
-          } else if (spanClasses.contains("spoiler")) {
-            return _SpoilerText(node: node, children: children);
-          }
+    // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
+    return ExcludeSemantics(
+      child: Html(
+        // limit text on BoardScreen
+        style: widget.currentTab.type == TabTypes.thread
+            ? {}
+            : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
+        data: widget.post.comment,
+        customRender: {
+          "span": (node, children) {
+            List<String> spanClasses = node.tree.elementClasses;
+            if (spanClasses.contains("unkfunc")) {
+              // greentext cite
+              return TextSpan(
+                  style:
+                      const TextStyle(color: Color.fromARGB(255, 120, 153, 34)),
+                  text: node.tree.element!.text);
+            } else if (spanClasses.contains("spoiler")) {
+              return _SpoilerText(node: node, children: children);
+            }
+          },
+          "a": (node, children) => TextSpan(
+              // custom link color render
+              style: TextStyle(
+                  color: Theme.of(context).secondaryHeaderColor,
+                  decoration: TextDecoration.underline),
+              text: node.tree.element!.text,
+              recognizer: TapGestureRecognizer()..onTap = () => openLink(node)),
         },
-        "a": (node, children) => TextSpan(
-            // custom link color render
-            style: TextStyle(
-                color: Theme.of(context).secondaryHeaderColor,
-                decoration: TextDecoration.underline),
-            text: node.tree.element!.text,
-            recognizer: TapGestureRecognizer()..onTap = () => openLink(node)),
-      },
+      ),
     );
   }
 

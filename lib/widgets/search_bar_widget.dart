@@ -28,34 +28,37 @@ class _SearchBarState extends State<SearchBar> {
             // TODO: make enter key work
             child: TextField(
               controller: _controller,
+              onSubmitted: (value) {
+                submit();
+              },
               decoration: const InputDecoration(
                 hintText: "Ссылка или тег доски...",
               ),
             ),
           ),
-          IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              onPressed: () {
-                try {
-                  widget.onOpen(searchBarService.parseInput(_controller.text));
-                  widget.onCloseDrawer();
-                } catch (e) {
-                  // fix infinite duration
-
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   // TODO: make it appear above drawer
-                  //   const SnackBar(
-                  //     content: Text("Неверная ссылка"),
-                  //     behavior: SnackBarBehavior.floating,
-                  //     duration: Duration(seconds: 2),
-                  //     elevation: 0,
-                  //   ),
-                  // );
-                }
-              })
+          IconButton(icon: const Icon(Icons.arrow_forward), onPressed: submit)
         ],
       ),
     );
+  }
+
+  void submit() {
+    try {
+      widget.onOpen(searchBarService.parseInput(_controller.text));
+      widget.onCloseDrawer();
+    } catch (e) {
+      // fix infinite duration
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   // TODO: make it appear above drawer
+      //   const SnackBar(
+      //     content: Text("Неверная ссылка"),
+      //     behavior: SnackBarBehavior.floating,
+      //     duration: Duration(seconds: 2),
+      //     elevation: 0,
+      //   ),
+      // );
+    }
   }
 
   void showErrorSnackBar() {}

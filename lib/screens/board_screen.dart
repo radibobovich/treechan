@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import 'package:treechan/models/bloc/board_bloc.dart';
+import '../models/bloc/board_bloc.dart';
+
 import '../widgets/board/refresh_custom_footer.dart';
 import '../widgets/board/thread_card.dart';
-import 'tab_navigator.dart';
+
 import '../widgets/shared/go_back_widget.dart';
+import 'tab_navigator.dart';
 
 class BoardScreen extends StatefulWidget {
   const BoardScreen(

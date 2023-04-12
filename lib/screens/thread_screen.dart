@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:ui';
 
-import 'package:treechan/screens/tab_navigator.dart';
+import '../screens/tab_navigator.dart';
 
 import '../main.dart';
 import '../models/json/json.dart';
@@ -97,10 +97,11 @@ class _ThreadScreenState extends State<ThreadScreen>
               return FlexibleTreeView<Post>(
                 key: treeKey,
                 scrollable: prefs.getBool('2dscroll')!,
-                indent: 16,
+                indent: !Platform.isWindows ? 16 : 24,
                 showLines: state.threadInfo!.showLines!,
                 scrollController: scrollController,
                 nodes: state.roots!,
+                nodeWidth: MediaQuery.of(context).size.width / 1.5,
                 nodeItemBuilder: (context, node) {
                   return PostWidget(
                     key: node.gKey,

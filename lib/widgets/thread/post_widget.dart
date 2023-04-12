@@ -71,17 +71,13 @@ class _PostWidgetState extends State<PostWidget> {
                           )),
                         ),
                   MediaPreview(files: post.files),
-                  ExcludeSemantics(
-                    // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-                    // TODO: better use InhetiredWidget
-                    child: HtmlContainer(
-                        post: post,
-                        roots: widget.roots,
-                        currentTab: widget.currentTab,
-                        onOpen: widget.onOpen,
-                        onGoBack: widget.onGoBack,
-                        scrollService: widget.scrollService),
-                  )
+                  HtmlContainer(
+                      post: post,
+                      roots: widget.roots,
+                      currentTab: widget.currentTab,
+                      onOpen: widget.onOpen,
+                      onGoBack: widget.onGoBack,
+                      scrollService: widget.scrollService)
                 ],
               ),
             ),
