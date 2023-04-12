@@ -52,6 +52,7 @@ class _HistoryScreenState extends State<HistoryScreen>
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
+              itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 final DrawerTabHistory item = snapshot.data![index];
                 return ListTile(
@@ -65,7 +66,6 @@ class _HistoryScreenState extends State<HistoryScreen>
                   onLongPress: () => onItemSelect(item),
                 );
               },
-              itemCount: snapshot.data!.length,
             );
           } else {
             return const Center(child: CircularProgressIndicator());
