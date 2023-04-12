@@ -17,7 +17,11 @@ class DrawerTabHistory extends DrawerTab {
   late DatabaseFactory databaseFactory;
   DrawerTab toDrawerTab() {
     return DrawerTab(
-        type: type, id: id, name: name, tag: tag, prevTab: prevTab);
+        type: type,
+        id: id,
+        name: name,
+        tag: tag,
+        prevTab: prevTab ?? boardListTab);
   }
 
   Map<String, dynamic> toMap() {
