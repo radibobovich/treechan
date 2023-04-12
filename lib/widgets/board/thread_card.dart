@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:treechan/services/date_time_service.dart';
 
 import '../../models/json/json.dart';
 import '../../screens/tab_navigator.dart';
@@ -79,11 +80,14 @@ class _CardHeader extends StatelessWidget {
   final Thread? thread;
   @override
   Widget build(BuildContext context) {
+    DateTimeService dateTimeSerivce = DateTimeService(dateRaw: thread!.date!);
     return Row(
       children: [
         Text(thread?.name ?? "No author"),
         const Spacer(),
-        Text(thread?.date ?? "a long time ago"),
+        Text(dateTimeSerivce.getAdaptiveDate(),
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodySmall!.color))
       ],
     );
   }
