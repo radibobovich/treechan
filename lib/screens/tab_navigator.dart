@@ -268,7 +268,11 @@ class _TabNavigatorState extends State<TabNavigator>
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const HistoryScreen()));
+                              builder: (context) =>
+                                  HistoryScreen(onOpen: (DrawerTab newTab) {
+                                    addTab(newTab);
+                                    _scaffoldKey.currentState!.closeDrawer();
+                                  })));
                     }),
                 ListTile(
                     leading: const Icon(Icons.settings),
