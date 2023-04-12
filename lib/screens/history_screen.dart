@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../models/history_database.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  const HistoryScreen({super.key, required this.onOpen});
+
+  final Function onOpen;
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -62,7 +64,12 @@ class _HistoryScreenState extends State<HistoryScreen>
                   trailing: Text(formatter.format(item.timestamp)),
                   leading: isSelected(item) ? const Icon(Icons.check) : null,
                   selected: isSelected(item),
-                  onTap: selected.isEmpty ? () {} : () => onItemSelect(item),
+                  onTap: selected.isEmpty
+                      ? () {
+                          Navigator.pop(context);
+                          widget.onOpen(item.toDrawerTab());
+                        }
+                      : () => onItemSelect(item),
                   onLongPress: () => onItemSelect(item),
                 );
               },
