@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/screens/tab_navigator.dart';
 
 class DrawerTabHistory extends DrawerTab {
@@ -9,8 +12,9 @@ class DrawerTabHistory extends DrawerTab {
       required super.name,
       required super.tag,
       required this.timestamp});
-  final DateTime timestamp;
 
+  final DateTime timestamp;
+  late DatabaseFactory databaseFactory;
   DrawerTab toDrawerTab() {
     return DrawerTab(
         type: type, id: id, name: name, tag: tag, prevTab: prevTab);
@@ -37,17 +41,36 @@ class HistoryDatabase {
   factory HistoryDatabase() {
     return _instance;
   }
+
   late Future<Database> _database;
   HistoryDatabase._internal() {
     _database = _createDatabase();
   }
 
   Future<Database> _createDatabase() async {
-    return openDatabase(join(await getDatabasesPath(), 'history_database.db'),
+    if (Platform.isWindows || Platform.isLinux) {
+      databaseFactory = databaseFactoryFfi;
+      return databaseFactory.openDatabase(
+        join(await getDatabasesPath(), 'history_database.db'),
+        options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) {
+              return db.execute(
+                  'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)');
+            }),
+      );
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      return openDatabase(
+        join(await getDatabasesPath(), 'history_database.db'),
         onCreate: (db, version) {
-      return db.execute(
-          'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)');
-    }, version: 1);
+          return db.execute(
+              'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)');
+        },
+        version: 1,
+      );
+    } else {
+      throw Exception("Unsupported platform");
+    }
   }
 
   Future<void> add(DrawerTabHistory tab) async {
