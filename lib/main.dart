@@ -1,19 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_downloader/image_downloader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/themes.dart';
 import 'screens/tab_navigator.dart';
 
 bool flagDebugThread = false;
 late SharedPreferences prefs;
 StreamController<String> theme = StreamController();
-
+late DatabaseFactory databaseFactory;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
   await initializePreferences();
+  if (Platform.isWindows || Platform.isLinux) {
+    sqfliteFfiInit();
+  }
+  databaseFactory = databaseFactoryFfi;
   runApp(const MyApp());
 }
 

@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/models/history_database.dart';
 
-import 'package:treechan/screens/thread_screen.dart';
-import 'package:treechan/services/board_service.dart';
+import '../screens/thread_screen.dart';
+import '../services/board_service.dart';
 import '../widgets/search_bar_widget.dart';
 import '../models/bloc/board_bloc.dart';
 import '../models/bloc/board_list_bloc.dart';
@@ -12,6 +13,7 @@ import '../services/board_list_service.dart';
 import '../services/thread_service.dart';
 import '../screens/board_screen.dart';
 import 'board_list_screen.dart';
+import 'history_screen.dart';
 import 'settings_screen.dart';
 
 enum TabTypes { boardList, board, thread }
@@ -28,6 +30,11 @@ class DrawerTab {
       required this.tag,
       this.name,
       this.prevTab});
+
+  DrawerTabHistory toHistory() {
+    return DrawerTabHistory(
+        type: type, name: name, tag: tag, id: id, timestamp: DateTime.now());
+  }
 
   @override
   bool operator ==(Object other) {
@@ -91,6 +98,8 @@ class _TabNavigatorState extends State<TabNavigator>
         tabs.add(tab);
         tabController = TabController(length: tabs.length, vsync: this);
       });
+
+      HistoryDatabase().add(tab.toHistory());
     }
     tabController.animateTo(tabs.indexOf(tab));
   }
@@ -101,6 +110,7 @@ class _TabNavigatorState extends State<TabNavigator>
       setState(() {
         tab.name = name;
       });
+      HistoryDatabase().add(tab.toHistory());
     });
   }
 
@@ -250,6 +260,17 @@ class _TabNavigatorState extends State<TabNavigator>
                   thickness: 1,
                 ),
                 ListTile(
+                    leading: const Icon(Icons.history),
+                    title: const Text("История"),
+                    textColor: Theme.of(context).textTheme.titleMedium!.color,
+                    iconColor: Theme.of(context).iconTheme.color,
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HistoryScreen()));
+                    }),
+                ListTile(
                     leading: const Icon(Icons.settings),
                     title: const Text("Настройки"),
                     textColor: Theme.of(context).textTheme.titleMedium!.color,
@@ -260,6 +281,7 @@ class _TabNavigatorState extends State<TabNavigator>
                           MaterialPageRoute(
                               builder: (context) => const SettingsScreen()));
                     }),
+                // history button
               ],
             ),
           ),
