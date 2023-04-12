@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/main.dart';
+import 'package:treechan/services/date_time_service.dart';
 import '../../models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -91,29 +92,39 @@ class _PostWidgetState extends State<PostWidget> {
 class _PostHeader extends StatelessWidget {
   const _PostHeader({Key? key, required this.node}) : super(key: key);
   final TreeNode<Post> node;
+
   @override
   Widget build(BuildContext context) {
     Post post = node.data;
+    final DateTimeService dateTimeSerivce =
+        DateTimeService(dateRaw: post.date!);
+
     return Padding(
       padding: node.hasNodes
           ? const EdgeInsets.fromLTRB(8, 2, 0, 0)
           : const EdgeInsets.fromLTRB(8, 2, 8, 0),
       child: Row(
         children: [
-          Text(
-            post.name!,
-            style: post.email == "mailto:sage"
-                ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
-                : const TextStyle(),
-          ),
-          const Spacer(),
+          Text(post.name!,
+              style: post.email == "mailto:sage"
+                  ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
+                  // : TextStyle(
+                  //     color: Theme.of(context).textTheme.bodySmall!.color),
+                  : null),
+
           // don't show date for deep nodes to prevent overflow.
           // but show date in 2d scroll mode no matter how deep the node is.
+
+          // todo: make it human readable
           (node.depth % 16 <= 9 && node.depth % 16 != 0 ||
                   node.depth == 0 ||
                   prefs.getBool('2dscroll')!)
-              ? Text(post.date!)
+              // ? Text(post.date!)
+              ? Text(" ${dateTimeSerivce.getAdaptiveDate()}",
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall!.color))
               : const SizedBox.shrink(),
+          const Spacer(),
           node.hasNodes
               ? IconButton(
                   iconSize: 20,
@@ -129,7 +140,7 @@ class _PostHeader extends StatelessWidget {
               : const SizedBox(
                   //width: node.depth == 0 ? 0 : 30,
                   //width: 30,
-                  width: 0)
+                  width: 10)
         ],
       ),
     );
