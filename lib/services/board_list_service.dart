@@ -1,8 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'package:treechan/main.dart';
+import 'dart:convert';
+
 import '../models/category.dart';
 import '../models/json/json.dart';
-import 'dart:convert';
 
 class BoardListService {
   BoardListService();
@@ -28,21 +29,22 @@ class BoardListService {
     _categories = [];
   }
 
-  static Future<String?> _downloadBoards() async {
+  static Future<String?> _getBoardListResponse() async {
     String url = "https://2ch.hk/api/mobile/v2/boards";
 
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return response.body;
+    } else {
+      throw Exception(
+          'Failed to load board list. Error code: ${response.statusCode}');
     }
-    return null;
   }
 
   Future<void> _getCategories() async {
-    String? downloadedBoards = await _downloadBoards();
+    String? downloadedBoards = await _getBoardListResponse();
     if (downloadedBoards == null) {
-      // TODO: add error handling
       return;
     }
     List<Board>? boardList = boardListFromJson(jsonDecode(downloadedBoards));
