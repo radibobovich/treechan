@@ -23,6 +23,8 @@ class AppTheme {
     appBarTheme: const AppBarTheme(color: Color.fromARGB(255, 255, 102, 0)),
     secondaryHeaderColor: const Color.fromARGB(255, 255, 102, 0),
     brightness: Brightness.light,
+    textTheme: const TextTheme(
+        bodySmall: TextStyle(color: Color.fromARGB(255, 56, 68, 77))),
   );
 
   static final ThemeData makabaNight = ThemeData(
@@ -56,6 +58,7 @@ class AppTheme {
       scaffoldBackgroundColor: const Color.fromARGB(255, 21, 32, 43),
       textTheme: const TextTheme(
           titleMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
-          bodyMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204))),
+          bodyMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
+          bodySmall: TextStyle(color: Color.fromARGB(255, 125, 125, 125))),
       hintColor: const Color.fromARGB(255, 125, 125, 125));
 }
