@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:settings_ui/settings_ui.dart';
+
 import 'package:treechan/main.dart';
 
 class SettingsScreen extends StatefulWidget {

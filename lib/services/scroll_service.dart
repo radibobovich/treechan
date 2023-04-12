@@ -8,8 +8,8 @@ import '../widgets/thread/post_widget.dart';
 
 /// A service generally to scroll to a post after thread refresh.
 class ScrollService {
-  List<PostWidget> visiblePosts = List.empty(growable: true);
-  List<PostWidget> partiallyVisiblePosts = List.empty(growable: true);
+  List<dynamic> visiblePosts = List.empty(growable: true);
+  List<dynamic> partiallyVisiblePosts = List.empty(growable: true);
 
   final ScrollController _scrollController;
   final double _screenHeight;
@@ -110,7 +110,7 @@ class ScrollService {
   }
 
   void checkVisibility(
-      {required PostWidget widget,
+      {required dynamic widget,
       required VisibilityInfo visibilityInfo,
       required Post post}) {
     if (true) {

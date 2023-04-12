@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:treechan/screens/tab_navigator.dart';
+
+import '../screens/tab_navigator.dart';
+
 import '../models/bloc/board_list_bloc.dart';
 import '../models/category.dart';
 import '../models/json/json.dart';
+
 import '../widgets/board_list/category_widget.dart';
 
 class BoardListScreen extends StatefulWidget {
