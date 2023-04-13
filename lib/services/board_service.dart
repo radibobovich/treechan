@@ -1,7 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:treechan/utils/fix_blank_space.dart';
+
 import '../exceptions.dart';
 import '../models/json/json.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import '../utils/fix_html_video.dart';
 
 enum SortBy { page, bump, time }
 
@@ -22,7 +27,6 @@ class BoardService {
     return _threads;
   }
 
-  // TODO: add refresh
   Future<http.Response> _getBoardResponse() async {
     String url = "";
     if (sortType == SortBy.bump) {
@@ -50,8 +54,21 @@ class BoardService {
     http.Response response = await _getBoardResponse();
     boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
-    _threads = _fixThreadInfo(_threads!);
+    for (var thread in _threads!) {
+      if (fixBlankSpace(thread.posts![0])) break;
+    }
+    final stopwatch = Stopwatch()..start();
     _threads = _extendThumbnailLinks(_threads!);
+    for (var thread in _threads!) {
+      if (thread.posts![0].comment!.contains("<video")) {
+        fixHtmlVideo(thread);
+      }
+    }
+    debugPrint(
+        "Remove video from posts elapsed: ${stopwatch.elapsedMilliseconds}");
+    _threads = _fixThreadInfo(_threads!);
+
+    currentPage = 0;
   }
 
   Future<void> refreshBoard() async {
@@ -74,7 +91,7 @@ class BoardService {
         thread.board = thread.posts![0].board;
         thread.name = thread.posts![0].name;
         thread.date = thread.posts![0].date;
-        thread.files = thread.posts![0].files;
+        thread.files ??= thread.posts![0].files;
       }
     }
     return threads;
