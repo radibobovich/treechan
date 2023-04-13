@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/widgets/thread/popup_menu_thread.dart';
 import 'dart:ui';
 
 import '../screens/tab_navigator.dart';
@@ -72,19 +73,13 @@ class _ThreadScreenState extends State<ThreadScreen>
                     Scaffold.of(context).openDrawer();
                   },
                 ),
-          actions: [
+          actions: <Widget>[
             IconButton(
                 onPressed: () async {
-                  scrollService.saveCurrentScrollInfo();
-
-                  BlocProvider.of<ThreadBloc>(context)
-                      .add(RefreshThreadEvent());
-                  await Future.delayed(const Duration(milliseconds: 10));
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    scrollService.updateScrollPosition();
-                  });
+                  _refreshThread();
                 },
-                icon: const Icon(Icons.refresh))
+                icon: const Icon(Icons.refresh)),
+            PopupMenuThread()
           ],
         ),
         body: BlocBuilder<ThreadBloc, ThreadState>(
@@ -121,5 +116,15 @@ class _ThreadScreenState extends State<ThreadScreen>
             }
           },
         ));
+  }
+
+  Future<void> _refreshThread() async {
+    scrollService.saveCurrentScrollInfo();
+
+    BlocProvider.of<ThreadBloc>(context).add(RefreshThreadEvent());
+    await Future.delayed(const Duration(milliseconds: 10));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollService.updateScrollPosition();
+    });
   }
 }

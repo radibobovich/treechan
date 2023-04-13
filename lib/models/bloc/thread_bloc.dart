@@ -7,12 +7,14 @@ import '../../models/json/json.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ThreadService threadService;
+  // late List<TreeNode<Post>>? roots;
+  late Root? threadInfo;
   ThreadBloc({required this.threadService}) : super(ThreadInitialState()) {
     on<LoadThreadEvent>(
       (event, emit) async {
         try {
           final roots = await threadService.getRoots();
-          final threadInfo = threadService.getThreadInfo;
+          threadInfo = threadService.getThreadInfo;
           emit(ThreadLoadedState(
             roots: roots,
             threadInfo: threadInfo,
