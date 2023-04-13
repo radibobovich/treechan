@@ -103,6 +103,8 @@ class ThreadService {
   Future<void> refreshThread() async {
     final http.Response response = await _getThreadResponse(isRefresh: true);
     List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
+    _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
+    _threadInfo.maxNum = newPosts.last.id;
     _extendThumbnailLinks(newPosts);
     _posts!.addAll(newPosts);
     if (newPosts.isNotEmpty) {
