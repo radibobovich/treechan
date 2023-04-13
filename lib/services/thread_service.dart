@@ -12,6 +12,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
 
+import '../utils/fix_blank_space.dart';
+
 class ThreadService {
   ThreadService({required this.boardTag, required this.threadId});
 
@@ -80,6 +82,7 @@ class ThreadService {
     Root decodedResponse = Root.fromJson(jsonDecode(response.body));
 
     _posts = decodedResponse.threads!.first.posts;
+    if (_posts != null) fixBlankSpace(_posts!.first);
     _threadInfo = decodedResponse;
     _threadInfo.opPostId = _posts!.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
