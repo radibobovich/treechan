@@ -5,8 +5,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/screens/tab_navigator.dart';
 
-class DrawerTabHistory extends DrawerTab {
-  DrawerTabHistory(
+class HistoryTab extends DrawerTab {
+  HistoryTab(
       {required super.type,
       super.id,
       required super.name,
@@ -77,7 +77,7 @@ class HistoryDatabase {
     }
   }
 
-  Future<void> add(DrawerTabHistory tab) async {
+  Future<void> add(HistoryTab tab) async {
     if (tab.type != TabTypes.thread) {
       return;
     }
@@ -87,7 +87,7 @@ class HistoryDatabase {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<void> remove(DrawerTabHistory tab) async {
+  Future<void> remove(HistoryTab tab) async {
     final Database db = await _database;
 
     await db.delete('history',
@@ -95,17 +95,17 @@ class HistoryDatabase {
         whereArgs: [tab.type.toString(), tab.tag, tab.id]);
   }
 
-  Future<void> removeMultiple(List<DrawerTabHistory> tabs) async {
+  Future<void> removeMultiple(List<HistoryTab> tabs) async {
     final Database db = await _database;
 
-    for (DrawerTabHistory tab in tabs) {
+    for (HistoryTab tab in tabs) {
       await db.delete('history',
           where: 'type = ? AND tag = ? AND threadId = ?',
           whereArgs: [tab.type.toString(), tab.tag, tab.id]);
     }
   }
 
-  Future<List<DrawerTabHistory>> getHistory() async {
+  Future<List<HistoryTab>> getHistory() async {
     final Database db = await _database;
 
     final List<Map<String, dynamic>> maps = await db.query('history');
@@ -115,7 +115,7 @@ class HistoryDatabase {
       TabTypes type = TabTypes.values
           .firstWhere((element) => element.toString() == map['type']);
 
-      return DrawerTabHistory(
+      return HistoryTab(
           type: type,
           tag: map['tag'],
           id: map['threadId'],
