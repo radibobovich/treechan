@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
+import 'package:treechan/utils/fix_html_video.dart';
 
 import '../models/json/json.dart';
 
@@ -87,6 +88,9 @@ class ThreadService {
     _threadInfo.opPostId = _posts!.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
     _extendThumbnailLinks(_posts);
+    for (var post in _posts!) {
+      if (post.comment!.contains("video")) fixHtmlVideo(post);
+    }
     _roots = TreeService(posts: _posts!, threadInfo: _threadInfo).getRoots;
     _threadInfo.showLines = true;
 

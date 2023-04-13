@@ -26,8 +26,8 @@ class MediaPreview extends StatelessWidget {
   }
 }
 
-List<int> _galleryTypes = [1, 2, 4];
-List<int> _videoTypes = [6, 10];
+List<int> _galleryTypes = [1, 2, 4]; // jpg png gif respectively
+List<int> _videoTypes = [6, 10]; // webm mp4
 
 List<Widget> _getImages(List<File>? files, BuildContext context) {
   if (files == null) {
