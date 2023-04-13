@@ -30,12 +30,6 @@
             "flutterMode": "release"
         },
         {
-            "name": "treechan",
-            "cwd": "treechan",
-            "request": "launch",
-            "type": "dart",
-        },
-        {
             "name": "treechan (profile mode)",
             "cwd": "treechan",
             "request": "launch",
