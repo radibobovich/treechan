@@ -57,16 +57,13 @@ class BoardService {
     for (var thread in _threads!) {
       if (fixBlankSpace(thread.posts![0])) break;
     }
-    final stopwatch = Stopwatch()..start();
+    _threads = _fixThreadInfo(_threads!);
     _threads = _extendThumbnailLinks(_threads!);
     for (var thread in _threads!) {
       if (thread.posts![0].comment!.contains("<video")) {
         fixHtmlVideo(thread);
       }
     }
-    debugPrint(
-        "Remove video from posts elapsed: ${stopwatch.elapsedMilliseconds}");
-    _threads = _fixThreadInfo(_threads!);
 
     currentPage = 0;
   }
