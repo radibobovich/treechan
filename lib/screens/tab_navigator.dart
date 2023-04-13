@@ -98,8 +98,7 @@ class _TabNavigatorState extends State<TabNavigator>
         tabs.add(tab);
         tabController = TabController(length: tabs.length, vsync: this);
       });
-
-      HistoryDatabase().add(tab.toHistory());
+      if (tab.name != null) HistoryDatabase().add(tab.toHistory());
     }
     tabController.animateTo(tabs.indexOf(tab));
   }
