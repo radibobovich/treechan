@@ -20,7 +20,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   void initState() {
     super.initState();
-    String url = "https://2ch.hk${widget.file.path!}";
+    String url = widget.file.path!.contains("http")
+        ? widget.file.path!
+        : "https://2ch.hk${widget.file.path!}";
     controller = VideoPlayerController.network(url);
     flickManager = FlickManager(
       videoPlayerController: controller,
@@ -38,7 +40,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
     return Center(
       child: AspectRatio(
           // aspectRatio: controller.value.aspectRatio,
-          aspectRatio: widget.file.width! / widget.file.height!,
+          aspectRatio: (widget.file.width ?? 1) / (widget.file.height ?? 1),
           child: FlickVideoPlayer(
             flickManager: flickManager,
           )),
