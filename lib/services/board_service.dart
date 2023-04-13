@@ -1,3 +1,5 @@
+import 'package:treechan/utils/fix_blank_space.dart';
+
 import '../exceptions.dart';
 import '../models/json/json.dart';
 import 'package:http/http.dart' as http;
@@ -50,6 +52,9 @@ class BoardService {
     http.Response response = await _getBoardResponse();
     boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
+    for (var thread in _threads!) {
+      if (fixBlankSpace(thread.posts![0])) break;
+    }
     _threads = _fixThreadInfo(_threads!);
     _threads = _extendThumbnailLinks(_threads!);
     currentPage = 0;
