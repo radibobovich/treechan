@@ -18,7 +18,6 @@ void main() async {
   await initializePreferences();
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
   }
 
   runApp(const MyApp());
