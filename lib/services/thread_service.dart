@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 
@@ -42,6 +43,7 @@ class ThreadService {
 
   /// Sends GET request and gets thread information and list of posts.
   Future<http.Response> _getThreadResponse({bool isRefresh = false}) async {
+    final stopwatch = Stopwatch()..start();
     String url;
     http.Response response;
 
@@ -60,6 +62,8 @@ class ThreadService {
       response = await http.get(Uri.parse(url));
     }
     if (response.statusCode == 200) {
+      debugPrint(
+          "Downloaded thread $boardTag/$threadId in ${stopwatch.elapsedMilliseconds}");
       return response;
     } else if (response.statusCode == 404) {
       throw ThreadNotFoundException(
@@ -82,7 +86,10 @@ class ThreadService {
     _extendThumbnailLinks(_posts);
     _roots = TreeService(posts: _posts!, threadInfo: _threadInfo).getRoots;
     _threadInfo.showLines = true;
+
+    final stopwatch = Stopwatch()..start();
     _setShowLinesProperty(_roots);
+    debugPrint("Set showLines property in ${stopwatch.elapsedMilliseconds}");
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.

@@ -52,6 +52,7 @@ class BoardService {
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
     _threads = _fixThreadInfo(_threads!);
     _threads = _extendThumbnailLinks(_threads!);
+    currentPage = 0;
   }
 
   Future<void> refreshBoard() async {
