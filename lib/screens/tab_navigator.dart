@@ -31,8 +31,8 @@ class DrawerTab {
       this.name,
       this.prevTab});
 
-  DrawerTabHistory toHistory() {
-    return DrawerTabHistory(
+  HistoryTab toHistoryTab() {
+    return HistoryTab(
         type: type, name: name, tag: tag, id: id, timestamp: DateTime.now());
   }
 
@@ -98,7 +98,7 @@ class _TabNavigatorState extends State<TabNavigator>
         tabs.add(tab);
         tabController = TabController(length: tabs.length, vsync: this);
       });
-      if (tab.name != null) HistoryDatabase().add(tab.toHistory());
+      if (tab.name != null) HistoryDatabase().add(tab.toHistoryTab());
     }
     tabController.animateTo(tabs.indexOf(tab));
   }
@@ -109,7 +109,7 @@ class _TabNavigatorState extends State<TabNavigator>
       setState(() {
         tab.name = name;
       });
-      HistoryDatabase().add(tab.toHistory());
+      HistoryDatabase().add(tab.toHistoryTab());
     });
   }
 
