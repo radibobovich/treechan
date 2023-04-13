@@ -115,13 +115,13 @@ class ScrollService {
       required Post post}) {
     if (true) {
       if (visibilityInfo.visibleFraction == 1) {
-        debugPrint("Post ${post.id} is visible, key is $widget.key");
+        // debugPrint("Post ${post.id} is visible, key is $widget.key");
         if (!visiblePosts.contains(widget)) {
           visiblePosts.add(widget);
         }
       }
       if (visibilityInfo.visibleFraction < 1 && visiblePosts.contains(widget)) {
-        debugPrint("Post ${post.id} is invisible");
+        // debugPrint("Post ${post.id} is invisible");
         visiblePosts.remove(widget);
       }
       if (visibilityInfo.visibleFraction < 1 &&

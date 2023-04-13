@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
+import 'package:treechan/utils/fix_html_video.dart';
 
 import '../models/json/json.dart';
 
@@ -10,6 +12,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
+
+import '../utils/fix_blank_space.dart';
 
 class ThreadService {
   ThreadService({required this.boardTag, required this.threadId});
@@ -42,6 +46,7 @@ class ThreadService {
 
   /// Sends GET request and gets thread information and list of posts.
   Future<http.Response> _getThreadResponse({bool isRefresh = false}) async {
+    final stopwatch = Stopwatch()..start();
     String url;
     http.Response response;
 
@@ -60,6 +65,8 @@ class ThreadService {
       response = await http.get(Uri.parse(url));
     }
     if (response.statusCode == 200) {
+      debugPrint(
+          "Downloaded thread $boardTag/$threadId in ${stopwatch.elapsedMilliseconds}");
       return response;
     } else if (response.statusCode == 404) {
       throw ThreadNotFoundException(
@@ -76,13 +83,20 @@ class ThreadService {
     Root decodedResponse = Root.fromJson(jsonDecode(response.body));
 
     _posts = decodedResponse.threads!.first.posts;
+    if (_posts != null) fixBlankSpace(_posts!.first);
     _threadInfo = decodedResponse;
     _threadInfo.opPostId = _posts!.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
     _extendThumbnailLinks(_posts);
+    for (var post in _posts!) {
+      if (post.comment!.contains("video")) fixHtmlVideo(post);
+    }
     _roots = TreeService(posts: _posts!, threadInfo: _threadInfo).getRoots;
     _threadInfo.showLines = true;
+
+    final stopwatch = Stopwatch()..start();
     _setShowLinesProperty(_roots);
+    debugPrint("Set showLines property in ${stopwatch.elapsedMilliseconds}");
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
