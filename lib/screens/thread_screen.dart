@@ -79,7 +79,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                   _refreshThread();
                 },
                 icon: const Icon(Icons.refresh)),
-            PopupMenuThread()
+            const PopupMenuThread()
           ],
         ),
         body: BlocBuilder<ThreadBloc, ThreadState>(
