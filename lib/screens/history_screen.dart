@@ -17,8 +17,8 @@ class _HistoryScreenState extends State<HistoryScreen>
   @override
   get wantKeepAlive => true;
 
-  late Future<List<DrawerTabHistory>> history;
-  List<DrawerTabHistory> selected = [];
+  late Future<List<HistoryTab>> history;
+  List<HistoryTab> selected = [];
   final formatter = DateFormat('HH:mm dd.MM.yy ');
   @override
   void initState() {
@@ -49,14 +49,14 @@ class _HistoryScreenState extends State<HistoryScreen>
           ),
         ],
       ),
-      body: FutureBuilder<List<DrawerTabHistory>>(
+      body: FutureBuilder<List<HistoryTab>>(
         future: history,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                final DrawerTabHistory item = snapshot.data![index];
+                final HistoryTab item = snapshot.data![index];
                 return ListTile(
                   title: Text(item.name!,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -82,7 +82,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  void onItemSelect(DrawerTabHistory item) {
+  void onItemSelect(HistoryTab item) {
     setState(() {
       if (selected.contains(item)) {
         selected.remove(item);
@@ -92,7 +92,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     });
   }
 
-  bool isSelected(DrawerTabHistory item) {
+  bool isSelected(HistoryTab item) {
     return selected.contains(item);
   }
 }
