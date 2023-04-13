@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:treechan/main.dart';
 
 import '../models/json/json.dart';
@@ -28,6 +29,7 @@ class TreeService {
 
   /// Adds a list of parent posts to each post based on the comment html.
   void _addPostParents() {
+    final stopwatch = Stopwatch()..start();
     for (var post in posts) {
       //take post comment
       final postCommentHtml = html.parse(post.comment);
@@ -50,9 +52,11 @@ class TreeService {
       }
       post.parents = parents;
     }
+    debugPrint('addPostParents() executed in ${stopwatch.elapsedMilliseconds}');
   }
 
   void _createTreeModel() {
+    final stopwatch = Stopwatch()..start();
     for (var post in posts) {
       if (post.parents.isEmpty ||
           post.parents.contains(threadInfo.opPostId) ||
@@ -69,6 +73,8 @@ class TreeService {
         _roots.add(node);
       }
     }
+    debugPrint(
+        'createTreeModel() executed in ${stopwatch.elapsedMilliseconds}');
   }
 
   /// Called recursively to connect post children.
@@ -89,12 +95,15 @@ class TreeService {
 
   /// Check if post has references to posts in other threads.
   static bool _hasExternalReferences(List<Post> posts, List<int> referenceIds) {
+    // final stopwatch = Stopwatch()..start();
     for (var referenceId in referenceIds) {
       // if there are no posts with that id in current thread, then it is an external reference
       if (posts.where((post) => post.id == referenceId).isEmpty) {
+        // debugPrint('_hasExternalReferences() executed in ${stopwatch.elapsed}');
         return true;
       }
     }
+    // debugPrint('_hasExternalReferences() executed in ${stopwatch.elapsed}');
     return false;
   }
 
