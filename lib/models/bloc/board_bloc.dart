@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/exceptions.dart';
+import 'package:treechan/main.dart';
 import 'package:treechan/services/board_service.dart';
 
 import '../json/json.dart';
@@ -37,6 +38,14 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         }
       },
     );
+    on<ChangeViewBoardEvent>((event, emit) async {
+      try {
+        await boardService.changeSortType(event.sortType!, event.searchTag);
+        add(LoadBoardEvent());
+      } catch (e) {
+        emit(BoardErrorState(e.toString()));
+      }
+    });
   }
 }
 
@@ -50,6 +59,17 @@ class LoadBoardEvent extends BoardEvent {
 class RefreshBoardEvent extends BoardEvent {
   RefreshBoardEvent({this.refreshFromScratch = false});
   bool refreshFromScratch;
+}
+
+class ChangeViewBoardEvent extends BoardEvent {
+  ChangeViewBoardEvent(this.sortType, {this.searchTag}) {
+    // get sort type from prefs and convert it to enum
+    SortBy boardSortType = SortBy.values.firstWhere((e) =>
+        e.toString().split('.').last == prefs.getString('boardSortType'));
+    sortType ??= boardSortType;
+  }
+  SortBy? sortType;
+  String? searchTag;
 }
 
 abstract class BoardState {}
