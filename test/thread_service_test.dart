@@ -14,6 +14,7 @@ void main() async {
       'postsCollapsed': false,
       '2dscroll': false,
       'androidDestinationType': 'directoryDownloads',
+      'boardSortType': 'bump',
     });
     prefs = await SharedPreferences.getInstance();
   });
@@ -56,6 +57,8 @@ Future<void> initializePreferences() async {
   if (prefs.getString('androidDestinationType') == null) {
     await prefs.setString('androidDestinationType', 'directoryDownloads');
   }
-
+  if (prefs.getString('boardSortType') == null) {
+    await prefs.setString('boardSortType', 'bump');
+  }
   return;
 }
