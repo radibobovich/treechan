@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/main.dart';
 import 'package:treechan/screens/tab_navigator.dart';
 
 class SearchBarService {
@@ -8,7 +9,7 @@ class SearchBarService {
   late Uri parsedUrl;
   DrawerTab? currentTab;
   late DrawerTab newTab;
-  DrawerTab parseInput(String url) {
+  DrawerTab parseInput(String url, {String? searchTag}) {
     List<String> allowedHosts = ["2ch.hk", "2ch.life"];
     if (url == "") {
       throw Exception("Empty url");
@@ -46,6 +47,9 @@ class SearchBarService {
           newTab.type = TabTypes.thread;
           // split is used to remove the .html extension
           newTab.id = int.parse(parsedUrl.pathSegments[2].split(".")[0]);
+        } else if (parsedUrl.pathSegments.last == "catalog.html") {
+          newTab.isCatalog = true;
+          newTab.searchTag = searchTag;
         } else {
           newTab.type = TabTypes.thread;
           newTab.id = int.parse(parsedUrl.pathSegments[1].split(".")[0]);
