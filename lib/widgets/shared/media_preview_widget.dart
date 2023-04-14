@@ -13,6 +13,7 @@ class MediaPreview extends StatelessWidget {
   final List<File>? files;
   @override
   Widget build(BuildContext context) {
+    fixLinks(files);
     return Padding(
       padding:
           (files == null ? const EdgeInsets.all(0) : const EdgeInsets.all(8.0)),
@@ -23,6 +24,20 @@ class MediaPreview extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+void fixLinks(List<File>? files) {
+  if (files == null) {
+    return;
+  }
+  for (var file in files) {
+    if (file.thumbnail != null && !file.thumbnail!.contains("http")) {
+      file.thumbnail = "https://2ch.hk${file.thumbnail}";
+    }
+    if (file.path != null && !file.path!.contains("http")) {
+      file.path = "https://2ch.hk${file.path}";
+    }
   }
 }
 
@@ -41,9 +56,9 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
 
   for (var file in files) {
     if (_galleryTypes.contains(file.type)) {
-      fullResLinks.add("https://2ch.hk${file.path ?? ""}");
+      fullResLinks.add(file.path!);
     } else if (_videoTypes.contains(file.type)) {
-      videoLinks.add("https://2ch.hk${file.path ?? ""}");
+      videoLinks.add(file.path!);
     }
   }
   for (var file in files) {
@@ -80,8 +95,7 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex =
-        widget.imageLinks.indexOf("https://2ch.hk${widget.file.path ?? ""}");
+    final currentIndex = widget.imageLinks.indexOf(widget.file.path!);
     final pageController = ExtendedPageController(initialPage: currentIndex);
 
     return GestureDetector(
