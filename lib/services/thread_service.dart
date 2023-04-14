@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/fix_html_video.dart';
@@ -32,6 +33,7 @@ class ThreadService {
   Future<List<TreeNode<Post>>?> getRoots() async {
     if (_roots == null) {
       await loadThread();
+      prefs = await SharedPreferences.getInstance();
     }
     return _roots;
   }
