@@ -31,9 +31,10 @@ class ThreadService {
   List<TreeNode<Post>>? _roots;
 
   Future<List<TreeNode<Post>>?> getRoots() async {
+    prefs = await SharedPreferences.getInstance();
+
     if (_roots == null) {
       await loadThread();
-      prefs = await SharedPreferences.getInstance();
     }
     return _roots;
   }
