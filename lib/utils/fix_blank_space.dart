@@ -7,3 +7,11 @@ bool fixBlankSpace(Post post) {
   }
   return true;
 }
+
+// bool fixBlankSpaceThread(Thread thread) {
+//   if (thread.board == 'pr' && thread.num_ == 1215536) {
+//     // trim <br> tag from the end of the comment
+//     thread.comment = thread.comment!.substring(0, thread.comment!.length - 4);
+//   }
+//   return true;
+// }

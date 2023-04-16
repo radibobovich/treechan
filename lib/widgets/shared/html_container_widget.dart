@@ -70,15 +70,17 @@ class HtmlContainer extends StatefulWidget {
       required this.currentTab,
       required this.onOpen,
       required this.onGoBack,
+      this.onOpenCatalog,
       this.scrollService})
       : super(key: key);
   // data can be Post or Thread object
-  final dynamic post;
+  final Post post;
   final List<TreeNode<Post>>? roots;
   final DrawerTab currentTab;
 
   final Function onOpen;
   final Function onGoBack;
+  final Function? onOpenCatalog;
   final ScrollService? scrollService;
   @override
   State<HtmlContainer> createState() => _HtmlContainerState();
@@ -122,6 +124,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
 
   void openLink(RenderContext node) {
     String url = node.tree.element!.attributes['href']!;
+    String? searchTag = node.tree.element!.attributes['title'];
     if (widget.currentTab.type == TabTypes.thread && url.contains(
         // check if link points to some post in thread
         "/${widget.currentTab.tag}/res/${widget.currentTab.id}.html#")) {
@@ -137,8 +140,14 @@ class _HtmlContainerState extends State<HtmlContainer> {
       SearchBarService searchBarService =
           SearchBarService(currentTab: widget.currentTab);
       try {
-        DrawerTab newTab = searchBarService.parseInput(url);
+        DrawerTab newTab =
+            searchBarService.parseInput(url, searchTag: searchTag);
         widget.onOpen(newTab);
+        if (newTab.isCatalog != null && newTab.tag == widget.currentTab.tag) {
+          // that means new tab will not be opened because of duplicate protection
+          // so we need to change mode to catalog
+          widget.onOpenCatalog!();
+        }
       } catch (e) {
         tryLaunchUrl(url);
       }
