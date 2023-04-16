@@ -14,7 +14,7 @@ import '../services/board_list_service.dart';
 import '../services/thread_service.dart';
 import '../screens/board_screen.dart';
 import 'board_list_screen.dart';
-import 'history_screen_new.dart';
+import 'history_screen.dart';
 import 'settings_screen.dart';
 
 enum TabTypes { boardList, board, thread }
@@ -156,7 +156,10 @@ class _TabNavigatorState extends State<TabNavigator>
 
   /// Goes back to the previous tab when user presses back button.
   void goBack(DrawerTab currentTab) {
-    if (currentTab.prevTab == null) return;
+    if (currentTab.prevTab == null) {
+      tabController.animateTo(tabs.indexOf(boardListTab));
+      return;
+    }
     int prevTabId = tabs.indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
       if (tabController.index > 0) {
@@ -229,7 +232,7 @@ class _TabNavigatorState extends State<TabNavigator>
                       )..add(LoadThreadEvent()),
                       child: ThreadScreen(
                           currentTab: tab,
-                          prevTab: tab.prevTab!,
+                          prevTab: tab.prevTab ?? boardListTab,
                           onOpen: (DrawerTab newTab) => addTab(newTab),
                           onGoBack: (DrawerTab currentTab) =>
                               goBack(currentTab),
@@ -270,11 +273,15 @@ class _TabNavigatorState extends State<TabNavigator>
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  HistoryScreen(onOpen: (DrawerTab newTab) {
-                                    addTab(newTab);
-                                    _scaffoldKey.currentState!.closeDrawer();
-                                  })));
+                              builder: (context) => BlocProvider(
+                                    create: (context) =>
+                                        HistoryBloc()..add(LoadHistoryEvent()),
+                                    child: HistoryScreen(
+                                        onOpen: (DrawerTab newTab) {
+                                      addTab(newTab);
+                                      _scaffoldKey.currentState!.closeDrawer();
+                                    }),
+                                  )));
                     }),
                 ListTile(
                     leading: const Icon(Icons.settings),
@@ -285,10 +292,7 @@ class _TabNavigatorState extends State<TabNavigator>
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => BlocProvider(
-                                    create: (context) => HistoryBloc(),
-                                    child: const SettingsScreen(),
-                                  )));
+                              builder: (context) => const SettingsScreen()));
                     }),
                 // history button
               ],
