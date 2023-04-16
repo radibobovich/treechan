@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:treechan/utils/fix_blank_space.dart';
 
 import '../exceptions.dart';
@@ -11,12 +10,11 @@ import '../utils/fix_html_video.dart';
 enum SortBy { page, bump, time }
 
 class BoardService {
-  BoardService(
-      {required this.boardTag, required this.sortType, this.currentPage = 0});
+  BoardService({required this.boardTag, this.currentPage = 0});
 
   final String boardTag;
-  late final String boardName;
-  SortBy sortType;
+  late String boardName;
+  SortBy sortType = SortBy.page;
   int currentPage;
   List<Thread>? _threads;
 
@@ -25,6 +23,15 @@ class BoardService {
       await loadBoard();
     }
     return _threads;
+  }
+
+  // TODO: add search in catalog uisng searchTag
+  Future<void> changeSortType(SortBy newSortType, String? searchTag) async {
+    if (sortType != newSortType) {
+      sortType = newSortType;
+      currentPage = 0;
+      await loadBoard();
+    }
   }
 
   Future<http.Response> _getBoardResponse() async {
@@ -55,19 +62,11 @@ class BoardService {
     boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
     for (var thread in _threads!) {
-      if (fixBlankSpace(thread.posts![0])) break;
+      if (fixBlankSpace(thread.posts[0])) break;
     }
-    final stopwatch = Stopwatch()..start();
-    _threads = _extendThumbnailLinks(_threads!);
     for (var thread in _threads!) {
-      if (thread.posts![0].comment!.contains("<video")) {
-        fixHtmlVideo(thread);
-      }
+      fixHtmlVideo(thread, sortType: sortType);
     }
-    debugPrint(
-        "Remove video from posts elapsed: ${stopwatch.elapsedMilliseconds}");
-    _threads = _fixThreadInfo(_threads!);
-
     currentPage = 0;
   }
 
@@ -76,38 +75,6 @@ class BoardService {
     http.Response response = await _getBoardResponse();
     List<Thread>? newThreads =
         Root.fromJson(jsonDecode(response.body)).threads!;
-    newThreads = _fixThreadInfo(newThreads);
-    newThreads = _extendThumbnailLinks(newThreads);
     _threads = _threads! + newThreads;
-  }
-
-  List<Thread> _fixThreadInfo(List<Thread> threads) {
-    if (sortType == SortBy.page) {
-      for (var thread in threads) {
-        thread.comment = thread.posts![0].comment;
-        thread.subject = thread.posts![0].subject;
-        thread.num_ = thread.posts![0].id;
-        thread.email = thread.posts![0].email;
-        thread.board = thread.posts![0].board;
-        thread.name = thread.posts![0].name;
-        thread.date = thread.posts![0].date;
-        thread.files ??= thread.posts![0].files;
-      }
-    }
-    return threads;
-  }
-
-  static List<Thread> _extendThumbnailLinks(List<Thread> threadList) {
-    for (var thread in threadList) {
-      if (thread.files != null) {
-        thread.files?.forEach((element) {
-          // make full link to image thumbnail
-          if (element.thumbnail != null) {
-            element.thumbnail = "http://2ch.hk${element.thumbnail}";
-          }
-        });
-      }
-    }
-    return threadList;
   }
 }
