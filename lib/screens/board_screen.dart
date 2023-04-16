@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:treechan/widgets/board/popup_menu_board.dart';
 
 import '../models/bloc/board_bloc.dart';
 
@@ -59,7 +60,8 @@ class _BoardScreenState extends State<BoardScreen>
               BlocProvider.of<BoardBloc>(context)
                   .add(RefreshBoardEvent(refreshFromScratch: true));
             },
-          )
+          ),
+          const PopupMenuBoard()
         ],
       ),
       body: Padding(
@@ -94,11 +96,16 @@ class _BoardScreenState extends State<BoardScreen>
                     itemCount: state.threads!.length,
                     itemBuilder: (context, index) {
                       return ThreadCard(
-                        thread: state.threads![index],
-                        currentTab: widget.currentTab,
-                        onOpen: widget.onOpen,
-                        onGoBack: widget.onGoBack,
-                      );
+                          thread: state.threads![index],
+                          currentTab: widget.currentTab,
+                          onOpen: widget.onOpen,
+                          onGoBack: widget.onGoBack,
+                          onOpenCatalog: () {
+                            BlocProvider.of<BoardBloc>(context)
+                                .add(ChangeViewBoardEvent(
+                              null,
+                            ));
+                          });
                     },
                   ),
                 );

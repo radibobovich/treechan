@@ -35,6 +35,22 @@ class HistoryTab extends DrawerTab {
   }
 
   @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is HistoryTab &&
+        other.type == type &&
+        other.tag == tag &&
+        other.id == id &&
+        other.timestamp == timestamp;
+  }
+
+  @override
+  int get hashCode {
+    return type.hashCode ^ tag.hashCode ^ id.hashCode ^ timestamp.hashCode;
+  }
+
+  @override
   String toString() {
     return 'DrawerTab{type: ${type.toString()}, tag: $tag, id: $id, name: $name}';
   }
@@ -52,23 +68,24 @@ class HistoryDatabase {
   }
 
   Future<Database> _createDatabase() async {
+    final String dbPath = join(await getDatabasesPath(), 'history_database.db');
+    const String sql =
+        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)';
     if (Platform.isWindows || Platform.isLinux) {
       databaseFactory = databaseFactoryFfi;
       return databaseFactory.openDatabase(
-        join(await getDatabasesPath(), 'history_database.db'),
+        dbPath,
         options: OpenDatabaseOptions(
             version: 1,
             onCreate: (db, version) {
-              return db.execute(
-                  'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)');
+              return db.execute(sql);
             }),
       );
     } else if (Platform.isAndroid || Platform.isIOS) {
       return openDatabase(
-        join(await getDatabasesPath(), 'history_database.db'),
+        dbPath,
         onCreate: (db, version) {
-          return db.execute(
-              'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)');
+          return db.execute(sql);
         },
         version: 1,
       );
@@ -91,8 +108,13 @@ class HistoryDatabase {
     final Database db = await _database;
 
     await db.delete('history',
-        where: 'type = ? AND tag = ? AND threadId = ?',
-        whereArgs: [tab.type.toString(), tab.tag, tab.id]);
+        where: 'type = ? AND tag = ? AND threadId = ? AND timestamp = ?',
+        whereArgs: [
+          tab.type.toString(),
+          tab.tag,
+          tab.id,
+          tab.timestamp.toString()
+        ]);
   }
 
   Future<void> removeMultiple(List<HistoryTab> tabs) async {
@@ -100,9 +122,20 @@ class HistoryDatabase {
 
     for (HistoryTab tab in tabs) {
       await db.delete('history',
-          where: 'type = ? AND tag = ? AND threadId = ?',
-          whereArgs: [tab.type.toString(), tab.tag, tab.id]);
+          where: 'type = ? AND tag = ? AND threadId = ? AND timestamp = ?',
+          whereArgs: [
+            tab.type.toString(),
+            tab.tag,
+            tab.id,
+            tab.timestamp.toString()
+          ]);
     }
+  }
+
+  Future<void> clear() async {
+    final Database db = await _database;
+
+    await db.delete('history');
   }
 
   Future<List<HistoryTab>> getHistory() async {
