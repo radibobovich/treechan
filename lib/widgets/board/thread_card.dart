@@ -12,13 +12,14 @@ class ThreadCard extends StatelessWidget {
   final DrawerTab currentTab;
   final Function onOpen;
   final Function onGoBack;
-
+  final Function onOpenCatalog;
   const ThreadCard({
     Key? key,
     required this.thread,
     required this.currentTab,
     required this.onOpen,
     required this.onGoBack,
+    required this.onOpenCatalog,
   }) : super(key: key);
 
   @override
@@ -40,18 +41,19 @@ class ThreadCard extends StatelessWidget {
                     child: _CardHeader(thread: thread),
                   ),
                   Text.rich(TextSpan(
-                    text: thread!.subject,
+                    text: thread!.posts[0].subject,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )),
                 ],
               ),
             ),
-            MediaPreview(files: thread!.files),
+            MediaPreview(files: thread!.posts[0].files),
             HtmlContainer(
-              post: thread!,
+              post: thread!.posts[0],
               currentTab: currentTab,
               onOpen: onOpen,
               onGoBack: onGoBack,
+              onOpenCatalog: onOpenCatalog,
             ),
             _CardFooter(thread: thread)
           ],
@@ -63,9 +65,9 @@ class ThreadCard extends StatelessWidget {
   void openThread() {
     onOpen(DrawerTab(
         type: TabTypes.thread,
-        id: thread!.num_,
-        tag: thread!.board!,
-        name: thread!.subject!,
+        id: thread!.posts[0].id,
+        tag: thread!.posts[0].board!,
+        name: thread!.posts[0].subject!,
         prevTab: currentTab));
   }
 }
@@ -80,10 +82,11 @@ class _CardHeader extends StatelessWidget {
   final Thread? thread;
   @override
   Widget build(BuildContext context) {
-    DateTimeService dateTimeSerivce = DateTimeService(dateRaw: thread!.date!);
+    DateTimeService dateTimeSerivce =
+        DateTimeService(dateRaw: thread!.posts[0].date!);
     return Row(
       children: [
-        Text(thread?.name ?? "No author"),
+        Text(thread?.posts[0].name ?? "No author"),
         const Spacer(),
         Text(dateTimeSerivce.getAdaptiveDate(),
             style:
