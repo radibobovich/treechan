@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/models/history_database.dart';
 
+import '../models/bloc/history_bloc.dart';
 import '../screens/thread_screen.dart';
 import '../services/board_service.dart';
 import '../widgets/search_bar_widget.dart';
@@ -13,7 +14,7 @@ import '../services/board_list_service.dart';
 import '../services/thread_service.dart';
 import '../screens/board_screen.dart';
 import 'board_list_screen.dart';
-import 'history_screen.dart';
+import 'history_screen_new.dart';
 import 'settings_screen.dart';
 
 enum TabTypes { boardList, board, thread }
@@ -282,7 +283,10 @@ class _TabNavigatorState extends State<TabNavigator>
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SettingsScreen()));
+                              builder: (context) => BlocProvider(
+                                    create: (context) => HistoryBloc(),
+                                    child: const SettingsScreen(),
+                                  )));
                     }),
                 // history button
               ],

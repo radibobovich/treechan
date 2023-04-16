@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:treechan/services/history_search_service.dart';
 
 import '../models/history_database.dart';
 
+//TODO: all in bloc
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key, required this.onOpen});
 
@@ -19,6 +21,7 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   late Future<List<HistoryTab>> history;
   List<HistoryTab> selected = [];
+  bool searchMode = false;
   final formatter = DateFormat('HH:mm dd.MM.yy ');
   @override
   void initState() {
@@ -31,10 +34,18 @@ class _HistoryScreenState extends State<HistoryScreen>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title: selected.isEmpty
-            ? const Text('История')
-            : Text('Выбрано: ${selected.length}'),
+        title: getTitle(),
+        // selected.isEmpty
+        //     ? const Text('История')
+        //     : Text('Выбрано: ${selected.length}'),
         actions: [
+          IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() {
+                  searchMode = !searchMode;
+                });
+              }),
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () async {
@@ -94,5 +105,27 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   bool isSelected(HistoryTab item) {
     return selected.contains(item);
+  }
+
+  Widget getTitle() {
+    if (searchMode) {
+      // final searchService = HistorySearchService(history: history);
+      return TextField(
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: 'Поиск',
+          border: InputBorder.none,
+        ),
+        onChanged: (value) {
+          setState(() {
+            // history = searchService.search(value);
+          });
+        },
+      );
+    } else if (selected.isEmpty) {
+      return const Text('История');
+    } else {
+      return Text('Выбрано: ${selected.length}');
+    }
   }
 }
