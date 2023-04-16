@@ -1,129 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:treechan/services/history_search_service.dart';
 
+import '../models/bloc/history_bloc.dart';
 import '../models/history_database.dart';
 
-//TODO: all in bloc
-class HistoryScreen extends StatefulWidget {
+class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key, required this.onOpen});
 
   final Function onOpen;
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  Widget build(BuildContext context) {
+    return BlocBuilder<HistoryBloc, HistoryState>(
+      builder: (context, state) {
+        return Scaffold(
+          appBar: const PreferredSize(
+              preferredSize: Size.fromHeight(56), child: HistoryAppBar()),
+          body: HistoryListView(onOpen: onOpen),
+        );
+      },
+    );
+  }
 }
 
-class _HistoryScreenState extends State<HistoryScreen>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  get wantKeepAlive => true;
-
-  late Future<List<HistoryTab>> history;
-  List<HistoryTab> items = [];
-  List<HistoryTab> selected = [];
-  bool searchMode = false;
-  final formatter = DateFormat('HH:mm dd.MM.yy ');
-  @override
-  void initState() {
-    super.initState();
-    history = HistoryDatabase().getHistory();
-  }
+class HistoryAppBar extends StatelessWidget {
+  const HistoryAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: selected.isEmpty
-            ? const Text('История')
-            : Text('Выбрано: ${selected.length}'),
-        leading: selected.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.select_all),
+    return BlocBuilder<HistoryBloc, HistoryState>(
+      builder: (context, state) {
+        if (state is HistoryLoadedState) {
+          return AppBar(
+            title: const Text("История"),
+            actions: [
+              IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    BlocProvider.of<HistoryBloc>(context)
+                        .add(SearchQueryChangedEvent(""));
+                  }),
+              IconButton(
+                icon: const Icon(Icons.delete),
                 onPressed: () {
-                  setState(() {
-                    if (selected.length == items.length) {
-                      selected = [];
-                    } else {
-                      selected = [];
-                      selected.addAll(items);
-                    }
-                  });
+                  showHistoryClearDialog(
+                      context: context, clearHistory: state.clearHistory);
                 },
               )
-            : null,
-        actions: [
-          IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                setState(() {
-                  searchMode = !searchMode;
-                });
-              }),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () async {
-              if (selected.isNotEmpty) {
-                await HistoryDatabase().removeMultiple(selected);
-                setState(() {
-                  selected = [];
-                  history = HistoryDatabase().getHistory();
-                });
-              } else if (items.isNotEmpty) {
-                showHistoryClearDialog(context);
-              }
-            },
-          ),
-        ],
-      ),
-      body: FutureBuilder<List<HistoryTab>>(
-        future: history,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            items = snapshot.data!;
-            return ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final HistoryTab item = items[index];
-                return ListTile(
-                  title: Text(item.name!,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text("/${item.tag}/${item.id}"),
-                  trailing: Text(formatter.format(item.timestamp)),
-                  leading: isSelected(item) ? const Icon(Icons.check) : null,
-                  selected: isSelected(item),
-                  onTap: selected.isEmpty
-                      ? () {
-                          Navigator.pop(context);
-                          widget.onOpen(item.toDrawerTab());
-                        }
-                      : () => onItemSelect(item),
-                  onLongPress: () => onItemSelect(item),
-                );
-              },
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+            ],
+          );
+        } else if (state is HistorySelectedState) {
+          return AppBar(
+            title: Text("Выбрано: ${state.selected.length}"),
+            actions: [
+              IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    BlocProvider.of<HistoryBloc>(context)
+                        .add(SearchQueryChangedEvent(""));
+                  }),
+              IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    BlocProvider.of<HistoryBloc>(context)
+                        .add(RemoveSelectedEvent());
+                  })
+            ],
+          );
+        } else if (state is HistorySearchState) {
+          return AppBar(
+            title: const SearchField(),
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  BlocProvider.of<HistoryBloc>(context).add(LoadHistoryEvent());
+                }),
+          );
+        } else if (state is HistorySearchSelectedState) {
+          return AppBar(
+              title: const SearchField(),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  BlocProvider.of<HistoryBloc>(context).add(LoadHistoryEvent());
+                },
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    // state.removeSelected();
+                    BlocProvider.of<HistoryBloc>(context)
+                        .add(RemoveSelectedEvent());
+                  },
+                )
+              ]);
+        } else {
+          return AppBar(title: const Text("История"));
+        }
+      },
     );
   }
 
-  Future<dynamic> showHistoryClearDialog(BuildContext context) {
+  showHistoryClearDialog({
+    required BuildContext context,
+    required Function clearHistory,
+  }) {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
               title: const Text('Очистить историю?'),
               actions: [
                 TextButton(
-                    onPressed: () async {
-                      await HistoryDatabase().clear();
-                      setState(() {
-                        history = HistoryDatabase().getHistory();
-                      });
-                      // ignore: use_build_context_synchronously
+                    onPressed: () {
+                      BlocProvider.of<HistoryBloc>(context)
+                          .add(RemoveSelectedEvent(removeAll: true));
+                      clearHistory();
                       Navigator.pop(context);
                     },
                     child: const Text('Очистить')),
@@ -133,40 +126,142 @@ class _HistoryScreenState extends State<HistoryScreen>
               ],
             ));
   }
+}
 
-  void onItemSelect(HistoryTab item) {
-    setState(() {
-      if (selected.contains(item)) {
-        selected.remove(item);
-      } else {
-        selected.add(item);
-      }
-    });
+class SearchField extends StatelessWidget {
+  const SearchField({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      autofocus: true,
+      decoration: const InputDecoration(hintText: 'Поиск'),
+      onChanged: (query) {
+        BlocProvider.of<HistoryBloc>(context)
+            .add(SearchQueryChangedEvent(query));
+      },
+    );
   }
+}
 
-  bool isSelected(HistoryTab item) {
-    return selected.contains(item);
+class HistoryListView extends StatefulWidget {
+  const HistoryListView({super.key, required this.onOpen});
+
+  final Function onOpen;
+
+  @override
+  State<HistoryListView> createState() => _HistoryListViewState();
+}
+
+class _HistoryListViewState extends State<HistoryListView> {
+  final formatter = DateFormat('HH:mm dd.MM.yy ');
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HistoryBloc, HistoryState>(
+      builder: (context, state) {
+        if (state is HistoryLoadedState) {
+          return ListView.builder(
+            itemCount: state.history.length,
+            itemBuilder: (context, index) {
+              final HistoryTab item = state.history[index];
+              return ListTileIdle(
+                  item: item, formatter: formatter, onOpen: widget.onOpen);
+            },
+          );
+        } else if (state is HistorySelectedState) {
+          return ListView.builder(
+            itemCount: state.history.length,
+            itemBuilder: (context, index) {
+              final HistoryTab item = state.history[index];
+              return ListTileSelectable(
+                item: item,
+                formatter: formatter,
+              );
+            },
+          );
+        } else if (state is HistorySearchState) {
+          return ListView.builder(
+              itemCount: state.searchResult.length,
+              itemBuilder: (context, index) {
+                final HistoryTab item = state.searchResult[index];
+                return ListTileIdle(
+                    item: item, formatter: formatter, onOpen: widget.onOpen);
+              });
+        } else if (state is HistorySearchSelectedState) {
+          return ListView.builder(
+            itemCount: state.searchResult.length,
+            itemBuilder: (context, index) {
+              final HistoryTab item = state.searchResult[index];
+              return ListTileSelectable(
+                item: item,
+                formatter: formatter,
+              );
+            },
+          );
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
   }
+}
 
-  Widget getTitle() {
-    if (searchMode) {
-      // final searchService = HistorySearchService(history: history);
-      return TextField(
-        autofocus: true,
-        decoration: const InputDecoration(
-          hintText: 'Поиск',
-          border: InputBorder.none,
-        ),
-        onChanged: (value) {
-          setState(() {
-            // history = searchService.search(value);
-          });
-        },
-      );
-    } else if (selected.isEmpty) {
-      return const Text('История');
-    } else {
-      return Text('Выбрано: ${selected.length}');
-    }
+// Used in normal and search mode.
+class ListTileIdle extends StatelessWidget {
+  const ListTileIdle({
+    super.key,
+    required this.item,
+    required this.formatter,
+    required this.onOpen,
+  });
+
+  final HistoryTab item;
+  final DateFormat formatter;
+  final Function onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(item.name!, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text("/${item.tag}/${item.id}"),
+      trailing: Text(formatter.format(item.timestamp)),
+      onTap: () {
+        Navigator.pop(context);
+        onOpen(item);
+      },
+      onLongPress: () {
+        BlocProvider.of<HistoryBloc>(context).add(SelectionChangedEvent(item));
+      },
+    );
+  }
+}
+
+// Used in selec and search select mode.
+class ListTileSelectable extends StatelessWidget {
+  const ListTileSelectable({
+    super.key,
+    required this.item,
+    required this.formatter,
+  });
+
+  final HistoryTab item;
+  final DateFormat formatter;
+
+  @override
+  Widget build(BuildContext context) {
+    bool isSelected =
+        BlocProvider.of<HistoryBloc>(context).selected.contains(item);
+    return ListTile(
+        title: Text(item.name!, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: Text("/${item.tag}/${item.id}"),
+        leading: isSelected ? const Icon(Icons.check) : null,
+        trailing: Text(formatter.format(item.timestamp)),
+        selected: isSelected,
+        onTap: () {
+          BlocProvider.of<HistoryBloc>(context)
+              .add(SelectionChangedEvent(item));
+        });
   }
 }
