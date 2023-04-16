@@ -20,6 +20,8 @@ enum TabTypes { boardList, board, thread }
 
 class DrawerTab {
   TabTypes type;
+  bool? isCatalog;
+  String? searchTag; // to search something in catalog
   int? id;
   String? name;
   String tag;
@@ -100,6 +102,7 @@ class _TabNavigatorState extends State<TabNavigator>
       });
       if (tab.name != null) HistoryDatabase().add(tab.toHistoryTab());
     }
+
     tabController.animateTo(tabs.indexOf(tab));
   }
 
@@ -205,8 +208,7 @@ class _TabNavigatorState extends State<TabNavigator>
                     return BlocProvider(
                       key: ValueKey(tab),
                       create: (context) => BoardBloc(
-                          boardService: BoardService(
-                              boardTag: tab.tag, sortType: SortBy.page))
+                          boardService: BoardService(boardTag: tab.tag))
                         ..add(LoadBoardEvent()),
                       child: BoardScreen(
                           currentTab: tab,

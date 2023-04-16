@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/fix_html_video.dart';
@@ -30,6 +31,8 @@ class ThreadService {
   List<TreeNode<Post>>? _roots;
 
   Future<List<TreeNode<Post>>?> getRoots() async {
+    prefs = await SharedPreferences.getInstance();
+
     if (_roots == null) {
       await loadThread();
     }
@@ -103,6 +106,8 @@ class ThreadService {
   Future<void> refreshThread() async {
     final http.Response response = await _getThreadResponse(isRefresh: true);
     List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
+    _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
+    _threadInfo.maxNum = newPosts.last.id;
     _extendThumbnailLinks(newPosts);
     _posts!.addAll(newPosts);
     if (newPosts.isNotEmpty) {

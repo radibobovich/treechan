@@ -6,8 +6,9 @@ import '../models/category.dart';
 import '../models/json/json.dart';
 
 class BoardListService {
-  BoardListService();
+  BoardListService({this.openAsCatalog});
 
+  bool? openAsCatalog = false;
   List<Category> _categories = List.empty(growable: true);
   List<Board> _favoriteBoards = List.empty(growable: true);
 
