@@ -64,7 +64,12 @@ class BoardAppBar extends StatelessWidget {
           return AppBar(
             title: TextField(
               autofocus: true,
-              decoration: const InputDecoration(hintText: 'Поиск'),
+              decoration: const InputDecoration(
+                hintText: 'Поиск',
+                border: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
               onChanged: (query) {
                 BlocProvider.of<BoardBloc>(context)
                     .add(SearchQueryChangedEvent(query));
