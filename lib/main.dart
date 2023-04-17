@@ -66,7 +66,7 @@ Future<void> initializePreferences() async {
   if (prefs.getString('androidDestinationType') == null) {
     await prefs.setString('androidDestinationType', 'directoryDownloads');
   }
-  if (prefs.getString('boardSortType') == null || true) {
+  if (prefs.getString('boardSortType') == null) {
     await prefs.setString('boardSortType', 'bump');
   }
 
