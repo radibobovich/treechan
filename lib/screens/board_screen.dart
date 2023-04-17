@@ -63,13 +63,13 @@ class BoardAppBar extends StatelessWidget {
         } else if (state is BoardSearchState) {
           return AppBar(
             title: TextField(
+              style: const TextStyle(color: Colors.white),
               autofocus: true,
               decoration: const InputDecoration(
-                hintText: 'Поиск',
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
-              ),
+                  hintText: ' Поиск',
+                  hintStyle: TextStyle(color: Colors.white70),
+                  focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white))),
               onChanged: (query) {
                 BlocProvider.of<BoardBloc>(context)
                     .add(SearchQueryChangedEvent(query));
