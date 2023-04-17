@@ -3,15 +3,18 @@ import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/services/board_service.dart';
 
+import '../../services/board_search_service.dart';
 import '../json/json.dart';
 
 class BoardBloc extends Bloc<BoardEvent, BoardState> {
   // final String boardTag;
   late final BoardService boardService;
+  late BoardSearchService searchService;
   BoardBloc({required this.boardService}) : super(BoardInitialState()) {
     on<LoadBoardEvent>((event, emit) async {
       try {
         final List<Thread>? threads = await boardService.getThreads();
+        searchService = BoardSearchService(threads: threads!);
         emit(BoardLoadedState(
             boardName: boardService.boardName,
             threads: threads,
@@ -46,6 +49,14 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         emit(BoardErrorState(e.toString()));
       }
     });
+    on<SearchQueryChangedEvent>((event, emit) async {
+      try {
+        emit(BoardSearchState(
+            searchResult: await searchService.search(event.query)));
+      } catch (e) {
+        emit(BoardErrorState(e.toString()));
+      }
+    });
   }
 }
 
@@ -63,13 +74,21 @@ class RefreshBoardEvent extends BoardEvent {
 
 class ChangeViewBoardEvent extends BoardEvent {
   ChangeViewBoardEvent(this.sortType, {this.searchTag}) {
+    if (sortType != null && sortType != SortBy.page) {
+      prefs.setString('boardSortType', sortType.toString().split('.').last);
+    }
     // get sort type from prefs and convert it to enum
-    SortBy boardSortType = SortBy.values.firstWhere((e) =>
+    SortBy savedSortType = SortBy.values.firstWhere((e) =>
         e.toString().split('.').last == prefs.getString('boardSortType'));
-    sortType ??= boardSortType;
+    sortType ??= savedSortType;
   }
   SortBy? sortType;
   String? searchTag;
+}
+
+class SearchQueryChangedEvent extends BoardEvent {
+  SearchQueryChangedEvent(this.query);
+  final String query;
 }
 
 abstract class BoardState {}
@@ -84,9 +103,10 @@ class BoardLoadedState extends BoardState {
       {required this.boardName, this.threads, this.completeRefresh = true});
 }
 
-// class RefreshCompletedState extends BoardState {
-//   RefreshCompletedState();
-// }
+class BoardSearchState extends BoardState {
+  BoardSearchState({required this.searchResult});
+  final List<Thread> searchResult;
+}
 
 class BoardErrorState extends BoardState {
   final String errorMessage;

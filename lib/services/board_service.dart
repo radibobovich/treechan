@@ -25,7 +25,6 @@ class BoardService {
     return _threads;
   }
 
-  // TODO: add search in catalog uisng searchTag
   Future<void> changeSortType(SortBy newSortType, String? searchTag) async {
     if (sortType != newSortType) {
       sortType = newSortType;
