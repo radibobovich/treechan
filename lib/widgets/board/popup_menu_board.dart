@@ -4,30 +4,26 @@ import 'package:treechan/main.dart';
 import 'package:treechan/models/bloc/board_bloc.dart';
 import 'package:treechan/services/board_service.dart';
 
-class PopupMenuBoard extends StatefulWidget {
+class PopupMenuBoard extends StatelessWidget {
   const PopupMenuBoard({super.key});
 
-  @override
-  State<PopupMenuBoard> createState() => _PopupMenuBoardState();
-}
-
-class _PopupMenuBoardState extends State<PopupMenuBoard> {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
       icon: const Icon(Icons.more_vert),
       padding: EdgeInsets.zero,
       itemBuilder: (context) {
-        if (BlocProvider.of<BoardBloc>(context).boardService.sortType ==
+        if (BlocProvider.of<BoardBloc>(context).boardService.sortType !=
             SortBy.page) {
-          return <PopupMenuEntry<dynamic>>[
-            getViewButton(context),
-          ];
-        } else {
-          // sorry for this shitcode. it doenst allow to make it shorter
+          // catalog mode: can return to page mode, sort by time or bump and search
           return <PopupMenuEntry<dynamic>>[
             getViewButton(context),
             getSortButton(context),
+          ];
+        } else {
+          // page sort mode: can go to catalog
+          return <PopupMenuEntry<dynamic>>[
+            getViewButton(context),
           ];
         }
       },
@@ -41,9 +37,8 @@ class _PopupMenuBoardState extends State<PopupMenuBoard> {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: const Text('Каталог'),
         onTap: () {
-          BlocProvider.of<BoardBloc>(context)
-              .add(ChangeViewBoardEvent(SortBy.bump));
-          setState(() {});
+          BlocProvider.of<BoardBloc>(context).add(ChangeViewBoardEvent(null));
+          // setState(() {});
         },
       );
     } else {
@@ -51,12 +46,8 @@ class _PopupMenuBoardState extends State<PopupMenuBoard> {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: const Text('Страницы'),
         onTap: () {
-          String prevSortType =
-              prefs.getString('boardSortType').toString().split('.').last;
-          SortBy type = SortBy.values.firstWhere(
-              (element) => element.toString().split('.').last == prevSortType);
-          BlocProvider.of<BoardBloc>(context).add(ChangeViewBoardEvent(type));
-          setState(() {});
+          BlocProvider.of<BoardBloc>(context)
+              .add(ChangeViewBoardEvent(SortBy.page));
         },
       );
     }
@@ -72,7 +63,7 @@ class _PopupMenuBoardState extends State<PopupMenuBoard> {
           prefs.setString('boardSortType', 'bump');
           BlocProvider.of<BoardBloc>(context)
               .add(ChangeViewBoardEvent(SortBy.bump));
-          setState(() {});
+          // setState(() {});
         },
       );
     } else {
@@ -80,12 +71,23 @@ class _PopupMenuBoardState extends State<PopupMenuBoard> {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: const Text('Сортировать по дате'),
         onTap: () {
-          prefs.setString('boardSortType', 'date');
+          prefs.setString('boardSortType', 'time');
           BlocProvider.of<BoardBloc>(context)
               .add(ChangeViewBoardEvent(SortBy.time));
-          setState(() {});
+          // setState(() {});
         },
       );
     }
   }
+
+  // PopupMenuItem<dynamic> getSearchButton(BuildContext context) {
+  //   return PopupMenuItem(
+  //     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+  //     child: const Text('Поиск'),
+  //     onTap: () {
+  //       // BlocProvider.of<BoardBloc>(context).add(ChangeViewBoardEvent(null));
+  //       BlocProvider.of<BoardBloc>(context).add(SearchQueryChangedEvent(""));
+  //     },
+  //   );
+  // }
 }
