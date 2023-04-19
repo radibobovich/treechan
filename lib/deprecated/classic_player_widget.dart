@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../models/json/json.dart';
+import '../domain/models/json/json.dart';
 
 import 'package:video_player/video_player.dart';
 

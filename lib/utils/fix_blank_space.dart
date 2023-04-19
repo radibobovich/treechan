@@ -1,4 +1,4 @@
-import '../models/json/json.dart';
+import '../domain/models/json/json.dart';
 
 bool fixBlankSpace(Post post) {
   if (post.board == 'pr' && post.id == 1215536) {

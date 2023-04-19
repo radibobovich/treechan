@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/services/thread_service.dart';
+import 'package:treechan/domain/services/thread_service.dart';
 
 late SharedPreferences prefs;
 void main() async {
