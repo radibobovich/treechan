@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:treechan/services/date_time_service.dart';
+import 'package:treechan/domain/services/date_time_service.dart';
 
 void main() {
   List<String> dates = [

@@ -1,5 +1,5 @@
-import '../models/json/json.dart';
-import '../services/board_service.dart';
+import 'constants/enums.dart';
+import '../domain/models/json/json.dart';
 
 /// Removes <video> tag from comment and adds file to files list.
 void fixHtmlVideo(dynamic item, {SortBy? sortType}) {

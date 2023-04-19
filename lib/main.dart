@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:treechan/themes.dart';
-import 'screens/tab_navigator.dart';
+import 'package:treechan/config/themes.dart';
+import 'presentation/provider/tab_provider.dart';
+import 'presentation/screens/tab_navigator.dart';
 
 bool flagDebugThread = false;
 late SharedPreferences prefs;
@@ -35,7 +37,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Flutter Demo',
           theme: getTheme(snapshot.data!),
-          home: const TabNavigator(),
+          home: ListenableProvider(
+              create: (context) => TabProvider(), child: const TabNavigator()),
           initialRoute: '/',
         );
       },
