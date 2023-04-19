@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/category.dart';
-import '../models/json/json.dart';
+import '../domain/models/category.dart';
+import '../domain/models/json/json.dart';
 import 'dart:convert';
 
 /// Returns a list of available boards saved in device memory, otherwise downloads it.
