@@ -46,6 +46,7 @@ class TabProvider with ChangeNotifier {
     await Future.delayed(
         const Duration(milliseconds: 20)); // enables transition animation
     animateTo(_tabs.indexOf(tab));
+    HistoryDatabase().add(tab.toHistoryTab());
   }
 
   void removeTab(DrawerTab tab) {
