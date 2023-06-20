@@ -12,7 +12,7 @@ class GoBackButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () {
-        context.read<TabProvider>().goBack(currentTab);
+        context.read<TabProvider>().goBack();
       },
     );
   }

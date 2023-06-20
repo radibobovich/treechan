@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:treechan/domain/models/catalog.dart';
+import 'package:treechan/presentation/screens/tab_navigator.dart';
 
 import '../../data/history_database.dart';
 import '../../domain/models/tab.dart';
@@ -12,22 +13,39 @@ class TabProvider with ChangeNotifier {
       StreamController<Catalog>.broadcast();
   Stream<Catalog> get catalogStream => _catalog.stream;
 
+  // TabController tabController =
+  //     TabController(length: 0, vsync: navState as TickerProvider);
   final List<DrawerTab> _tabs = [];
   List<DrawerTab> get tabs => _tabs;
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
 
+  late TabController tabController;
+  late TabNavigatorState state;
+  void initController(TabNavigatorState gotState) {
+    state = gotState;
+    tabController = TabController(length: 0, vsync: state);
+  }
+
+  void refreshController() {
+    tabController = TabController(length: tabs.length, vsync: state);
+  }
+
   void animateTo(int index) {
     _currentIndex = index;
+    tabController.animateTo(index);
     notifyListeners();
   }
 
-  void addTab(DrawerTab tab) {
+  void addTab(DrawerTab tab) async {
     if (!_tabs.contains(tab)) {
       _tabs.add(tab);
+      refreshController();
     }
-    animateTo(_tabs.indexOf(tab));
     notifyListeners();
+    await Future.delayed(
+        const Duration(milliseconds: 20)); // enables transition animation
+    animateTo(_tabs.indexOf(tab));
   }
 
   void removeTab(DrawerTab tab) {
@@ -36,7 +54,7 @@ class TabProvider with ChangeNotifier {
     int removingTabIndex = tabs.indexOf(tab);
 
     tabs.remove(tab);
-
+    refreshController();
     if (currentIndex == removingTabIndex) {
       // if you close the current tab
       try {
@@ -66,7 +84,8 @@ class TabProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void goBack(DrawerTab currentTab) {
+  void goBack() {
+    DrawerTab currentTab = tabs[currentIndex];
     if (currentTab.prevTab == null) {
       animateTo(tabs.indexOf(boardListTab));
       return;
