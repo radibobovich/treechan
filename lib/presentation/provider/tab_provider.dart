@@ -66,7 +66,8 @@ class TabProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void goBack(DrawerTab currentTab) {
+  void goBack() {
+    final DrawerTab currentTab = _tabs[_currentIndex];
     if (currentTab.prevTab == null) {
       animateTo(tabs.indexOf(boardListTab));
       return;

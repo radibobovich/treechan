@@ -9,6 +9,7 @@ import '../../utils/constants/enums.dart';
 
 import '../screens/thread_screen.dart';
 import '../screens/board_screen.dart';
+import '../widgets/animated_stack.dart';
 import 'board_list_screen.dart';
 
 import '../widgets/drawer/drawer.dart';
@@ -64,9 +65,9 @@ class _TabNavigatorState extends State<TabNavigator> {
     /// Overrides Android back button to go back to the previous tab.
     return WillPopScope(
       onWillPop: () async {
-        int currentIndex = context.watch<TabProvider>().currentIndex;
+        int currentIndex = provider.currentIndex;
         if (currentIndex > 0) {
-          provider.goBack(context.watch<TabProvider>().tabs[currentIndex]);
+          provider.goBack();
           return Future.value(false);
         } else {
           return Future.value(true);
@@ -94,7 +95,7 @@ class ScreenStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IndexedStack(
+    return FadeIndexedStack(
       index: provider.currentIndex,
       children: provider.tabs.map((tab) {
         switch (tab.type) {
