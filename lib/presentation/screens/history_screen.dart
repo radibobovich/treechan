@@ -45,7 +45,7 @@ class HistoryAppBar extends StatelessWidget {
                 icon: const Icon(Icons.delete),
                 onPressed: () {
                   showHistoryClearDialog(
-                      context: context, clearHistory: state.clearHistory);
+                      bcontext: context, clearHistory: state.clearHistory);
                 },
               )
             ],
@@ -104,17 +104,17 @@ class HistoryAppBar extends StatelessWidget {
   }
 
   showHistoryClearDialog({
-    required BuildContext context,
+    required BuildContext bcontext,
     required Function clearHistory,
   }) {
     return showDialog(
-        context: context,
+        context: bcontext,
         builder: (context) => AlertDialog(
               title: const Text('Очистить историю?'),
               actions: [
                 TextButton(
                     onPressed: () {
-                      BlocProvider.of<HistoryBloc>(context)
+                      BlocProvider.of<HistoryBloc>(bcontext)
                           .add(RemoveSelectedEvent(removeAll: true));
                       clearHistory();
                       Navigator.pop(context);
