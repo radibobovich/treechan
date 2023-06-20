@@ -29,16 +29,17 @@ import '../../domain/services/board_service.dart';
 class TabNavigator extends StatefulWidget {
   const TabNavigator({super.key});
   @override
-  State<TabNavigator> createState() => _TabNavigatorState();
+  State<TabNavigator> createState() => TabNavigatorState();
 }
 
-class _TabNavigatorState extends State<TabNavigator> {
+class TabNavigatorState extends State<TabNavigator>
+    with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
-
     final provider = context.read<TabProvider>();
+    provider.initController(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       provider.addTab(boardListTab);
       debugThread(provider);
@@ -76,7 +77,7 @@ class _TabNavigatorState extends State<TabNavigator> {
       child: ScaffoldMessenger(
         child: Scaffold(
           key: _scaffoldKey,
-          body: ScreenStack(provider: provider),
+          body: Screen(provider: provider),
           drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
         ),
       ),
@@ -85,8 +86,8 @@ class _TabNavigatorState extends State<TabNavigator> {
 }
 
 /// The widget showing current tab.
-class ScreenStack extends StatelessWidget {
-  const ScreenStack({
+class Screen extends StatelessWidget {
+  const Screen({
     super.key,
     required this.provider,
   });
@@ -95,8 +96,9 @@ class ScreenStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FadeIndexedStack(
-      index: provider.currentIndex,
+    return TabBarView(
+      physics: const NeverScrollableScrollPhysics(),
+      controller: context.watch<TabProvider>().tabController,
       children: provider.tabs.map((tab) {
         switch (tab.type) {
           case TabTypes.boardList:
