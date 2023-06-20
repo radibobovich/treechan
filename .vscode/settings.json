@@ -1,3 +1,4 @@
 {
-    "dart.sdkPath": "E:\\flutter-sdk\\flutter\\bin\\cache\\dart-sdk"
+    "dart.sdkPath": "E:\\flutter-sdk\\flutter\\bin\\cache\\dart-sdk",
+    "cmake.configureOnOpen": false
 }
