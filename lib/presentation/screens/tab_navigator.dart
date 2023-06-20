@@ -9,6 +9,7 @@ import '../../utils/constants/enums.dart';
 
 import '../screens/thread_screen.dart';
 import '../screens/board_screen.dart';
+import '../widgets/animated_stack.dart';
 import 'board_list_screen.dart';
 
 import '../widgets/drawer/drawer.dart';
@@ -97,7 +98,6 @@ class Screen extends StatelessWidget {
   Widget build(BuildContext context) {
     return TabBarView(
       physics: const NeverScrollableScrollPhysics(),
-      // index: provider.currentIndex,
       controller: context.watch<TabProvider>().tabController,
       children: provider.tabs.map((tab) {
         switch (tab.type) {
