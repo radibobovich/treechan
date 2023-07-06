@@ -13,8 +13,6 @@ class TabProvider with ChangeNotifier {
       StreamController<Catalog>.broadcast();
   Stream<Catalog> get catalogStream => _catalog.stream;
 
-  // TabController tabController =
-  //     TabController(length: 0, vsync: navState as TickerProvider);
   final List<DrawerTab> _tabs = [];
   List<DrawerTab> get tabs => _tabs;
   int _currentIndex = 0;
@@ -50,7 +48,6 @@ class TabProvider with ChangeNotifier {
   }
 
   void removeTab(DrawerTab tab) {
-    // int currentIndex = tabController.index;
     int currentIndex = _currentIndex;
     int removingTabIndex = tabs.indexOf(tab);
 

@@ -95,15 +95,12 @@ class Tree {
 
   /// Check if post has references to posts in other threads.
   static bool _hasExternalReferences(List<Post> posts, List<int> referenceIds) {
-    // final stopwatch = Stopwatch()..start();
     for (var referenceId in referenceIds) {
       // if there are no posts with that id in current thread, then it is an external reference
       if (posts.where((post) => post.id == referenceId).isEmpty) {
-        // debugPrint('_hasExternalReferences() executed in ${stopwatch.elapsed}');
         return true;
       }
     }
-    // debugPrint('_hasExternalReferences() executed in ${stopwatch.elapsed}');
     return false;
   }
 

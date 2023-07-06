@@ -40,12 +40,6 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
         }
       },
     );
-    // on<OpenCatalogEvent>(
-    //   (event, emit) async {
-    //     emit(OpenCatalogState(
-    //         boardTag: event.boardTag, searchTag: event.searchTag));
-    //   },
-    // );
   }
 }
 
@@ -58,12 +52,6 @@ class LoadThreadEvent extends ThreadEvent {
 
 class RefreshThreadEvent extends ThreadEvent {}
 
-// class OpenCatalogEvent extends ThreadEvent {
-//   OpenCatalogEvent({required this.boardTag, required this.searchTag});
-//   final String boardTag;
-//   final String searchTag;
-// }
-
 abstract class ThreadState {}
 
 class ThreadInitialState extends ThreadState {}
@@ -73,12 +61,6 @@ class ThreadLoadedState extends ThreadState {
   late final Root? threadInfo;
   ThreadLoadedState({required this.roots, required this.threadInfo});
 }
-
-// class OpenCatalogState extends ThreadState {
-//   OpenCatalogState({required this.boardTag, required this.searchTag});
-//   final String boardTag;
-//   final String searchTag;
-// }
 
 class ThreadErrorState extends ThreadState {
   final String errorMessage;
