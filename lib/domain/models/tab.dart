@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../utils/constants/enums.dart';
 
-/// An initial tab for the drawer. Referenced in goBack of boards.
+/// An initial tab for the drawer.
 DrawerTab boardListTab =
     DrawerTab(type: TabTypes.boardList, name: "Доски", tag: "boards");
 
