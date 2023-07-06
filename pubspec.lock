@@ -482,6 +482,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.5"
+  pausable_timer:
+    dependency: "direct main"
+    description:
+      name: pausable_timer
+      sha256: "1897e2c6a4e73b9486e4ff943bfd08585bc231400e6ae924a92f5b9fd8efc0a6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0+7"
   petitparser:
     dependency: transitive
     description:
