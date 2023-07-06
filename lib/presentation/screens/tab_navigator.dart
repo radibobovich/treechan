@@ -9,7 +9,7 @@ import '../../utils/constants/enums.dart';
 
 import '../screens/thread_screen.dart';
 import '../screens/board_screen.dart';
-import '../widgets/animated_stack.dart';
+import '../../deprecated/animated_stack.dart';
 import 'board_list_screen.dart';
 
 import '../widgets/drawer/drawer.dart';

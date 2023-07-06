@@ -24,7 +24,7 @@ class ThreadService {
   ///
   /// The tree comment system is a list of roots each is a reply to an OP-post
   /// or just a reply in the thread, or is an OP-post itself.
-  /// Replies to OP-posts is not added as a children of the OP-post, but as a
+  /// Replies to OP-posts are not added as a children of the OP-post, but as a
   /// independent root.
   List<TreeNode<Post>>? _roots;
 
@@ -59,7 +59,6 @@ class ThreadService {
     _threadInfo = decodedResponse;
     _threadInfo.opPostId = _posts!.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
-    // _extendThumbnailLinks(_posts);
     for (var post in _posts!) {
       if (post.comment!.contains("video")) fixHtmlVideo(post);
     }
@@ -80,15 +79,15 @@ class ThreadService {
     List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
     _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
     _threadInfo.maxNum = newPosts.last.id;
-    // _extendThumbnailLinks(newPosts);
     _posts!.addAll(newPosts);
     if (newPosts.isNotEmpty) {
       _threadInfo.maxNum = newPosts.last.id;
     }
-
+    // create tree for new posts
     Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
     List<TreeNode<Post>>? newRoots = treeService.getRoots;
 
+    // attach new tree to the old tree
     if (newRoots!.isEmpty) return;
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
@@ -105,19 +104,6 @@ class ThreadService {
     }
     _setShowLinesProperty(_roots);
   }
-
-  /// Extends image thumbnail links to a full link so it can be loaded directly.
-  // static void _extendThumbnailLinks(List<Post>? posts) {
-  //   return posts?.forEach((post) {
-  //     if (post.files != null) {
-  //       for (var file in post.files!) {
-  //         if (file.thumbnail != null) {
-  //           file.thumbnail = "http://2ch.hk${file.thumbnail ?? ""}";
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
 
   /// Sets showLines property to false when there are nodes with depth >=16.
   void _setShowLinesProperty(List<TreeNode<Post>>? roots) {
