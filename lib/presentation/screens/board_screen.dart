@@ -27,7 +27,6 @@ class _BoardAppBarState extends State<BoardAppBar> {
   final controller = TextEditingController(text: "INITIALCONTROLLERTEXT");
   @override
   Widget build(BuildContext context) {
-    // final controller = TextEditingController();
     return BlocBuilder<BoardBloc, BoardState>(
       builder: (context, state) {
         if (state is BoardLoadedState) {
@@ -167,12 +166,6 @@ class _BoardScreenState extends State<BoardScreen>
                       return ThreadCard(
                         thread: state.threads![index],
                         currentTab: widget.currentTab,
-                        // onOpenCatalog: () {
-                        //   BlocProvider.of<BoardBloc>(context)
-                        //       .add(ChangeViewBoardEvent(
-                        //     null,
-                        //   ));
-                        // }
                       );
                     },
                   ),
@@ -184,10 +177,6 @@ class _BoardScreenState extends State<BoardScreen>
                     return ThreadCard(
                       thread: state.searchResult[index],
                       currentTab: widget.currentTab,
-                      // onOpenCatalog: (String searchTag) {
-                      //   BlocProvider.of<BoardBloc>(context).add(
-                      //       ChangeViewBoardEvent(null, searchTag: searchTag));
-                      // }
                     );
                   },
                 );
