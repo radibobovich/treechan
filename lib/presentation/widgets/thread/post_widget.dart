@@ -4,6 +4,7 @@ import 'package:treechan/domain/services/date_time_service.dart';
 import '../../../domain/models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:pausable_timer/pausable_timer.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../domain/services/scroll_service.dart';
@@ -26,11 +27,35 @@ class PostWidget extends StatefulWidget {
   State<PostWidget> createState() => _PostWidgetState();
 }
 
-class _PostWidgetState extends State<PostWidget> {
+class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
+  late AnimationController animationController;
+  late Animation<Color?> colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    animationController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+
+    animationController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  PausableTimer? timer;
+
   @override
   Widget build(BuildContext context) {
     final Post post = widget.node.data;
+    colorAnimation = ColorTween(
+            begin: post.isHighlighted
+                ? const Color.fromARGB(255, 255, 174, 0)
+                : Theme.of(context).dividerColor,
+            end: Theme.of(context).dividerColor)
+        .animate(animationController);
 
+    bool firstTimeSeen = true;
     return VisibilityDetector(
       key: Key(post.id.toString()),
       onVisibilityChanged: (visibilityInfo) {
@@ -39,6 +64,7 @@ class _PostWidgetState extends State<PostWidget> {
           visibilityInfo: visibilityInfo,
           post: post,
         );
+        handleHighlight(visibilityInfo, post, firstTimeSeen);
       },
       child: InkWell(
         onTap: () {
@@ -55,8 +81,9 @@ class _PostWidgetState extends State<PostWidget> {
                   Tooltip(
                       message: "#${post.id}",
                       child: _PostHeader(node: widget.node)),
-                  const Divider(
+                  Divider(
                     thickness: 1,
+                    color: colorAnimation.value,
                   ),
                   post.subject == ""
                       ? const SizedBox.shrink()
@@ -80,6 +107,23 @@ class _PostWidgetState extends State<PostWidget> {
         ),
       ),
     );
+  }
+
+  void handleHighlight(
+      VisibilityInfo visibilityInfo, Post post, bool firstTimeSeen) {
+    if (visibilityInfo.visibleFraction == 1 && post.isHighlighted) {
+      if (firstTimeSeen) {
+        timer = PausableTimer(const Duration(seconds: 15), () {
+          debugPrint('timer finished');
+          // shouldHighlight.value = false;
+          animationController.forward();
+        });
+        timer?.start();
+        firstTimeSeen = false;
+      }
+    } else if (visibilityInfo.visibleFraction < 1 && post.isHighlighted) {
+      timer?.pause();
+    }
   }
 }
 
@@ -140,3 +184,33 @@ class _PostHeader extends StatelessWidget {
     );
   }
 }
+
+// class AnimatedDivider extends StatelessWidget {
+//   final Color startColor;
+//   final Color endColor;
+//   final double height;
+//   final Duration duration;
+
+//   const AnimatedDivider({
+//     super.key,
+//     required this.startColor,
+//     required this.endColor,
+//     this.height = 1.0,
+//     this.duration = const Duration(milliseconds: 300),
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return TweenAnimationBuilder<double>(
+//       tween: Tween<double>(begin: 0.0, end: 1.0),
+//       duration: duration,
+//       builder: (context, value, child) {
+//         final color = Color.lerp(startColor, endColor, value);
+//         return Divider(
+//           thickness: 1,
+//           color: color,
+//         );
+//       },
+//     );
+//   }
+// }
