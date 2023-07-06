@@ -22,8 +22,10 @@ class Post {
   int? timestamp;
   String? trip;
   int? views;
+
   GlobalKey? gKey = GlobalKey();
   List<int> parents = List.empty(growable: true);
+  bool isHighlighted = false;
   Post(
       {this.banned,
       this.board,
