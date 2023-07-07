@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:treechan/main.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:treechan/main.dart';
 
 import '../models/json/json.dart';
 
@@ -7,10 +8,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
 
 class Tree {
-  Tree({required this.posts, required this.threadInfo}) {
-    _addPostParents();
-    _createTreeModel();
-  }
+  Tree({required this.posts, required this.threadInfo});
 
   final List<Post> posts;
 
@@ -22,10 +20,16 @@ class Tree {
   /// or just a reply in the thread, or is an OP-post itself.
   /// Replies to OP-posts is not added as a children of the OP-post, but as a
   /// independent root.
-  final List<TreeNode<Post>> _roots =
-      List<TreeNode<Post>>.empty(growable: true);
+  List<TreeNode<Post>> _roots = [];
 
   List<TreeNode<Post>>? get getRoots => _roots;
+
+  Future<List<TreeNode<Post>>> getTree() async {
+    final prefs = await SharedPreferences.getInstance();
+    _addPostParents();
+    _roots = await compute(createTreeModel, {posts, threadInfo, prefs});
+    return _roots;
+  }
 
   /// Adds a list of parent posts to each post based on the comment html.
   void _addPostParents() {
@@ -53,55 +57,6 @@ class Tree {
       post.parents = parents;
     }
     debugPrint('addPostParents() executed in ${stopwatch.elapsedMilliseconds}');
-  }
-
-  void _createTreeModel() {
-    final stopwatch = Stopwatch()..start();
-    for (var post in posts) {
-      if (post.parents.isEmpty ||
-          post.parents.contains(threadInfo.opPostId) ||
-          _hasExternalReferences(posts, post.parents)) {
-        // find posts which are replies to the OP-post
-        TreeNode<Post> node = TreeNode<Post>(
-          expanded: !prefs.getBool("postsCollapsed")!,
-          data: post,
-          id: post.id,
-          children: post.id != threadInfo.opPostId
-              ? _attachChildren(post.id, posts)
-              : [],
-        );
-        _roots.add(node);
-      }
-    }
-    debugPrint(
-        'createTreeModel() executed in ${stopwatch.elapsedMilliseconds}');
-  }
-
-  /// Called recursively to connect post children.
-  List<TreeNode<Post>> _attachChildren(int? id, List<Post> posts) {
-    var childrenToAdd = <TreeNode<Post>>[];
-    // find all posts that are replying to this one
-    Iterable<Post> childsFound =
-        posts.where((post) => post.parents.contains(id));
-    for (var post in childsFound) {
-      // add replies to them too
-      childrenToAdd.add(TreeNode(
-          data: post,
-          children: _attachChildren(post.id, posts),
-          expanded: !prefs.getBool("postsCollapsed")!));
-    }
-    return childrenToAdd;
-  }
-
-  /// Check if post has references to posts in other threads.
-  static bool _hasExternalReferences(List<Post> posts, List<int> referenceIds) {
-    for (var referenceId in referenceIds) {
-      // if there are no posts with that id in current thread, then it is an external reference
-      if (posts.where((post) => post.id == referenceId).isEmpty) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /// Finds post by id in the list of trees.
@@ -136,4 +91,59 @@ class Tree {
     }
     return null;
   }
+}
+
+/// Creates list of comment roots.
+/// This is a heavy function and it defined outside the class to use isolate.
+Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
+  List<Post> posts = data.elementAt(0);
+  Root threadInfo = data.elementAt(1);
+  SharedPreferences prefs = data.elementAt(2);
+  final stopwatch = Stopwatch()..start();
+  List<TreeNode<Post>>? roots = [];
+  for (var post in posts) {
+    if (post.parents.isEmpty ||
+        post.parents.contains(threadInfo.opPostId) ||
+        _hasExternalReferences(posts, post.parents)) {
+      // find posts which are replies to the OP-post
+      TreeNode<Post> node = TreeNode<Post>(
+        expanded: !prefs.getBool("postsCollapsed")!,
+        data: post,
+        id: post.id,
+        children: post.id != threadInfo.opPostId
+            ? _attachChildren(post.id, posts, prefs)
+            : [],
+      );
+      roots.add(node);
+    }
+  }
+  debugPrint('createTreeModel() executed in ${stopwatch.elapsedMilliseconds}');
+  return roots;
+}
+
+/// Called recursively to connect post children.
+List<TreeNode<Post>> _attachChildren(
+    int? id, List<Post> posts, SharedPreferences prefs) {
+  var childrenToAdd = <TreeNode<Post>>[];
+  // find all posts that are replying to this one
+  Iterable<Post> childsFound = posts.where((post) => post.parents.contains(id));
+  for (var post in childsFound) {
+    // add replies to them too
+    childrenToAdd.add(TreeNode(
+        data: post,
+        children: _attachChildren(post.id, posts, prefs),
+        expanded: !prefs.getBool("postsCollapsed")!));
+  }
+  return childrenToAdd;
+}
+
+/// Check if post has references to posts in other threads.
+bool _hasExternalReferences(List<Post> posts, List<int> referenceIds) {
+  for (var referenceId in referenceIds) {
+    // if there are no posts with that id in current thread, then it is an external reference
+    if (posts.where((post) => post.id == referenceId).isEmpty) {
+      return true;
+    }
+  }
+  return false;
 }
