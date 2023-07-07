@@ -62,7 +62,7 @@ class ThreadService {
     for (var post in _posts!) {
       if (post.comment!.contains("video")) fixHtmlVideo(post);
     }
-    _roots = Tree(posts: _posts!, threadInfo: _threadInfo).getRoots;
+    _roots = await Tree(posts: _posts!, threadInfo: _threadInfo).getTree();
     _threadInfo.showLines = true;
 
     final stopwatch = Stopwatch()..start();
