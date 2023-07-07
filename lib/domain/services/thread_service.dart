@@ -79,6 +79,12 @@ class ThreadService {
     List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
     _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
     _threadInfo.maxNum = newPosts.last.id;
+
+    // highlight new posts
+    for (var post in newPosts) {
+      post.isHighlighted = true;
+    }
+
     _posts!.addAll(newPosts);
     if (newPosts.isNotEmpty) {
       _threadInfo.maxNum = newPosts.last.id;
