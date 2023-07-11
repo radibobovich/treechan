@@ -24,7 +24,10 @@ class Post {
   int? views;
 
   GlobalKey? gKey = GlobalKey();
+  // parents id in the thread
   List<int> parents = List.empty(growable: true);
+  // children indexes in posts list
+  List<int> children = [];
   bool isHighlighted = false;
   Post(
       {this.banned,
