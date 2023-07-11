@@ -6,6 +6,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/domain/services/search_bar_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:html/parser.dart' as html;
 
 import '../../../utils/constants/enums.dart';
 import '../../bloc/board_bloc.dart';
@@ -70,12 +71,14 @@ class HtmlContainer extends StatefulWidget {
   const HtmlContainer(
       {Key? key,
       required this.post,
+      this.treeNode,
       this.roots,
       required this.currentTab,
       this.scrollService})
       : super(key: key);
   // data can be Post or Thread object
   final Post post;
+  final TreeNode<Post>? treeNode;
   final List<TreeNode<Post>>? roots;
   final DrawerTab currentTab;
 
@@ -108,13 +111,27 @@ class _HtmlContainerState extends State<HtmlContainer> {
               return _SpoilerText(node: node, children: children);
             }
           },
-          "a": (node, children) => TextSpan(
-              // custom link color render
-              style: TextStyle(
-                  color: Theme.of(context).secondaryHeaderColor,
-                  decoration: TextDecoration.underline),
-              text: node.tree.element!.text,
-              recognizer: TapGestureRecognizer()..onTap = () => openLink(node)),
+          "a": (node, children) {
+            if (widget.post.id == 282647874) {
+              debugPrint('gotcha');
+            }
+            return TextSpan(
+                // custom link color render
+                style: TextStyle(
+                    color: Theme.of(context).secondaryHeaderColor,
+                    decoration: TextDecoration.underline,
+                    // highlight current parent in the post text if
+                    // there are multiple parents
+                    fontWeight: (widget.treeNode != null &&
+                            countATags(widget.post.comment!) > 1 &&
+                            node.tree.element!.text
+                                .contains('>>${widget.treeNode!.parent!.id}'))
+                        ? FontWeight.bold
+                        : FontWeight.normal),
+                text: node.tree.element!.text,
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () => openLink(node));
+          },
         },
       ),
     );
@@ -183,4 +200,16 @@ class _HtmlContainerState extends State<HtmlContainer> {
       throw Exception('Could not launch $url');
     }
   }
+}
+
+int countATags(String text) {
+  final document = html.parse(text);
+  final tags = document.getElementsByTagName('a');
+  int count = 0;
+  for (var tag in tags) {
+    if (tag.className == 'post-reply-link') {
+      count += 1;
+    }
+  }
+  return count;
 }
