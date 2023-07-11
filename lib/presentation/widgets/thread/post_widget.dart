@@ -97,6 +97,7 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
                   MediaPreview(files: post.files),
                   HtmlContainer(
                       post: post,
+                      treeNode: widget.node,
                       roots: widget.roots,
                       currentTab: widget.currentTab,
                       scrollService: widget.scrollService)
