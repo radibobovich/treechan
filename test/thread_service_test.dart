@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/services/thread_service.dart';
+import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
 
 late SharedPreferences prefs;
 void main() async {
@@ -50,5 +51,12 @@ void main() async {
 
     expect(post2!.children.where((element) => element.data.id == 55509),
         isNotEmpty);
+  });
+
+  test('<a> tag count', () {
+    String comment =
+        '<a href="/bo/res/843736.html#886558" class="post-reply-link" data-thread="843736" data-num="886558">>>886558</a><br><a href="/bo/res/843736.html#886599" class="post-reply-link" data-thread="843736" data-num="886599">>>886599</a><br>Cпасибо, что еще можете посоветовать? Собираю список на все лето, т.к. уезжаю к бабке сраке в деревню и буду без интернета 2 месяца';
+    int count = countATags(comment);
+    expect(count, 2);
   });
 }
