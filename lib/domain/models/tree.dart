@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:treechan/main.dart';
 
 import '../models/json/json.dart';
 
@@ -99,19 +98,24 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
   List<Post> posts = data.elementAt(0);
   Root threadInfo = data.elementAt(1);
   SharedPreferences prefs = data.elementAt(2);
+
+  final Set<int> postIds = posts.map((post) => post.id!).toSet();
+
   final stopwatch = Stopwatch()..start();
+
+  findChildren(posts);
   List<TreeNode<Post>>? roots = [];
   for (var post in posts) {
     if (post.parents.isEmpty ||
         post.parents.contains(threadInfo.opPostId) ||
-        _hasExternalReferences(posts, post.parents)) {
+        _hasExternalReferences(postIds, post.parents)) {
       // find posts which are replies to the OP-post
       TreeNode<Post> node = TreeNode<Post>(
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
         id: post.id,
         children: post.id != threadInfo.opPostId
-            ? _attachChildren(post.id, posts, prefs)
+            ? _attachChildren(post, posts, prefs, 1)
             : [],
       );
       roots.add(node);
@@ -123,25 +127,40 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
 
 /// Called recursively to connect post children.
 List<TreeNode<Post>> _attachChildren(
-    int? id, List<Post> posts, SharedPreferences prefs) {
+    Post post, List<Post> posts, SharedPreferences prefs, int depth) {
+  // debugPrint('Depth: $depth, id: ${post.id}');
   var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
-  Iterable<Post> childsFound = posts.where((post) => post.parents.contains(id));
-  for (var post in childsFound) {
+  List<int> children = post.children;
+  for (var index in children) {
+    post = posts[index];
     // add replies to them too
     childrenToAdd.add(TreeNode(
         data: post,
-        children: _attachChildren(post.id, posts, prefs),
+        children: _attachChildren(post, posts, prefs, depth + 1),
         expanded: !prefs.getBool("postsCollapsed")!));
   }
   return childrenToAdd;
 }
 
+List<Post> findChildren(List<Post> posts) {
+  for (var cpost in posts) {
+    List<int> childrenIndexes = [];
+    for (int i = 0; i < posts.length; i++) {
+      if (posts[i].parents.contains(cpost.id)) {
+        childrenIndexes.add(i);
+      }
+    }
+    cpost.children = childrenIndexes;
+  }
+  return posts;
+}
+
 /// Check if post has references to posts in other threads.
-bool _hasExternalReferences(List<Post> posts, List<int> referenceIds) {
+bool _hasExternalReferences(Set<int> postIds, List<int> referenceIds) {
   for (var referenceId in referenceIds) {
     // if there are no posts with that id in current thread, then it is an external reference
-    if (posts.where((post) => post.id == referenceId).isEmpty) {
+    if (!postIds.contains(referenceId)) {
       return true;
     }
   }
