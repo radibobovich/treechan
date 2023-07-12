@@ -1,5 +1,7 @@
 # Treechan
 
+[![wakatime](https://wakatime.com/badge/user/eb06c1d0-7ef9-4e5d-a664-4c0924533305/project/45d01e9d-9732-4df4-8eec-4c9090913f4d.svg)](https://wakatime.com/badge/user/eb06c1d0-7ef9-4e5d-a664-4c0924533305/project/45d01e9d-9732-4df4-8eec-4c9090913f4d)
+
 2ch клиент с древовидной системой постов. 
 Еще в разработке, но уже можно пользоваться ридонли.
 
