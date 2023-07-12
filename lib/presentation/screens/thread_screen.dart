@@ -91,6 +91,9 @@ class _ThreadScreenState extends State<ThreadScreen>
                     .read<TabProvider>()
                     .setName(widget.currentTab, state.threadInfo!.title!);
                 widget.currentTab.name = state.threadInfo!.title!;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {});
+                });
               }
               return FlexibleTreeView<Post>(
                 key: treeKey,
