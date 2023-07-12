@@ -113,7 +113,6 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
       TreeNode<Post> node = TreeNode<Post>(
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
-        id: post.id,
         children: post.id != threadInfo.opPostId
             ? _attachChildren(post, posts, prefs, 1)
             : [],
