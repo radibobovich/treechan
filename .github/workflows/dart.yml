@@ -26,7 +26,9 @@ jobs:
         with:
           sdk: 2.19.6
           
-      - uses: MobileDevOps/flutter-sdk-action@a93694305106b954a8b85195ab7cd4bfec0401bf
+      - uses: MobileDevOps/flutter-sdk-action@v1.0.0
+        with:
+          flutter-sdk-version: 3.7.11
       
       - name: Install dependencies
         run: flutter pub get
