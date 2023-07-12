@@ -41,7 +41,7 @@ void fixLinks(List<File>? files) {
   }
 }
 
-List<int> _galleryTypes = [1, 2, 4]; // jpg png gif respectively
+List<int> _galleryTypes = [0, 1, 2, 4]; // none jpg png gif respectively
 List<int> _videoTypes = [6, 10]; // webm mp4
 
 List<Widget> _getImages(List<File>? files, BuildContext context) {
