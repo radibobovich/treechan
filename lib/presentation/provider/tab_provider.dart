@@ -38,7 +38,10 @@ class TabProvider with ChangeNotifier {
   void addTab(DrawerTab tab) async {
     if (!_tabs.contains(tab)) {
       _tabs.add(tab);
+      int currentIndex = tabController.index;
       refreshController();
+      // avoid blinking first page during opening new tab
+      tabController.index = currentIndex;
     }
     notifyListeners();
     await Future.delayed(
