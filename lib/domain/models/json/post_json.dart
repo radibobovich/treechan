@@ -2,54 +2,99 @@ import "json.dart";
 import "package:flutter/material.dart";
 
 class Post {
-  int? banned;
-  String? board;
-  int? closed;
-  String? comment;
-  String? date;
-  String? email;
-  int? endless;
-  List<File>? files;
-  int? lasthit;
-  String? name;
-  int? id;
-  int? number;
-  int? op;
-  int? parent;
-  int? sticky;
-  String? subject;
-  String? tags;
-  int? timestamp;
-  String? trip;
-  int? views;
+  /// Banned or not.
+  late int banned;
 
+  /// Board tag, for example b
+  late String board;
+
+  /// Needs description.
+  late int closed;
+
+  /// Text of the post.
+  late String comment;
+
+  /// Date of publication, for example '12/07/23 Срд 01:11:30'
+  late String date;
+
+  /// email. Usually empty string or 'sage'
+  late String email;
+
+  /// Needs description.
+  late int endless;
+
+  /// Media attached to the post.
+  late List<File> files = [];
+
+  /// Needs description.
+  late int lasthit;
+
+  /// Author name. Usually 'Аноним'
+  late String name;
+
+  /// Post id, for example, 289970552
+  /// Post id is unique for the board, but not for the entire website.
+  late int id;
+
+  /// Post position by count. OP-post has count 1. Null if on the board page.
+  int? number;
+
+  /// If this post made by OP.
+  late int op;
+
+  /// Contains id of OP post of the thread. If this is OP post itself, it's 0.
+  late int parent;
+
+  /// Needs description.
+  late int sticky;
+
+  /// Header of the post.
+  late String subject;
+
+  /// Needs description.
+  String? tags;
+
+  /// Unix timestamp.
+  late int timestamp;
+
+  /// Needs description
+  late String trip;
+  late int views;
+
+  /// Each post has its GlobalKey because we need to scroll to a specific post
+  /// after thread refresh.
   GlobalKey? gKey = GlobalKey();
-  // parents id in the thread
+
+  /// Parents id's in the thread
   List<int> parents = List.empty(growable: true);
-  // children indexes in posts list
+
+  /// Children indexes in posts list
   List<int> children = [];
+
+  /// If the post should be highlighted as a new post.
+  /// Sets to true when added by refreshThread.
   bool isHighlighted = false;
   Post(
-      {this.banned,
-      this.board,
-      this.closed,
-      this.comment,
-      this.date,
-      this.email,
-      this.endless,
-      this.files,
-      this.lasthit,
-      this.name,
-      this.id,
-      this.number,
-      this.op,
-      this.parent,
-      this.sticky,
-      this.subject,
-      this.tags,
-      this.timestamp,
-      this.trip,
-      this.views,
+      {this.banned = 0,
+      this.board = '',
+      this.closed = 0,
+      this.comment = '',
+      this.date = '',
+      this.email = '',
+      this.endless = 0,
+      required this.files,
+      this.lasthit = 0,
+      this.name = '',
+      this.id = 0,
+      this.number = 0,
+      this.op = 0,
+      this.parent = 0,
+      this.sticky = 0,
+      this.subject = '',
+      this.tags = '',
+      this.timestamp = 0,
+      this.trip = '',
+      this.views = 0,
       this.gKey});
 
   Post.fromJson(Map<String, dynamic> json) {
