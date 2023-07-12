@@ -71,6 +71,7 @@ dependencies:
   share: ^2.0.4
   provider: ^6.0.5
   pausable_timer: ^1.0.0+7
+  test: ^1.22.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -81,7 +82,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
-  test: ^1.22.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
