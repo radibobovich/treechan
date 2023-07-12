@@ -93,64 +93,88 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
     with SingleTickerProviderStateMixin {
   ImageDownloadService imageDownloadService = ImageDownloadService();
 
+  late Widget thumbnail;
+  bool isLoaded = true;
+
+  @override
+  void initState() {
+    super.initState();
+    thumbnail = getThumbnail(widget.type);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentIndex = widget.imageLinks.indexOf(widget.file.path!);
     final pageController = ExtendedPageController(initialPage: currentIndex);
 
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 50),
-          transitionsBuilder: (_, animation, __, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          opaque: false,
-          pageBuilder: (_, __, ___) => Scaffold(
-              // black background if video
-              backgroundColor: _galleryTypes.contains(widget.type)
-                  ? Colors.transparent
-                  : Colors.black,
-              extendBodyBehindAppBar: true,
-              appBar: AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.save),
-                    onPressed: () {
-                      imageDownloadService.downloadImage();
-                      // fix infinite duration
+      key: ObjectKey(thumbnail),
+      onTap: () =>
+          isLoaded ? openGallery(context, pageController) : reloadThumbnail(),
+      child: thumbnail,
+    );
+  }
 
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   const SnackBar(
-                      //     content: Text("Загружено"),
-                      //     behavior: SnackBarBehavior.floating,
-                      //     duration: Duration(seconds: 3),
-                      //     elevation: 0,
-                      //   ),
-                      // );
+  void reloadThumbnail() {
+    thumbnail = getThumbnail(widget.type);
+    if (thumbnail.runtimeType == Image) {
+      isLoaded = true;
+    }
+    setState(() {});
+  }
+
+  Future<dynamic> openGallery(
+      BuildContext context, ExtendedPageController pageController) {
+    return Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 50),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        opaque: false,
+        pageBuilder: (_, __, ___) => Scaffold(
+            // black background if video
+            backgroundColor: _galleryTypes.contains(widget.type)
+                ? Colors.transparent
+                : Colors.black,
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.save),
+                  onPressed: () {
+                    imageDownloadService.downloadImage();
+                    // fix infinite duration
+
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(
+                    //     content: Text("Загружено"),
+                    //     behavior: SnackBarBehavior.floating,
+                    //     duration: Duration(seconds: 3),
+                    //     elevation: 0,
+                    //   ),
+                    // );
+                  },
+                  // add a notification here to show that the image is downloaded
+                )
+              ],
+            ),
+            body: (_galleryTypes.contains(widget.type))
+                ? SwipeGallery(
+                    imageLinks: widget.imageLinks,
+                    pageController: pageController,
+                    onDownloadImage: (imageUrl, fileName) {
+                      imageDownloadService.setUrl(url: imageUrl);
                     },
-                    // add a notification here to show that the image is downloaded
                   )
-                ],
-              ),
-              body: (_galleryTypes.contains(widget.type))
-                  ? SwipeGallery(
-                      imageLinks: widget.imageLinks,
-                      pageController: pageController,
-                      onDownloadImage: (imageUrl, fileName) {
-                        imageDownloadService.setUrl(url: imageUrl);
-                      },
-                    )
-                  : VideoPlayer(file: widget.file)),
-        ),
+                : VideoPlayer(file: widget.file)),
       ),
-      child: getThumbnail(widget.type),
     );
   }
 
@@ -161,8 +185,9 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
         height: 140,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
+          isLoaded = false;
           return const SizedBox(
-              height: 140, width: 140, child: Text("bad image"));
+              height: 140, width: 140, child: Icon(Icons.image_not_supported));
         },
       );
     } else if (_videoTypes.contains(type)) {
@@ -173,7 +198,9 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return const SizedBox(
-                height: 140, width: 140, child: Text("bad video"));
+                height: 140,
+                width: 140,
+                child: Icon(Icons.image_not_supported));
           },
         ),
         const Positioned.fill(
