@@ -45,7 +45,7 @@ class HistoryDatabase {
   }
 
   Future<void> add(HistoryTab tab) async {
-    if (tab.type != TabTypes.thread) {
+    if (tab.type != TabTypes.thread || tab.name == null) {
       return;
     }
     final Database db = await _database;
