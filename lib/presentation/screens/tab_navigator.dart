@@ -114,8 +114,7 @@ class Screen extends StatelessWidget {
   BlocProvider<BoardListBloc> getBoardListScreen(DrawerTab tab) {
     return BlocProvider(
       key: ValueKey(tab),
-      create: (context) => BoardListBloc(boardListService: BoardListService())
-        ..add(LoadBoardListEvent()),
+      create: (context) => BoardListBloc(boardListService: BoardListService()),
       child: const BoardListScreen(title: "Доски"),
     );
   }
@@ -127,7 +126,6 @@ class Screen extends StatelessWidget {
           ? (context) => BoardBloc(
               tabProvider: context.read<TabProvider>(),
               boardService: BoardService(boardTag: tab.tag))
-            ..add(LoadBoardEvent())
           : (context) => BoardBloc(
               tabProvider: context.read<TabProvider>(),
               boardService: BoardService(boardTag: tab.tag))
@@ -143,7 +141,7 @@ class Screen extends StatelessWidget {
       key: ValueKey(tab),
       create: (blocContext) => ThreadBloc(
         threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
-      )..add(LoadThreadEvent()),
+      ),
       child: ThreadScreen(
         currentTab: tab,
         prevTab: tab.prevTab ?? boardListTab,

@@ -33,6 +33,8 @@ class _ThreadScreenState extends State<ThreadScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+  bool firstRun = true;
+
   late ScrollController scrollController;
   late ScrollService scrollService;
   GlobalKey treeKey = GlobalKey();
@@ -43,6 +45,10 @@ class _ThreadScreenState extends State<ThreadScreen>
     scrollController = ScrollController();
     scrollService = ScrollService(scrollController,
         (window.physicalSize / window.devicePixelRatio).width);
+    if (firstRun) {
+      BlocProvider.of<ThreadBloc>(context).add(LoadThreadEvent());
+      firstRun = false;
+    }
   }
 
   @override
