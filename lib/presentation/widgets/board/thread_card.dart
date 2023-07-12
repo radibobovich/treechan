@@ -21,10 +21,10 @@ class ThreadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => openThread(context),
-      child: Card(
-        margin: const EdgeInsets.all(2),
+    return Card(
+      margin: const EdgeInsets.all(2),
+      child: InkWell(
+        onTap: () => openThread(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
