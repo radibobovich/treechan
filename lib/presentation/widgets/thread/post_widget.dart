@@ -66,13 +66,13 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
         );
         handleHighlight(visibilityInfo, post, firstTimeSeen);
       },
-      child: InkWell(
-        onTap: () {
-          widget.node.expanded = !widget.node.expanded;
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Card(
+          child: InkWell(
+            onTap: () {
+              widget.node.expanded = !widget.node.expanded;
+            },
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Column(
