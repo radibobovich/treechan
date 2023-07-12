@@ -136,7 +136,7 @@ class _PostHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     Post post = node.data;
     final DateTimeService dateTimeSerivce =
-        DateTimeService(dateRaw: post.date!);
+        DateTimeService(timestamp: post.timestamp);
 
     return Padding(
       padding: node.hasNodes
@@ -144,7 +144,7 @@ class _PostHeader extends StatelessWidget {
           : const EdgeInsets.fromLTRB(8, 2, 8, 0),
       child: Row(
         children: [
-          Text(post.name!,
+          Text(post.name,
               style: post.email == "mailto:sage"
                   ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
                   // : TextStyle(

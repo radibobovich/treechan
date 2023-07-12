@@ -42,7 +42,7 @@ class ScrollService {
     // for debugging
     List<String> visibleIds = [];
     for (PostWidget post in visiblePosts) {
-      visibleIds.add(post.node.data.id!.toString());
+      visibleIds.add(post.node.data.id.toString());
     }
     if (sortedByOffset.isEmpty) {
       return partiallyVisiblePosts.first;

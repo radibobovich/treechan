@@ -10,7 +10,7 @@ class BoardSearchService {
     }
     return threads.where((thread) {
       final post = thread.posts[0];
-      return post.comment!.toLowerCase().contains(query.toLowerCase());
+      return post.comment.toLowerCase().contains(query.toLowerCase());
     }).toList();
   }
 }
