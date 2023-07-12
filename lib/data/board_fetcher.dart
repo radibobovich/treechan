@@ -9,6 +9,7 @@ class BoardFetcher {
   final String boardTag;
   final SortBy sortType;
   Future<http.Response> getBoardResponse(int currentPage) async {
+    // List<String> cloudflareBoards = ['vn', 'ruvn', 'fg', 'ga', 'h', 'ho'];
     String url = "";
     if (sortType == SortBy.bump) {
       url = "https://2ch.hk/$boardTag/catalog.json";
@@ -21,13 +22,17 @@ class BoardFetcher {
       }
     }
     final response = await http.get(Uri.parse(url));
+
     if (response.statusCode == 200) {
       return response;
     } else if (response.statusCode == 404) {
-      throw BoardNotFoundException(message: 'Failed to load board.');
+      throw BoardNotFoundException(
+          message: 'Failed to load board $boardTag - board not found.');
     } else {
-      throw Exception(
-          'Failed to load board $boardTag. Error code: ${response.statusCode}');
+      throw FailedResponseException(
+          message:
+              'Failed to load board $boardTag. Error code: ${response.statusCode}',
+          statusCode: response.statusCode);
     }
   }
 }

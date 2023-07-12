@@ -37,6 +37,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
             completeRefresh: event.refreshCompleted));
       } on BoardNotFoundException {
         emit(BoardErrorState("404 - Доска не найдена"));
+      } on FailedResponseException catch (e) {
+        emit(BoardErrorState("Ошибка ${e.statusCode}."));
       } on Exception {
         emit(BoardErrorState("Неизвестная ошибка"));
       }
