@@ -112,9 +112,6 @@ class _HtmlContainerState extends State<HtmlContainer> {
             }
           },
           "a": (node, children) {
-            if (widget.post.id == 7610120) {
-              debugPrint('gotcha');
-            }
             return TextSpan(
                 // custom link color render
                 style: TextStyle(
@@ -124,6 +121,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     // there are multiple parents
                     fontWeight: (widget.treeNode != null &&
                             countATags(widget.post.comment) > 1 &&
+                            widget.treeNode!.parent != null &&
                             node.tree.element!.text.contains(
                                 '>>${widget.treeNode!.parent!.data.id}'))
                         ? FontWeight.bold
