@@ -23,7 +23,7 @@ Future<List<TreeNode<Post>>> createTreeModel2(Set data) async {
   Root threadInfo = data.elementAt(1);
   SharedPreferences prefs = data.elementAt(2);
 
-  final Set<int> postIds = posts.map((post) => post.id!).toSet();
+  final Set<int> postIds = posts.map((post) => post.id).toSet();
 
   final stopwatch = Stopwatch()..start();
 

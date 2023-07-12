@@ -61,8 +61,8 @@ class ThreadCard extends StatelessWidget {
     context.read<TabProvider>().addTab(DrawerTab(
         type: TabTypes.thread,
         id: thread!.posts[0].id,
-        tag: thread!.posts[0].board!,
-        name: thread!.posts[0].subject!,
+        tag: thread!.posts[0].board,
+        name: thread!.posts[0].subject,
         prevTab: currentTab));
   }
 }
@@ -78,7 +78,7 @@ class _CardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateTimeService dateTimeSerivce =
-        DateTimeService(dateRaw: thread!.posts[0].date!);
+        DateTimeService(timestamp: thread!.posts[0].timestamp);
     return Row(
       children: [
         Text(thread?.posts[0].name ?? "No author"),

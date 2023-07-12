@@ -108,7 +108,7 @@ class Post {
     if (json['files'] != null) {
       files = <File>[];
       json['files'].forEach((v) {
-        files!.add(File.fromJson(v));
+        files.add(File.fromJson(v));
       });
     }
     lasthit = json['lasthit'];
@@ -134,9 +134,7 @@ class Post {
     data['date'] = date;
     data['email'] = email;
     data['endless'] = endless;
-    if (files != null) {
-      data['files'] = files!.map((v) => v.toJson()).toList();
-    }
+    data['files'] = files.map((v) => v.toJson()).toList();
     data['lasthit'] = lasthit;
     data['name'] = name;
     data['num'] = id;
