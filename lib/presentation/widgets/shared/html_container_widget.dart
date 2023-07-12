@@ -123,7 +123,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     // highlight current parent in the post text if
                     // there are multiple parents
                     fontWeight: (widget.treeNode != null &&
-                            countATags(widget.post.comment!) > 1 &&
+                            countATags(widget.post.comment) > 1 &&
                             node.tree.element!.text
                                 .contains('>>${widget.treeNode!.parent!.id}'))
                         ? FontWeight.bold

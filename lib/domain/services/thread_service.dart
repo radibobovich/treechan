@@ -60,7 +60,7 @@ class ThreadService {
     _threadInfo.opPostId = _posts!.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
     for (var post in _posts!) {
-      if (post.comment!.contains("video")) fixHtmlVideo(post);
+      if (post.comment.contains("video")) fixHtmlVideo(post);
     }
     _roots = await Tree(posts: _posts!, threadInfo: _threadInfo).getTree();
     _threadInfo.showLines = true;

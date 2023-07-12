@@ -87,14 +87,14 @@ class _PostHeaderBorderless extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                post.name!,
+                post.name,
                 style: post.email == "mailto:sage"
                     ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
                     : const TextStyle(
                         color: Color.fromARGB(255, 116, 116, 116)),
               ),
               Text(
-                post.date!,
+                post.date,
                 style:
                     const TextStyle(color: Color.fromARGB(255, 116, 116, 116)),
               )
