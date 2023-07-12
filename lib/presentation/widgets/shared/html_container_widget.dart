@@ -112,7 +112,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
             }
           },
           "a": (node, children) {
-            if (widget.post.id == 282647874) {
+            if (widget.post.id == 7610120) {
               debugPrint('gotcha');
             }
             return TextSpan(
@@ -124,8 +124,8 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     // there are multiple parents
                     fontWeight: (widget.treeNode != null &&
                             countATags(widget.post.comment) > 1 &&
-                            node.tree.element!.text
-                                .contains('>>${widget.treeNode!.parent!.id}'))
+                            node.tree.element!.text.contains(
+                                '>>${widget.treeNode!.parent!.data.id}'))
                         ? FontWeight.bold
                         : FontWeight.normal),
                 text: node.tree.element!.text,
