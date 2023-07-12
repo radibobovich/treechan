@@ -25,6 +25,16 @@ class _BoardListScreenState extends State<BoardListScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+  bool firstRun = true;
+  @override
+  void initState() {
+    super.initState();
+    if (firstRun) {
+      BlocProvider.of<BoardListBloc>(context).add(LoadBoardListEvent());
+      firstRun = false;
+    }
+  }
+
   late Future<List<Category>> categories;
 
   bool allowReorder = false;
