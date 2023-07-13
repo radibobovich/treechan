@@ -71,7 +71,9 @@ Future<void> initializePreferences() async {
   if (prefs.getString('boardSortType') == null) {
     await prefs.setString('boardSortType', 'bump');
   }
-
+  if (prefs.getBool('spoilers') == null) {
+    await prefs.setBool('spoilers', true);
+  }
   return;
 }
 

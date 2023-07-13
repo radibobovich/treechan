@@ -58,6 +58,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SettingsTile.switchTile(
                   leading: const Icon(Icons.expand_more),
                   title: const Text('Ветви постов свернуты по умолчанию'),
+                  description: const Text(
+                      'Настройка вступит в силу при следующей загрузке треда.'),
                   initialValue: prefs.getBool('postsCollapsed')!,
                   onToggle: (value) {
                     setState(() {
@@ -69,11 +71,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.swap_horiz),
                   title: const Text('Горизонтальная прокрутка треда'),
                   description: const Text(
-                      'Альтернативное отображение треда. Ветви будут уходить вправо сколько угодно.'),
+                      'Альтернативное отображение треда. Ветви будут уходить вправо сколько угодно. Настройка вступит в силу после повторного открытия вкладки треда.'),
                   initialValue: prefs.getBool('2dscroll')!,
                   onToggle: (value) {
                     setState(() {
                       prefs.setBool('2dscroll', value);
+                    });
+                  },
+                ),
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.swap_horiz),
+                  title: const Text('Спойлеры'),
+                  description: const Text(
+                      'Настройка вступит в силу после того, как пост окажется вне экрана.'),
+                  initialValue: prefs.getBool('spoilers')!,
+                  onToggle: (value) {
+                    setState(() {
+                      prefs.setBool('spoilers', value);
                     });
                   },
                 ),

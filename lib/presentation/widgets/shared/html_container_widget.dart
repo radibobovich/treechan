@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/services/search_bar_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:html/parser.dart' as html;
 
+import '../../../main.dart';
 import '../../../utils/constants/enums.dart';
 import '../../bloc/board_bloc.dart';
 import '../../../domain/models/json/json.dart';
@@ -108,7 +110,11 @@ class _HtmlContainerState extends State<HtmlContainer> {
                       const TextStyle(color: Color.fromARGB(255, 120, 153, 34)),
                   text: node.tree.element!.text);
             } else if (spanClasses.contains("spoiler")) {
-              return _SpoilerText(node: node, children: children);
+              if (prefs.getBool('spoilers') == true) {
+                return _SpoilerText(node: node, children: children);
+              }
+            } else {
+              return children;
             }
           },
           "a": (node, children) {
