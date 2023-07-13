@@ -1,20 +1,36 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/catalog.dart';
 import 'package:treechan/presentation/screens/tab_navigator.dart';
 
 import '../../data/history_database.dart';
 import '../../domain/models/tab.dart';
+import '../../domain/services/board_list_service.dart';
+import '../../domain/services/board_service.dart';
+import '../../domain/services/thread_service.dart';
 import '../../utils/constants/enums.dart';
+import '../bloc/board_bloc.dart';
+import '../bloc/board_list_bloc.dart';
+import '../bloc/thread_bloc.dart';
+import '../screens/board_list_screen.dart';
+import '../screens/board_screen.dart';
+import '../screens/thread_screen.dart';
 
 class TabProvider with ChangeNotifier {
   final StreamController<Catalog> _catalog =
       StreamController<Catalog>.broadcast();
   Stream<Catalog> get catalogStream => _catalog.stream;
 
+  /// Contains all opened drawer tabs.
   final List<DrawerTab> _tabs = [];
   List<DrawerTab> get tabs => _tabs;
+
+  /// Contains all opened screens.
+  final List<dynamic> _blocs = [];
+  List<dynamic> get blocs => _blocs;
+
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
 
@@ -38,6 +54,7 @@ class TabProvider with ChangeNotifier {
   void addTab(DrawerTab tab) async {
     if (!_tabs.contains(tab)) {
       _tabs.add(tab);
+      addBloc(tab);
       int currentIndex = tabController.index;
       refreshController();
       // avoid blinking first page during opening new tab
@@ -55,6 +72,13 @@ class TabProvider with ChangeNotifier {
     int removingTabIndex = tabs.indexOf(tab);
 
     tabs.remove(tab);
+    _blocs.removeWhere((bloc) {
+      if (bloc.key == ValueKey(tab)) {
+        bloc.close();
+        return true;
+      }
+      return false;
+    });
     refreshController();
     if (currentIndex == removingTabIndex) {
       // if you close the current tab
@@ -124,6 +148,78 @@ class TabProvider with ChangeNotifier {
         searchTag: searchTag,
       ));
     }
+  }
+
+  /// Adds a new screen to the _blocs list.
+  /// Called when a new tab is opened.
+  void addBloc(DrawerTab tab) {
+    switch (tab.type) {
+      case TabTypes.boardList:
+        _blocs.add(BoardListBloc(
+            key: ValueKey(tab), boardListService: BoardListService())
+          ..add(LoadBoardListEvent()));
+        break;
+      case TabTypes.board:
+        tab.isCatalog == null
+            ? _blocs.add(BoardBloc(
+                key: ValueKey(tab),
+                tabProvider: this,
+                boardService: BoardService(boardTag: tab.tag))
+              ..add(LoadBoardEvent()))
+            : _blocs.add(BoardBloc(
+                key: ValueKey(tab),
+                tabProvider: this,
+                boardService: BoardService(boardTag: tab.tag))
+              ..add(ChangeViewBoardEvent(null, searchTag: tab.searchTag)));
+        break;
+      case TabTypes.thread:
+        _blocs.add(ThreadBloc(
+          key: ValueKey(tab),
+          threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
+        )..add(LoadThreadEvent()));
+    }
+  }
+
+  /// Picks a bloc requested by BlocProvider with desired type.
+  T getSpecificBloc<T>(DrawerTab tab) {
+    List<Type> allowedTypes = [BoardListBloc, BoardBloc, ThreadBloc];
+    if (!allowedTypes.contains(T)) {
+      throw Exception('Wrong bloc type.');
+    }
+    return _blocs.firstWhere(
+        (bloc) => bloc.runtimeType == T && bloc.key == ValueKey(tab));
+  }
+
+  /// Returns BoardListScreen for TabBarView children.
+  BlocProvider<BoardListBloc> getBoardListScreen(DrawerTab tab) {
+    return BlocProvider.value(
+      key: ValueKey(tab),
+      value: getSpecificBloc<BoardListBloc>(tab),
+      child: const BoardListScreen(title: "Доски"),
+    );
+  }
+
+  /// Returns BoardScreen for TabBarView children.
+  BlocProvider<BoardBloc> getBoardScreen(DrawerTab tab) {
+    return BlocProvider.value(
+      key: ValueKey(tab),
+      value: getSpecificBloc<BoardBloc>(tab),
+      child: BoardScreen(
+        currentTab: tab,
+      ),
+    );
+  }
+
+  /// Returns ThreadScreen for TabBarView children.
+  BlocProvider<ThreadBloc> getThreadScreen(DrawerTab tab) {
+    return BlocProvider.value(
+      key: ValueKey(tab),
+      value: getSpecificBloc<ThreadBloc>(tab),
+      child: ThreadScreen(
+        currentTab: tab,
+        prevTab: tab.prevTab ?? boardListTab,
+      ),
+    );
   }
 
   @override

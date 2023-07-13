@@ -116,14 +116,6 @@ class _BoardScreenState extends State<BoardScreen>
   @override
   bool get wantKeepAlive => true;
   bool firstRun = true;
-  @override
-  void initState() {
-    super.initState();
-    if (firstRun && widget.currentTab.isCatalog == null) {
-      BlocProvider.of<BoardBloc>(context).add(LoadBoardEvent());
-      firstRun = false;
-    }
-  }
 
   @override
   void dispose() {
