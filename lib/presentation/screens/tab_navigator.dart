@@ -2,26 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/constants/enums.dart';
-
-import '../screens/thread_screen.dart';
-import '../screens/board_screen.dart';
-import 'board_list_screen.dart';
 
 import '../widgets/drawer/drawer.dart';
 import '../../domain/models/tab.dart';
 
 import '../provider/tab_provider.dart';
-import '../bloc/board_bloc.dart';
-import '../bloc/board_list_bloc.dart';
-import '../bloc/thread_bloc.dart';
-
-import '../../domain/services/board_list_service.dart';
-import '../../domain/services/thread_service.dart';
-import '../../domain/services/board_service.dart';
 
 /// Root widget of the app.
 /// Controls tabs and creates a drawer with tabs.
@@ -101,51 +89,13 @@ class Screen extends StatelessWidget {
       children: provider.tabs.map((tab) {
         switch (tab.type) {
           case TabTypes.boardList:
-            return getBoardListScreen(tab);
+            return provider.getBoardListScreen(tab);
           case TabTypes.board:
-            return getBoardScreen(tab);
+            return provider.getBoardScreen(tab);
           case TabTypes.thread:
-            return getThreadScreen(tab);
+            return provider.getThreadScreen(tab);
         }
       }).toList(),
-    );
-  }
-
-  BlocProvider<BoardListBloc> getBoardListScreen(DrawerTab tab) {
-    return BlocProvider(
-      key: ValueKey(tab),
-      create: (context) => BoardListBloc(boardListService: BoardListService()),
-      child: const BoardListScreen(title: "Доски"),
-    );
-  }
-
-  BlocProvider<BoardBloc> getBoardScreen(DrawerTab tab) {
-    return BlocProvider(
-      key: ValueKey(tab),
-      create: tab.isCatalog == null
-          ? (context) => BoardBloc(
-              tabProvider: context.read<TabProvider>(),
-              boardService: BoardService(boardTag: tab.tag))
-          : (context) => BoardBloc(
-              tabProvider: context.read<TabProvider>(),
-              boardService: BoardService(boardTag: tab.tag))
-            ..add(ChangeViewBoardEvent(null, searchTag: tab.searchTag)),
-      child: BoardScreen(
-        currentTab: tab,
-      ),
-    );
-  }
-
-  BlocProvider<ThreadBloc> getThreadScreen(DrawerTab tab) {
-    return BlocProvider(
-      key: ValueKey(tab),
-      create: (blocContext) => ThreadBloc(
-        threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
-      ),
-      child: ThreadScreen(
-        currentTab: tab,
-        prevTab: tab.prevTab ?? boardListTab,
-      ),
     );
   }
 }
