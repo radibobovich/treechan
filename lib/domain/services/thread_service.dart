@@ -26,20 +26,20 @@ class ThreadService {
   /// or just a reply in the thread, or is an OP-post itself.
   /// Replies to OP-posts are not added as a children of the OP-post, but as a
   /// independent root.
-  List<TreeNode<Post>>? _roots;
+  late List<TreeNode<Post>> _roots = [];
 
-  Future<List<TreeNode<Post>>?> getRoots() async {
+  Future<List<TreeNode<Post>>> getRoots() async {
     prefs = await SharedPreferences.getInstance();
 
-    if (_roots == null) {
+    if (_roots.isEmpty) {
       await loadThread();
     }
     return _roots;
   }
 
   /// PLain list of all posts in the thread.
-  List<Post>? _posts;
-  List<Post>? get getPosts => _posts;
+  late List<Post> _posts = [];
+  List<Post> get getPosts => _posts;
 
   /// Contains thread information like maxNum, postsCount, etc.
   Root _threadInfo = Root();
@@ -55,14 +55,14 @@ class ThreadService {
     Root decodedResponse = Root.fromJson(jsonDecode(response.body));
 
     _posts = decodedResponse.threads!.first.posts;
-    if (_posts != null) fixBlankSpace(_posts!.first);
+    if (_posts.isNotEmpty) fixBlankSpace(_posts.first);
     _threadInfo = decodedResponse;
-    _threadInfo.opPostId = _posts!.first.id;
-    _threadInfo.postsCount = _threadInfo.postsCount! + _posts!.length;
-    for (var post in _posts!) {
+    _threadInfo.opPostId = _posts.first.id;
+    _threadInfo.postsCount = _threadInfo.postsCount! + _posts.length;
+    for (var post in _posts) {
       if (post.comment.contains("video")) fixHtmlVideo(post);
     }
-    _roots = await Tree(posts: _posts!, threadInfo: _threadInfo).getTree();
+    _roots = await Tree(posts: _posts, threadInfo: _threadInfo).getTree();
     _threadInfo.showLines = true;
 
     final stopwatch = Stopwatch()..start();
@@ -87,27 +87,27 @@ class ThreadService {
       post.isHighlighted = true;
     }
 
-    _posts!.addAll(newPosts);
+    _posts.addAll(newPosts);
     if (newPosts.isNotEmpty) {
       _threadInfo.maxNum = newPosts.last.id;
     }
     // create tree for new posts
     Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
-    List<TreeNode<Post>>? newRoots = treeService.getRoots;
+    List<TreeNode<Post>>? newRoots = await treeService.getTree();
 
     // attach new tree to the old tree
-    if (newRoots!.isEmpty) return;
+    if (newRoots.isEmpty) return;
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
         if (parentId != _threadInfo.opPostId) {
-          Tree.findPost(_roots!, parentId)!.addNode(newRoot);
+          Tree.findPost(_roots, parentId)!.addNode(newRoot);
         } else {
-          _roots!.add(newRoot);
+          _roots.add(newRoot);
         }
       }
 
       if (newRoot.data.parents.isEmpty) {
-        _roots!.add(newRoot);
+        _roots.add(newRoot);
       }
     }
     _setShowLinesProperty(_roots);
