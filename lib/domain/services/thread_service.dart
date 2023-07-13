@@ -77,10 +77,9 @@ class ThreadService {
     final http.Response response =
         await fetcher.getThreadResponse(isRefresh: true);
     List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
+    if (newPosts.isEmpty) return;
     _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
-    if (newPosts.isNotEmpty) {
-      _threadInfo.maxNum = newPosts.last.id;
-    }
+    _threadInfo.maxNum = newPosts.last.id;
 
     // highlight new posts
     for (var post in newPosts) {
