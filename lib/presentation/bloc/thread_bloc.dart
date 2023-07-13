@@ -22,24 +22,28 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
             roots: roots,
             threadInfo: threadInfo,
           ));
-          if (event.isRefresh) {}
-        } on ThreadNotFoundException {
-          emit(ThreadErrorState("404 - Тред не найден"));
-        } on Exception {
-          emit(ThreadErrorState("Неизвестная ошибка"));
+        } on ThreadNotFoundException catch (e) {
+          emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
+        } on NoConnectionException catch (e) {
+          emit(ThreadErrorState(
+              message: "Проверьте подключение к Интернету.", exception: e));
+        } on Exception catch (e) {
+          emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
         }
       },
     );
     on<RefreshThreadEvent>(
       (event, emit) async {
         try {
-          // await?
-          threadService.refreshThread();
-          add(LoadThreadEvent(isRefresh: true));
-        } on ThreadNotFoundException {
-          emit(ThreadErrorState("404 - Тред умер"));
-        } on Exception {
-          emit(ThreadErrorState("Неизвестная ошибка"));
+          await threadService.refreshThread();
+          add(LoadThreadEvent());
+        } on ThreadNotFoundException catch (e) {
+          emit(ThreadErrorState(message: "404 - Тред умер", exception: e));
+        } on NoConnectionException {
+          // do nothing
+          // TODO: show error snackbar
+        } on Exception catch (e) {
+          emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
         }
       },
     );
@@ -49,8 +53,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
 abstract class ThreadEvent {}
 
 class LoadThreadEvent extends ThreadEvent {
-  final bool isRefresh;
-  LoadThreadEvent({this.isRefresh = false});
+  // final bool isRefresh;
+  LoadThreadEvent();
 }
 
 class RefreshThreadEvent extends ThreadEvent {}
@@ -66,6 +70,7 @@ class ThreadLoadedState extends ThreadState {
 }
 
 class ThreadErrorState extends ThreadState {
-  final String errorMessage;
-  ThreadErrorState(this.errorMessage);
+  final String message;
+  final Exception? exception;
+  ThreadErrorState({required this.message, this.exception});
 }
