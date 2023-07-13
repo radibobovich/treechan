@@ -15,10 +15,10 @@ class BoardService {
   late String boardName;
   SortBy sortType = SortBy.page;
   int currentPage;
-  List<Thread>? _threads;
+  List<Thread> _threads = [];
 
   Future<List<Thread>?> getThreads() async {
-    if (_threads == null) {
+    if (_threads.isEmpty) {
       await loadBoard();
     }
     return _threads;
@@ -33,27 +33,32 @@ class BoardService {
   }
 
   Future<void> loadBoard() async {
+    currentPage = 0;
     final BoardFetcher fetcher =
         BoardFetcher(boardTag: boardTag, sortType: sortType);
     http.Response response = await fetcher.getBoardResponse(currentPage);
     boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
-    for (var thread in _threads!) {
+    for (var thread in _threads) {
       if (fixBlankSpace(thread.posts[0])) break;
     }
-    for (var thread in _threads!) {
+    for (var thread in _threads) {
       fixHtmlVideo(thread, sortType: sortType);
     }
     currentPage = 0;
   }
 
   Future<void> refreshBoard() async {
-    currentPage += 1;
+    if (_threads.isEmpty) {
+      return;
+    }
     final BoardFetcher fetcher =
         BoardFetcher(boardTag: boardTag, sortType: sortType);
-    http.Response response = await fetcher.getBoardResponse(currentPage);
-    List<Thread>? newThreads =
-        Root.fromJson(jsonDecode(response.body)).threads!;
-    _threads = _threads! + newThreads;
+    http.Response response = await fetcher.getBoardResponse(currentPage + 1);
+    List<Thread> newThreads = Root.fromJson(jsonDecode(response.body)).threads!;
+    if (newThreads.isNotEmpty) {
+      currentPage += 1;
+    }
+    _threads = _threads + newThreads;
   }
 }
