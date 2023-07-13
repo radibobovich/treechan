@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/exceptions.dart';
 import '../../utils/constants/enums.dart';
 import '../../domain/services/board_list_service.dart';
 import '../../domain/models/category.dart';
@@ -23,8 +24,11 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
               categories: categories,
               favorites: favorites,
               allowReorder: allowReorder));
-        } catch (e) {
-          emit(BoardListErrorState(e.toString()));
+        } on NoConnectionException catch (e) {
+          emit(BoardListErrorState(
+              message: 'Проверьте подключение к Интернету.', exception: e));
+        } on Exception catch (e) {
+          emit(BoardListErrorState(message: e.toString(), exception: e));
         }
       },
     );
@@ -34,8 +38,8 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
         try {
           await _boardListService.refreshBoardList();
           add(LoadBoardListEvent());
-        } catch (e) {
-          emit(BoardListErrorState(e.toString()));
+        } on Exception catch (e) {
+          emit(BoardListErrorState(message: e.toString(), exception: e));
         }
       },
     );
@@ -53,8 +57,8 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
           }
 
           add(LoadBoardListEvent());
-        } catch (e) {
-          emit(BoardListErrorState(e.toString()));
+        } on Exception catch (e) {
+          emit(BoardListErrorState(message: e.toString(), exception: e));
         }
       },
     );
@@ -89,6 +93,7 @@ class BoardListLoadedState extends BoardListState {
 }
 
 class BoardListErrorState extends BoardListState {
-  BoardListErrorState(this.errorMessage);
-  final String errorMessage;
+  BoardListErrorState({required this.message, this.exception});
+  final String message;
+  final Exception? exception;
 }

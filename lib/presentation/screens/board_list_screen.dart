@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/provider/tab_provider.dart';
+import 'package:treechan/presentation/widgets/shared/no_connection_placeholder.dart';
 
 import '../../utils/constants/enums.dart';
 import '../../domain/models/tab.dart';
@@ -70,7 +72,10 @@ class _BoardListScreenState extends State<BoardListScreen>
                 ],
               );
             } else if (state is BoardListErrorState) {
-              return Center(child: Text(state.errorMessage));
+              if (state.exception is NoConnectionException) {
+                return const NoConnectionPlaceholder();
+              }
+              return Center(child: Text(state.message));
             }
             return const Center(child: CircularProgressIndicator());
           },
