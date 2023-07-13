@@ -20,7 +20,7 @@ void _fixHtmlVideoInBoard(Thread thread) {
   thread.posts[0].comment = thread.posts[0].comment
       .substring(0, thread.posts[0].comment.indexOf("<video"));
   thread.posts[0].files;
-  thread.posts[0].files.add(File(
+  thread.posts[0].files?.add(File(
       type: 10,
       path: "https://2ch.hk/$src",
       thumbnail: 'https://via.placeholder.com/640x360.png?text=No+Thumbnail'));
@@ -34,7 +34,7 @@ void _fixHtmlVideoInThread(Post post) {
       video.substring(video.indexOf('src="') + 5, video.indexOf('"></video>'));
   post.comment = post.comment.substring(0, post.comment.indexOf("<video"));
   post.files;
-  post.files.add(File(
+  post.files?.add(File(
       type: 10,
       path: "https://2ch.hk/$src",
       thumbnail: 'https://via.placeholder.com/640x360.png?text=No+Thumbnail'));
