@@ -23,7 +23,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
     String url = widget.file.path!.contains("http")
         ? widget.file.path!
         : "https://2ch.hk${widget.file.path!}";
-    controller = VideoPlayerController.network(url);
+    controller = VideoPlayerController.networkUrl(Uri.tryParse(url)!);
     flickManager = FlickManager(
       videoPlayerController: controller,
     );
