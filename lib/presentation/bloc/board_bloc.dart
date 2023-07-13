@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
@@ -18,8 +19,12 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late final StreamSubscription tabSub;
   late final BoardService boardService;
   late BoardSearchService searchService;
+  Key key;
   bool isDisposed = false;
-  BoardBloc({required this.tabProvider, required this.boardService})
+  BoardBloc(
+      {required this.tabProvider,
+      required this.boardService,
+      required this.key})
       : super(BoardInitialState()) {
     tabSub = tabProvider.catalogStream.listen((catalog) {
       if (catalog.boardTag == boardService.boardTag && !isDisposed) {

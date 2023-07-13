@@ -1,4 +1,5 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/exceptions.dart';
 
@@ -7,9 +8,11 @@ import '../../domain/models/json/json.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ThreadService threadService;
+  Key key;
   // late List<TreeNode<Post>>? roots;
   late Root? threadInfo;
-  ThreadBloc({required this.threadService}) : super(ThreadInitialState()) {
+  ThreadBloc({required this.threadService, required this.key})
+      : super(ThreadInitialState()) {
     on<LoadThreadEvent>(
       (event, emit) async {
         try {

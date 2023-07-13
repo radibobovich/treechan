@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../utils/constants/enums.dart';
 import '../../domain/services/board_list_service.dart';
@@ -8,8 +9,9 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
   late final BoardListService _boardListService;
   late List<Category> categories;
   late List<Board> favorites;
+  foundation.Key key;
   bool allowReorder = false;
-  BoardListBloc({required BoardListService boardListService})
+  BoardListBloc({required BoardListService boardListService, required this.key})
       : _boardListService = boardListService,
         super(BoardListInitialState()) {
     on<LoadBoardListEvent>(
