@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,8 +21,12 @@ class ThreadFetcher {
   Future<http.Response> getThreadResponse({bool isRefresh = false}) async {
     String url;
     http.Response response;
-
-    if (const String.fromEnvironment('thread') == 'true') {
+    final prefs = await SharedPreferences.getInstance();
+    if (kDebugMode &&
+        (const String.fromEnvironment('thread') == 'true' ||
+            prefs.getBool('test') == true) &&
+        threadId == 282647314 &&
+        boardTag == 'b') {
       String jsonString = await rootBundle.loadString(
           isRefresh ? 'assets/new_posts.json' : 'assets/thread.json');
       response = http.Response(jsonString, 200, headers: {
