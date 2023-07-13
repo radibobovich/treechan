@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
@@ -19,6 +19,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late final StreamSubscription tabSub;
   late final BoardService boardService;
   late BoardSearchService searchService;
+  final ScrollController scrollController = ScrollController();
   Key key;
   bool isDisposed = false;
   BoardBloc(
@@ -41,11 +42,14 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
             threads: threads,
             completeRefresh: event.refreshCompleted));
       } on BoardNotFoundException {
-        emit(BoardErrorState("404 - Доска не найдена"));
+        emit(BoardErrorState(message: "404 - Доска не найдена"));
       } on FailedResponseException catch (e) {
-        emit(BoardErrorState("Ошибка ${e.statusCode}."));
-      } on Exception {
-        emit(BoardErrorState("Неизвестная ошибка"));
+        emit(BoardErrorState(message: "Ошибка ${e.statusCode}.", exception: e));
+      } on NoConnectionException catch (e) {
+        emit(BoardErrorState(
+            message: 'Проверьте подключение к Интернету.', exception: e));
+      } on Exception catch (e) {
+        emit(BoardErrorState(message: e.toString(), exception: e));
       }
     });
     on<RefreshBoardEvent>(
@@ -58,7 +62,6 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
           }
           add(LoadBoardEvent());
         } catch (e) {
-          boardService.currentPage -= 1;
           // emit(BoardErrorState(e.toString()));
           add(LoadBoardEvent(refreshCompleted: false));
         }
@@ -71,8 +74,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         if (event.searchTag != null) {
           add(SearchQueryChangedEvent(event.searchTag!));
         }
-      } catch (e) {
-        emit(BoardErrorState(e.toString()));
+      } on Exception catch (e) {
+        emit(BoardErrorState(message: e.toString(), exception: e));
       }
     });
     on<SearchQueryChangedEvent>((event, emit) async {
@@ -80,8 +83,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         emit(BoardSearchState(
             searchResult: await searchService.search(event.query),
             query: event.query));
-      } catch (e) {
-        emit(BoardErrorState(e.toString()));
+      } on Exception catch (e) {
+        emit(BoardErrorState(message: e.toString(), exception: e));
       }
     });
   }
@@ -144,6 +147,7 @@ class BoardSearchState extends BoardState {
 }
 
 class BoardErrorState extends BoardState {
-  final String errorMessage;
-  BoardErrorState(this.errorMessage);
+  final String message;
+  final Exception? exception;
+  BoardErrorState({required this.message, this.exception});
 }
