@@ -38,7 +38,7 @@ class ThreadService {
   }
 
   /// PLain list of all posts in the thread.
-  late List<Post> _posts = [];
+  List<Post> _posts = [];
   List<Post> get getPosts => _posts;
 
   /// Contains thread information like maxNum, postsCount, etc.
@@ -72,6 +72,11 @@ class ThreadService {
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
   Future<void> refreshThread() async {
+    // If thread hasn't been loaded properly you can't refresh it
+    // RefreshThreadEvent will fire LoadThreadEvent after so it will be loaded
+    if (_posts.isEmpty) {
+      return;
+    }
     final ThreadFetcher fetcher = ThreadFetcher(
         boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
     final http.Response response =
