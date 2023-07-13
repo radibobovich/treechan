@@ -33,3 +33,13 @@ class FailedResponseException implements Exception {
     return message;
   }
 }
+
+class NoConnectionException implements Exception {
+  final String message;
+  NoConnectionException(this.message);
+
+  @override
+  String toString() {
+    return message;
+  }
+}
