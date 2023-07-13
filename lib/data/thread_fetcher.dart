@@ -37,8 +37,11 @@ class ThreadFetcher {
       url = (isRefresh)
           ? "https://2ch.hk/api/mobile/v2/after/$boardTag/$threadId/${threadInfo.maxNum! + 1}"
           : "https://2ch.hk/$boardTag/res/${threadId.toString()}.json";
-
-      response = await http.get(Uri.parse(url));
+      try {
+        response = await http.get(Uri.parse(url));
+      } on SocketException {
+        throw NoConnectionException('Check your internet connection.');
+      }
     }
     if (response.statusCode == 200) {
       return response;
