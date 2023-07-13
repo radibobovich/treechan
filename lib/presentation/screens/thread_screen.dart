@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 import 'dart:ui';
 
+import '../../exceptions.dart';
 import '../provider/tab_provider.dart';
 import '../../domain/models/tab.dart';
 
@@ -15,6 +16,7 @@ import '../bloc/thread_bloc.dart';
 
 import '../../domain/services/scroll_service.dart';
 import '../widgets/shared/go_back_widget.dart';
+import '../widgets/shared/no_connection_placeholder.dart';
 import '../widgets/thread/post_widget.dart';
 
 class ThreadScreen extends StatefulWidget {
@@ -110,7 +112,10 @@ class _ThreadScreenState extends State<ThreadScreen>
                 },
               );
             } else if (state is ThreadErrorState) {
-              return Center(child: Text(state.errorMessage));
+              if (state.exception is NoConnectionException) {
+                return const NoConnectionPlaceholder();
+              }
+              return Center(child: Text(state.message));
             } else {
               return const Center(child: CircularProgressIndicator());
             }
@@ -119,12 +124,25 @@ class _ThreadScreenState extends State<ThreadScreen>
   }
 
   Future<void> _refreshThread() async {
-    scrollService.saveCurrentScrollInfo();
+    //No need to preserve scroll position if the thread hasn't been loaded
+    // correctly. This check is created in case user presses refresh after
+    // failed thread loading.
+    int oldPostCount =
+        BlocProvider.of<ThreadBloc>(context).threadService.getPosts.length;
 
+    if (oldPostCount > 0) {
+      scrollService.saveCurrentScrollInfo();
+    }
     BlocProvider.of<ThreadBloc>(context).add(RefreshThreadEvent());
+    int newPostCount =
+        BlocProvider.of<ThreadBloc>(context).threadService.getPosts.length;
+
     await Future.delayed(const Duration(milliseconds: 10));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollService.updateScrollPosition();
-    });
+
+    if (oldPostCount > 0 && newPostCount > oldPostCount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollService.updateScrollPosition();
+      });
+    }
   }
 }
