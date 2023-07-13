@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 
 import '../../utils/constants/enums.dart';
@@ -13,6 +14,7 @@ import '../../domain/models/tab.dart';
 import '../widgets/board/refresh_custom_footer.dart';
 import '../widgets/board/thread_card.dart';
 import '../widgets/shared/go_back_widget.dart';
+import '../widgets/shared/no_connection_placeholder.dart';
 
 class BoardAppBar extends StatefulWidget {
   const BoardAppBar({super.key, required this.currentTab});
@@ -61,6 +63,11 @@ class _BoardAppBarState extends State<BoardAppBar> {
                 onPressed: () {
                   BlocProvider.of<BoardBloc>(context)
                       .add(RefreshBoardEvent(refreshFromScratch: true));
+                  BlocProvider.of<BoardBloc>(context)
+                      .scrollController
+                      .animateTo(0,
+                          duration: const Duration(milliseconds: 100),
+                          curve: Curves.easeOut);
                 },
               ),
               const PopupMenuBoard()
@@ -162,9 +169,12 @@ class _BoardScreenState extends State<BoardScreen>
                   },
                   footer: RefreshCustomFooter(controller: controller),
                   child: ListView.builder(
+                    controller:
+                        BlocProvider.of<BoardBloc>(context).scrollController,
                     itemCount: state.threads!.length,
                     itemBuilder: (context, index) {
                       return ThreadCard(
+                        key: ValueKey(state.threads![index].posts[0].id),
                         thread: state.threads![index],
                         currentTab: widget.currentTab,
                       );
@@ -182,7 +192,10 @@ class _BoardScreenState extends State<BoardScreen>
                   },
                 );
               } else if (state is BoardErrorState) {
-                return Center(child: Text(state.errorMessage));
+                if (state.exception is NoConnectionException) {
+                  return const NoConnectionPlaceholder();
+                }
+                return Center(child: Text(state.message));
               } else {
                 return const Center(child: CircularProgressIndicator());
               }
