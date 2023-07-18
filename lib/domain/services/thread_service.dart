@@ -32,7 +32,7 @@ class ThreadService {
     prefs = await SharedPreferences.getInstance();
 
     if (_roots.isEmpty) {
-      await loadThread();
+      await load();
     }
     return _roots;
   }
@@ -48,7 +48,7 @@ class ThreadService {
   /// Sends GET request and gets thread information and list of posts.
 
   /// Loads thread from scratch.
-  Future<void> loadThread() async {
+  Future<void> load() async {
     final ThreadFetcher fetcher = ThreadFetcher(
         boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
     final http.Response response = await fetcher.getThreadResponse();
@@ -71,7 +71,7 @@ class ThreadService {
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
-  Future<void> refreshThread() async {
+  Future<void> refresh() async {
     // If thread hasn't been loaded properly you can't refresh it
     // RefreshThreadEvent will fire LoadThreadEvent after so it will be loaded
     if (_posts.isEmpty) {
@@ -104,7 +104,11 @@ class ThreadService {
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
         if (parentId != _threadInfo.opPostId) {
-          Tree.findPost(_roots, parentId)!.addNode(newRoot);
+          // Find a node to attach new tree to
+          final node = Tree.findNode(_roots, parentId)!;
+          newRoot.data.parents.add(node.data.id);
+          node.addNode(newRoot);
+          node.data.children.add(_posts.indexOf(newRoot.data));
         } else {
           _roots.add(newRoot);
         }

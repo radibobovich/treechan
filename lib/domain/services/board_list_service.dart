@@ -14,7 +14,7 @@ class BoardListService {
 
   Future<List<Category>> getCategories() async {
     if (_categories.isEmpty) {
-      await _getCategories();
+      await _load();
     }
     return _categories;
   }
@@ -30,7 +30,7 @@ class BoardListService {
     _categories = [];
   }
 
-  Future<void> _getCategories() async {
+  Future<void> _load() async {
     String? downloadedBoards = await BoardListFetcher.getBoardListResponse();
     if (downloadedBoards == null) {
       return;
