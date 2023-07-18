@@ -37,7 +37,7 @@ void main() async {
 
     expect(roots, isNotEmpty, reason: 'Got empty roots list.');
 
-    var post0 = Tree.findPost(roots, 50080);
+    var post0 = Tree.findNode(roots, 50080);
     expect(post0, isNotNull,
         reason: 'Specified post 50080 not found in the tree.');
     expect(post0!.children.length >= 3, isTrue,
@@ -45,8 +45,8 @@ void main() async {
 
     // 55509 answers to 55504 and 55506
     // check if tree matches these relationships
-    TreeNode<Post>? post1 = Tree.findPost(roots, 55504);
-    TreeNode<Post>? post2 = Tree.findPost(roots, 55506);
+    TreeNode<Post>? post1 = Tree.findNode(roots, 55504);
+    TreeNode<Post>? post2 = Tree.findNode(roots, 55506);
     expect(post1, isNotNull,
         reason: 'Specified parent 55504 not found in the tree.');
     expect(post2, isNotNull,
@@ -70,7 +70,7 @@ void main() async {
     List<TreeNode<Post>> roots = List.from(await threadService.getRoots());
     List<Post> posts = List.from(threadService.getPosts);
 
-    await threadService.refreshThread();
+    await threadService.refresh();
 
     List<TreeNode<Post>> updatedRoots = await threadService.getRoots();
     List<Post> updatedPosts = threadService.getPosts;
