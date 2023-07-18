@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/json/json.dart';
@@ -59,7 +60,7 @@ class Tree {
   }
 
   /// Finds post by id in the list of trees.
-  static TreeNode<Post>? findPost(List<TreeNode<Post>> roots, int id) {
+  static TreeNode<Post>? findNode(List<TreeNode<Post>> roots, int id) {
     // for (var root in roots doesn't work for some reason)
     for (int i = 0; i < roots.length; i++) {
       if (roots[i].data.id == id) {
@@ -111,6 +112,7 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
         _hasExternalReferences(postIds, post.parents)) {
       // find posts which are replies to the OP-post
       TreeNode<Post> node = TreeNode<Post>(
+        gKey: GlobalKey(),
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
         children: post.id != threadInfo.opPostId
@@ -135,6 +137,7 @@ List<TreeNode<Post>> _attachChildren(
     post = posts[index];
     // add replies to them too
     childrenToAdd.add(TreeNode(
+        gKey: GlobalKey(),
         data: post,
         children: _attachChildren(post, posts, prefs, depth + 1),
         expanded: !prefs.getBool("postsCollapsed")!));
