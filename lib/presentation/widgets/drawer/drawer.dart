@@ -25,7 +25,7 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: [
           SearchBar(
-            onOpen: (DrawerTab newTab) => provider.addTab(newTab),
+            // onOpen: (DrawerTab newTab) => provider.addTab(newTab),
             onCloseDrawer: () => _scaffoldKey.currentState!.closeDrawer(),
           ),
           const Divider(
