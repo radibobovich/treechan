@@ -2,14 +2,14 @@ import "json.dart";
 import "package:flutter/material.dart";
 
 class Post {
-  /// Banned or not.
-  late int banned;
+  /// Banned or not for this post.
+  late bool banned;
 
   /// Board tag, for example b
   late String board;
 
   /// Needs description.
-  late int closed;
+  late bool closed;
 
   /// Text of the post.
   late String comment;
@@ -20,8 +20,8 @@ class Post {
   /// email. Usually empty string or 'sage'
   late String email;
 
-  /// Needs description.
-  late int endless;
+  /// True if the thread removes old messages to add new ones
+  late bool endless;
 
   /// Media attached to the post.
   List<File>? files;
@@ -45,8 +45,8 @@ class Post {
   /// Contains id of OP post of the thread. If this is OP post itself, it's 0.
   late int parent;
 
-  /// Needs description.
-  late int sticky;
+  /// If the thread is pinned at the top of the board.
+  late bool sticky;
 
   /// Header of the post.
   late String subject;
@@ -75,13 +75,13 @@ class Post {
   /// Sets to true when added by refreshThread.
   bool isHighlighted = false;
   Post(
-      {this.banned = 0,
+      {this.banned = false,
       this.board = '',
-      this.closed = 0,
+      this.closed = false,
       this.comment = '',
       this.date = '',
       this.email = '',
-      this.endless = 0,
+      this.endless = false,
       required this.files,
       this.lasthit = 0,
       this.name = '',
@@ -89,7 +89,7 @@ class Post {
       this.number = 0,
       this.op = 0,
       this.parent = 0,
-      this.sticky = 0,
+      this.sticky = false,
       this.subject = '',
       this.tags = '',
       this.timestamp = 0,
@@ -98,13 +98,13 @@ class Post {
       this.gKey});
 
   Post.fromJson(Map<String, dynamic> json) {
-    banned = json['banned'];
+    banned = json['banned'] == 1 ? true : false;
     board = json['board'];
-    closed = json['closed'];
+    closed = json['closed'] == 1 ? true : false;
     comment = json['comment'];
     date = json['date'];
     email = json['email'];
-    endless = json['endless'];
+    endless = json['endless'] == 1 ? true : false;
     if (json['files'] != null) {
       files = <File>[];
       json['files'].forEach((v) {
@@ -117,7 +117,7 @@ class Post {
     number = json['number'];
     op = json['op'];
     parent = json['parent'];
-    sticky = json['sticky'];
+    sticky = json['sticky'] > 0 ? true : false;
     subject = json['subject'];
     tags = json['tags'];
     timestamp = json['timestamp'];
