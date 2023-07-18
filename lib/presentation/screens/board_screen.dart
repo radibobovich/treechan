@@ -48,16 +48,21 @@ class _BoardAppBarState extends State<BoardAppBar> {
                     },
                   ),
             actions: [
-              BlocProvider.of<BoardBloc>(context).boardService.sortType !=
-                      SortBy.page
-                  ? IconButton(
-                      icon: const Icon(Icons.search),
-                      onPressed: () {
-                        BlocProvider.of<BoardBloc>(context)
-                            .add(SearchQueryChangedEvent(""));
-                      },
-                    )
-                  : const SizedBox.shrink(),
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  if (BlocProvider.of<BoardBloc>(context)
+                          .boardService
+                          .sortType ==
+                      SortBy.page) {
+                    BlocProvider.of<BoardBloc>(context)
+                        .add(ChangeViewBoardEvent(null, searchTag: ""));
+                  } else {
+                    BlocProvider.of<BoardBloc>(context)
+                        .add(SearchQueryChangedEvent(""));
+                  }
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: () {
