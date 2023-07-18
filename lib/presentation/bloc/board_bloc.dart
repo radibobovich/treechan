@@ -56,9 +56,9 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       (event, emit) async {
         try {
           if (event.refreshFromScratch) {
-            await boardService.loadBoard();
+            await boardService.load();
           } else {
-            await boardService.refreshBoard();
+            await boardService.refresh();
           }
           add(LoadBoardEvent());
         } catch (e) {
