@@ -174,7 +174,7 @@ class _BoardScreenState extends State<BoardScreen>
                     itemCount: state.threads!.length,
                     itemBuilder: (context, index) {
                       return ThreadCard(
-                        key: ValueKey(state.threads![index].posts[0].id),
+                        key: ValueKey(state.threads![index].posts.first.id),
                         thread: state.threads![index],
                         currentTab: widget.currentTab,
                       );
@@ -186,6 +186,7 @@ class _BoardScreenState extends State<BoardScreen>
                   itemCount: state.searchResult.length,
                   itemBuilder: (context, index) {
                     return ThreadCard(
+                      key: ValueKey(state.searchResult[index].posts.first.id),
                       thread: state.searchResult[index],
                       currentTab: widget.currentTab,
                     );
