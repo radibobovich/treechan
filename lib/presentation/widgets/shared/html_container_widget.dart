@@ -118,7 +118,9 @@ class _HtmlContainerState extends State<HtmlContainer> {
             }
           },
           "a": (node, children) {
-            return TextSpan(
+            return GestureDetector(
+              onTap: () => openLink(node),
+              child: Text(
                 // custom link color render
                 style: TextStyle(
                     color: Theme.of(context).secondaryHeaderColor,
@@ -132,9 +134,9 @@ class _HtmlContainerState extends State<HtmlContainer> {
                                 '>>${widget.treeNode!.parent!.data.id}'))
                         ? FontWeight.bold
                         : FontWeight.normal),
-                text: node.tree.element!.text,
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () => openLink(node));
+                node.tree.element!.text,
+              ),
+            );
           },
         },
       ),
@@ -150,7 +152,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
             "/${widget.currentTab.tag}/res/${widget.currentTab.id}.html#")) {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
-      if (Tree.findPost(widget.roots!, id) == null) {
+      if (Tree.findNode(widget.roots!, id) == null) {
         return;
       }
       openPostPreview(context, id);
@@ -188,7 +190,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
               child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               PostWidget(
-                node: Tree.findPost(widget.roots!, id)!,
+                node: Tree.findNode(widget.roots!, id)!,
                 roots: widget.roots!,
                 currentTab: widget.currentTab,
                 scrollService: widget.scrollService,
