@@ -106,7 +106,6 @@ class ThreadService {
         if (parentId != _threadInfo.opPostId) {
           // Find a node to attach new tree to
           final node = Tree.findNode(_roots, parentId)!;
-          newRoot.data.parents.add(node.data.id);
           node.addNode(newRoot);
           node.data.children.add(_posts.indexOf(newRoot.data));
         } else {
