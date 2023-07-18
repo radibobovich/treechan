@@ -35,7 +35,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
     on<RefreshThreadEvent>(
       (event, emit) async {
         try {
-          await threadService.refreshThread();
+          await threadService.refresh();
           add(LoadThreadEvent());
         } on ThreadNotFoundException catch (e) {
           emit(ThreadErrorState(message: "404 - Тред умер", exception: e));
