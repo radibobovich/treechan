@@ -19,7 +19,7 @@ class BoardService {
 
   Future<List<Thread>?> getThreads() async {
     if (_threads.isEmpty) {
-      await loadBoard();
+      await load();
     }
     return _threads;
   }
@@ -28,11 +28,11 @@ class BoardService {
     if (sortType != newSortType) {
       sortType = newSortType;
       currentPage = 0;
-      await loadBoard();
+      await load();
     }
   }
 
-  Future<void> loadBoard() async {
+  Future<void> load() async {
     currentPage = 0;
     final BoardFetcher fetcher =
         BoardFetcher(boardTag: boardTag, sortType: sortType);
@@ -45,10 +45,9 @@ class BoardService {
     for (var thread in _threads) {
       fixHtmlVideo(thread, sortType: sortType);
     }
-    currentPage = 0;
   }
 
-  Future<void> refreshBoard() async {
+  Future<void> refresh() async {
     if (_threads.isEmpty) {
       return;
     }
