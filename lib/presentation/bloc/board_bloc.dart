@@ -57,6 +57,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         try {
           if (event.refreshFromScratch) {
             await boardService.load();
+            scrollToTop();
           } else {
             await boardService.refresh();
           }
@@ -71,6 +72,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       try {
         await boardService.changeSortType(event.sortType!, event.searchTag);
         add(LoadBoardEvent());
+        scrollToTop();
         if (event.searchTag != null) {
           add(SearchQueryChangedEvent(event.searchTag!));
         }
@@ -87,6 +89,11 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         emit(BoardErrorState(message: e.toString(), exception: e));
       }
     });
+  }
+
+  void scrollToTop() {
+    scrollController.animateTo(0,
+        duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
   }
 
   @override
