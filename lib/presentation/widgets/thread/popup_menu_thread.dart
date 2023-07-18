@@ -30,9 +30,6 @@ class _PopupMenuThreadState extends State<PopupMenuThread> {
                 }
               },
             ),
-            // PopupMenuItem(
-            //     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            //     child: const Text('ы')),
           ];
         });
   }
