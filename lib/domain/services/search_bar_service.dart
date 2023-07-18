@@ -28,7 +28,7 @@ class SearchBarService {
         throw Exception("Host not allowed");
       }
     } else if (allowedHosts.contains(parsedUrl.pathSegments[0])) {
-      // fix if the user entered a link without the protocol
+      // fix if the user entered a link without a protocol
       parsedUrl = Uri.parse("https://$url");
       debugPrint("Fixed protocol: ");
       for (var segment in parsedUrl.pathSegments) {
