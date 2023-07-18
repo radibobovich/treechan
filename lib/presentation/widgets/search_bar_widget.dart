@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../domain/services/search_bar_service.dart';
+import '../provider/tab_provider.dart';
 
 class SearchBar extends StatefulWidget {
   const SearchBar({
     super.key,
-    required this.onOpen,
+    // required this.onOpen,
     required this.onCloseDrawer,
   });
-  final Function onOpen;
+  // final Function onOpen;
   final Function onCloseDrawer;
   @override
   State<SearchBar> createState() => _SearchBarState();
@@ -43,7 +45,10 @@ class _SearchBarState extends State<SearchBar> {
 
   void submit() {
     try {
-      widget.onOpen(searchBarService.parseInput(_controller.text));
+      context
+          .read<TabProvider>()
+          .addTab(searchBarService.parseInput(_controller.text));
+      // widget.onOpen(searchBarService.parseInput(_controller.text));
       widget.onCloseDrawer();
     } catch (e) {
       // fix infinite duration
