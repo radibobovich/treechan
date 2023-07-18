@@ -1,5 +1,3 @@
-import 'package:sqflite/sqflite.dart';
-
 import '../../utils/constants/enums.dart';
 
 /// An initial tab for the drawer.
@@ -56,7 +54,6 @@ class HistoryTab extends DrawerTab {
       required this.timestamp});
 
   final DateTime timestamp;
-  late DatabaseFactory databaseFactory;
   DrawerTab toDrawerTab() {
     return DrawerTab(
         type: type,
