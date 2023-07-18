@@ -68,11 +68,6 @@ class _BoardAppBarState extends State<BoardAppBar> {
                 onPressed: () {
                   BlocProvider.of<BoardBloc>(context)
                       .add(RefreshBoardEvent(refreshFromScratch: true));
-                  BlocProvider.of<BoardBloc>(context)
-                      .scrollController
-                      .animateTo(0,
-                          duration: const Duration(milliseconds: 100),
-                          curve: Curves.easeOut);
                 },
               ),
               const PopupMenuBoard()
