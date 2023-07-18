@@ -64,7 +64,6 @@ class PopupMenuBoard extends StatelessWidget {
           prefs.setString('boardSortType', 'bump');
           BlocProvider.of<BoardBloc>(context)
               .add(ChangeViewBoardEvent(SortBy.bump));
-          // setState(() {});
         },
       );
     } else {
@@ -75,7 +74,7 @@ class PopupMenuBoard extends StatelessWidget {
           prefs.setString('boardSortType', 'time');
           BlocProvider.of<BoardBloc>(context)
               .add(ChangeViewBoardEvent(SortBy.time));
-          // setState(() {});
+          BlocProvider.of<BoardBloc>(context).scrollToTop();
         },
       );
     }
