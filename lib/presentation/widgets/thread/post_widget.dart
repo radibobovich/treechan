@@ -147,18 +147,19 @@ class _PostHeader extends StatelessWidget {
           Text(post.name,
               style: post.email == "mailto:sage"
                   ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
-                  // : TextStyle(
-                  //     color: Theme.of(context).textTheme.bodySmall!.color),
                   : null),
-
-          // don't show date for deep nodes to prevent overflow.
-          // but show date in 2d scroll mode no matter how deep the node is.
-
-          // todo: make it human readable
-          (node.depth % 16 <= 9 && node.depth % 16 != 0 ||
-                  node.depth == 0 ||
-                  prefs.getBool('2dscroll')!)
-              // ? Text(post.date!)
+          post.op == 1
+              ? const Padding(
+                  padding: EdgeInsets.fromLTRB(3, 0, 0, 0),
+                  child: Text(
+                    'OP',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 120, 153, 34),
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
+          _isEnoughSpaceForDate()
               ? Text(" ${dateTimeSerivce.getAdaptiveDate()}",
                   style: TextStyle(
                       color: Theme.of(context).textTheme.bodySmall!.color))
@@ -183,6 +184,14 @@ class _PostHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // don't show date for deep nodes to prevent overflow.
+  // but show date in 2d scroll mode no matter how deep the node is.
+  bool _isEnoughSpaceForDate() {
+    return (node.depth % 16 <= 9 && node.depth % 16 != 0 ||
+        node.depth == 0 ||
+        prefs.getBool('2dscroll')!);
   }
 }
 
