@@ -229,7 +229,7 @@ class ListTileIdle extends StatelessWidget {
       trailing: Text(formatter.format(item.timestamp)),
       onTap: () {
         Navigator.pop(context);
-        onOpen(item);
+        onOpen(item.toDrawerTab());
       },
       onLongPress: () {
         BlocProvider.of<HistoryBloc>(context).add(SelectionChangedEvent(item));
