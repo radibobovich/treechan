@@ -23,7 +23,12 @@ class DrawerTab {
 
   HistoryTab toHistoryTab() {
     return HistoryTab(
-        type: type, name: name, tag: tag, id: id, timestamp: DateTime.now());
+      type: type,
+      name: name,
+      tag: tag,
+      id: id,
+      timestamp: DateTime.now(),
+    );
   }
 
   DrawerTab getRidOfCatalog() {
