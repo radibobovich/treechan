@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/json/json.dart';
@@ -24,15 +23,19 @@ class Tree {
 
   List<TreeNode<Post>>? get getRoots => _roots;
 
-  Future<List<TreeNode<Post>>> getTree() async {
+  Future<List<TreeNode<Post>>> getTree({bool skipPostsModify = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    _addPostParents();
+    if (!skipPostsModify) {
+      _findPostParents();
+    }
+    findChildren(posts);
+
     _roots = await compute(createTreeModel, {posts, threadInfo, prefs});
     return _roots;
   }
 
   /// Adds a list of parent posts to each post based on the comment html.
-  void _addPostParents() {
+  void _findPostParents() {
     final stopwatch = Stopwatch()..start();
     for (var post in posts) {
       //take post comment
@@ -91,6 +94,26 @@ class Tree {
     }
     return null;
   }
+
+  /// Counts all nodes in the tree.
+  static int countNodes(TreeNode<Post> node) {
+    int count = 1;
+    for (var child in node.children) {
+      count += 1;
+      count += _countForChildren(child);
+    }
+    return count;
+  }
+
+  /// Called recursively for all the children.
+  static int _countForChildren(TreeNode<Post> node) {
+    int count = 0;
+    for (var child in node.children) {
+      count += 1;
+      count += _countForChildren(child);
+    }
+    return count;
+  }
 }
 
 /// Creates list of comment roots.
@@ -104,15 +127,13 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
 
   final stopwatch = Stopwatch()..start();
 
-  findChildren(posts);
   List<TreeNode<Post>>? roots = [];
   for (var post in posts) {
     if (post.parents.isEmpty ||
         post.parents.contains(threadInfo.opPostId) ||
-        _hasExternalReferences(postIds, post.parents)) {
+        _isExternalReference(postIds, post.parents)) {
       // find posts which are replies to the OP-post
       TreeNode<Post> node = TreeNode<Post>(
-        gKey: GlobalKey(),
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
         children: post.id != threadInfo.opPostId
@@ -134,12 +155,12 @@ List<TreeNode<Post>> _attachChildren(
   // find all posts that are replying to this one
   List<int> children = post.children;
   for (var index in children) {
-    post = posts[index];
+    // if (index >= posts.length) continue;
+    final child = posts[index];
     // add replies to them too
     childrenToAdd.add(TreeNode(
-        gKey: GlobalKey(),
-        data: post,
-        children: _attachChildren(post, posts, prefs, depth + 1),
+        data: child,
+        children: _attachChildren(child, posts, prefs, depth + 1),
         expanded: !prefs.getBool("postsCollapsed")!));
   }
   return childrenToAdd;
@@ -159,7 +180,7 @@ List<Post> findChildren(List<Post> posts) {
 }
 
 /// Check if post has references to posts in other threads.
-bool _hasExternalReferences(Set<int> postIds, List<int> referenceIds) {
+bool _isExternalReference(Set<int> postIds, List<int> referenceIds) {
   for (var referenceId in referenceIds) {
     // if there are no posts with that id in current thread, then it is an external reference
     if (!postIds.contains(referenceId)) {
