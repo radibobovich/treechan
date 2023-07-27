@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
+import 'package:treechan/utils/constants/enums.dart';
+import 'package:treechan/utils/remove_html.dart';
 import '../../../domain/models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -8,6 +11,7 @@ import 'package:pausable_timer/pausable_timer.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../domain/services/scroll_service.dart';
+import '../../provider/tab_provider.dart';
 import '../shared/media_preview_widget.dart';
 import '../shared/html_container_widget.dart';
 
@@ -39,7 +43,9 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
         AnimationController(vsync: this, duration: const Duration(seconds: 2));
 
     animationController.addListener(() {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -70,8 +76,12 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Card(
           child: InkWell(
-            onTap: () {
+            onTap: () async {
               widget.node.expanded = !widget.node.expanded;
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            onLongPress: () {
+              openActionMenu(context);
             },
             child: Padding(
               padding: const EdgeInsets.all(4.0),
@@ -110,13 +120,26 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
     );
   }
 
+  Future<dynamic> openActionMenu(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext bcontext) {
+          return AlertDialog(
+              contentPadding: const EdgeInsets.all(10),
+              content: ActionMenu(
+                currentTab: widget.currentTab,
+                node: widget.node,
+                providerContext: context,
+              ));
+        });
+  }
+
+  /// Removes highlight after 15 seconds of a new post being seen
   void handleHighlight(
       VisibilityInfo visibilityInfo, Post post, bool firstTimeSeen) {
     if (visibilityInfo.visibleFraction == 1 && post.isHighlighted) {
       if (firstTimeSeen) {
         timer = PausableTimer(const Duration(seconds: 15), () {
-          debugPrint('timer finished');
-          // shouldHighlight.value = false;
           animationController.forward();
         });
         timer?.start();
@@ -195,32 +218,39 @@ class _PostHeader extends StatelessWidget {
   }
 }
 
-// class AnimatedDivider extends StatelessWidget {
-//   final Color startColor;
-//   final Color endColor;
-//   final double height;
-//   final Duration duration;
+class ActionMenu extends StatelessWidget {
+  final DrawerTab currentTab;
+  final TreeNode<Post> node;
+  final BuildContext providerContext;
+  const ActionMenu(
+      {super.key,
+      required this.currentTab,
+      required this.node,
+      required this.providerContext});
 
-//   const AnimatedDivider({
-//     super.key,
-//     required this.startColor,
-//     required this.endColor,
-//     this.height = 1.0,
-//     this.duration = const Duration(milliseconds: 300),
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return TweenAnimationBuilder<double>(
-//       tween: Tween<double>(begin: 0.0, end: 1.0),
-//       duration: duration,
-//       builder: (context, value, child) {
-//         final color = Color.lerp(startColor, endColor, value);
-//         return Divider(
-//           thickness: 1,
-//           color: color,
-//         );
-//       },
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+        width: double.minPositive,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          node.data.number != 1
+              ? ListTile(
+                  title: const Text('Открыть в новой вкладке'),
+                  onTap: () {
+                    providerContext.read<TabProvider>().addTab(
+                          DrawerTab(
+                            type: TabTypes.branch,
+                            tag: currentTab.tag,
+                            id: node.data.id,
+                            name:
+                                'Ответ: "${removeHtmlTags(node.data.comment)}"',
+                            prevTab: currentTab,
+                          ),
+                        );
+                    Navigator.pop(context);
+                  },
+                )
+              : const SizedBox.shrink()
+        ]));
+  }
+}
