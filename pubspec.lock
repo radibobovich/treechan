@@ -222,8 +222,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: master
-      resolved-ref: "0ae16a4b53bba11843c6987c4821ac5cbc4f0f1d"
+      ref: HEAD
+      resolved-ref: "97ab1557a9dea7da438c4d94e5ae60d70493db37"
       url: "https://github.com/radeonovich/flexible_tree_view.git"
     source: git
     version: "0.0.6"
@@ -367,7 +367,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "4a2ab71bccb53f824a67960685dc8a769cd8f9c5"
+      resolved-ref: "27aaafb9bff46c7c63adf3ce064653f366e91a5b"
       url: "https://github.com/radeonovich/image_downloader.git"
     source: git
     version: "0.32.0"
