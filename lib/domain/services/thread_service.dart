@@ -92,9 +92,6 @@ class ThreadService {
     }
 
     _posts.addAll(newPosts);
-    if (newPosts.isNotEmpty) {
-      _threadInfo.maxNum = newPosts.last.id;
-    }
     // create tree for new posts
     Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
     List<TreeNode<Post>>? newRoots = await treeService.getTree();
@@ -107,7 +104,21 @@ class ThreadService {
           // Find a node to attach new tree to
           final node = Tree.findNode(_roots, parentId)!;
           node.addNode(newRoot);
-          node.data.children.add(_posts.indexOf(newRoot.data));
+
+          /// find index of a child to add it to children list of a post
+          int childIndex =
+              _posts.indexWhere((element) => element.id == newRoot.data.id);
+
+          /// update children in [node.data]
+          node.data.children.add(childIndex);
+
+          /// find index of a parent post to update his children list too
+          int nodeIndex =
+              _posts.indexWhere((element) => element.id == node.data.id);
+
+          /// update children in [_posts]
+          _posts[nodeIndex].children.add(childIndex);
+          debugPrint(node.data.children.toString());
         } else {
           _roots.add(newRoot);
         }

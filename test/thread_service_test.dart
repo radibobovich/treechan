@@ -6,6 +6,7 @@ import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/services/thread_service.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
+import 'package:treechan/utils/remove_html.dart';
 
 late SharedPreferences prefs;
 void main() async {
@@ -98,5 +99,13 @@ void main() async {
         '<a href="/bo/res/843736.html#886558" class="post-reply-link" data-thread="843736" data-num="886558">>>886558</a><br><a href="/bo/res/843736.html#886599" class="post-reply-link" data-thread="843736" data-num="886599">>>886599</a><br>Cпасибо, что еще можете посоветовать? Собираю список на все лето, т.к. уезжаю к бабке сраке в деревню и буду без интернета 2 месяца';
     int count = countATags(comment);
     expect(count, 2, reason: "Wrong count of reply post links.");
+  });
+
+  test('Remove html tags', () {
+    String htmlString =
+        '<a href="/b/res/282647314.html#282647314" class="post-reply-link" data-thread="282647314" data-num="282647314">>>282647314 (OP)</a><br>А в чем он неправ? На работе надо максимально ловить проеб, считаешь по другому - гречневая пидораха.';
+    String cleanedString = removeHtmlTags(htmlString);
+    expect(cleanedString,
+        'А в чем он неправ? На работе надо максимально ловить проеб, считаешь по другому - гречневая пидораха.');
   });
 }

@@ -94,6 +94,8 @@ class Screen extends StatelessWidget {
             return provider.getBoardScreen(tab);
           case TabTypes.thread:
             return provider.getThreadScreen(tab);
+          case TabTypes.branch:
+            return provider.getBranchScreen(tab);
         }
       }).toList(),
     );
