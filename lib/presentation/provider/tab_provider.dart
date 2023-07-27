@@ -13,9 +13,11 @@ import '../../domain/services/thread_service.dart';
 import '../../utils/constants/enums.dart';
 import '../bloc/board_bloc.dart';
 import '../bloc/board_list_bloc.dart';
+import '../bloc/branch_bloc.dart';
 import '../bloc/thread_bloc.dart';
 import '../screens/board_list_screen.dart';
 import '../screens/board_screen.dart';
+import '../screens/branch_screen.dart';
 import '../screens/thread_screen.dart';
 
 class TabProvider with ChangeNotifier {
@@ -52,6 +54,7 @@ class TabProvider with ChangeNotifier {
   }
 
   void addTab(DrawerTab tab) async {
+    assert(tab.prevTab != null || tab.type == TabTypes.boardList);
     if (!_tabs.contains(tab)) {
       _tabs.add(tab);
       addBloc(tab);
@@ -174,15 +177,32 @@ class TabProvider with ChangeNotifier {
         break;
       case TabTypes.thread:
         _blocs.add(ThreadBloc(
-          key: ValueKey(tab),
-          threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
-        )..add(LoadThreadEvent()));
+            key: ValueKey(tab),
+            threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
+            tab: tab,
+            provider: this)
+          ..add(LoadThreadEvent()));
+        break;
+      case TabTypes.branch:
+        _blocs.add(BranchBloc(
+            // find a thread related to the branch
+            threadBloc: _blocs.firstWhere(
+                (bloc) => bloc is ThreadBloc && bloc.tab == tab.prevTab),
+            postId: tab.id!,
+            prevTab: tab.prevTab!,
+            key: ValueKey(tab))
+          ..add(LoadBranchEvent()));
     }
   }
 
   /// Picks a bloc requested by BlocProvider with desired type.
-  T getSpecificBloc<T>(DrawerTab tab) {
-    List<Type> allowedTypes = [BoardListBloc, BoardBloc, ThreadBloc];
+  T _getSpecificBloc<T>(DrawerTab tab) {
+    List<Type> allowedTypes = [
+      BoardListBloc,
+      BoardBloc,
+      ThreadBloc,
+      BranchBloc
+    ];
     if (!allowedTypes.contains(T)) {
       throw Exception('Wrong bloc type.');
     }
@@ -190,11 +210,21 @@ class TabProvider with ChangeNotifier {
         (bloc) => bloc.runtimeType == T && bloc.key == ValueKey(tab));
   }
 
+  /// Called when a thread has been refreshed.
+  void refreshRelatedBranches(DrawerTab threadTab, int lastIndex) {
+    for (var bloc in _blocs) {
+      if (bloc.runtimeType == BranchBloc && bloc.prevTab == threadTab) {
+        (bloc as BranchBloc).add(
+            RefreshBranchEvent(RefreshSource.thread, lastIndex: lastIndex));
+      }
+    }
+  }
+
   /// Returns BoardListScreen for TabBarView children.
   BlocProvider<BoardListBloc> getBoardListScreen(DrawerTab tab) {
     return BlocProvider.value(
       key: ValueKey(tab),
-      value: getSpecificBloc<BoardListBloc>(tab),
+      value: _getSpecificBloc<BoardListBloc>(tab),
       child: const BoardListScreen(title: "Доски"),
     );
   }
@@ -203,7 +233,7 @@ class TabProvider with ChangeNotifier {
   BlocProvider<BoardBloc> getBoardScreen(DrawerTab tab) {
     return BlocProvider.value(
       key: ValueKey(tab),
-      value: getSpecificBloc<BoardBloc>(tab),
+      value: _getSpecificBloc<BoardBloc>(tab),
       child: BoardScreen(
         currentTab: tab,
       ),
@@ -214,10 +244,20 @@ class TabProvider with ChangeNotifier {
   BlocProvider<ThreadBloc> getThreadScreen(DrawerTab tab) {
     return BlocProvider.value(
       key: ValueKey(tab),
-      value: getSpecificBloc<ThreadBloc>(tab),
+      value: _getSpecificBloc<ThreadBloc>(tab),
       child: ThreadScreen(
         currentTab: tab,
         prevTab: tab.prevTab ?? boardListTab,
+      ),
+    );
+  }
+
+  BlocProvider<BranchBloc> getBranchScreen(DrawerTab tab) {
+    return BlocProvider.value(
+      key: ValueKey(tab),
+      value: _getSpecificBloc<BranchBloc>(tab),
+      child: BranchScreen(
+        currentTab: tab,
       ),
     );
   }
