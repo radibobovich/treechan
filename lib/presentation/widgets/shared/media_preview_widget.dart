@@ -183,7 +183,10 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
       return Image.network(
         widget.file.thumbnail!,
         height: 140,
-        fit: BoxFit.contain,
+        width: 140.0 *
+            widget.file.width!.toDouble() /
+            widget.file.height!.toDouble(),
+        fit: BoxFit.fill,
         errorBuilder: (context, error, stackTrace) {
           isLoaded = false;
           return const SizedBox(
