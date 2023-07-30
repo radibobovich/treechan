@@ -26,12 +26,12 @@ class TabProvider with ChangeNotifier {
   Stream<Catalog> get catalogStream => _catalog.stream;
 
   /// Contains all opened drawer tabs.
-  final List<DrawerTab> _tabs = [];
-  List<DrawerTab> get tabs => _tabs;
+  final Map<DrawerTab, dynamic> _tabs = {};
+  Map<DrawerTab, dynamic> get tabs => _tabs;
 
   /// Contains all opened screens.
-  final List<dynamic> _blocs = [];
-  List<dynamic> get blocs => _blocs;
+  // final List<dynamic> _blocs = [];
+  // List<dynamic> get blocs => _blocs;
 
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
@@ -50,14 +50,18 @@ class TabProvider with ChangeNotifier {
   void animateTo(int index) {
     _currentIndex = index;
     tabController.animateTo(index);
-    notifyListeners();
+    // notifyListeners();
+  }
+
+  bool isActive(DrawerTab tab) {
+    return true;
+    // return _tabs.keys.toList().indexOf(tab) == currentIndex;
   }
 
   void addTab(DrawerTab tab) async {
     assert(tab.prevTab != null || tab.type == TabTypes.boardList);
-    if (!_tabs.contains(tab)) {
-      _tabs.add(tab);
-      addBloc(tab);
+    if (!_tabs.containsKey(tab)) {
+      _tabs[tab] = createBloc(tab);
       int currentIndex = tabController.index;
       refreshController();
       // avoid blinking first page during opening new tab
@@ -66,22 +70,15 @@ class TabProvider with ChangeNotifier {
     notifyListeners();
     await Future.delayed(
         const Duration(milliseconds: 20)); // enables transition animation
-    animateTo(_tabs.indexOf(tab));
+    animateTo(_tabs.keys.toList().indexOf(tab));
     HistoryDatabase().add(tab.toHistoryTab());
   }
 
   void removeTab(DrawerTab tab) {
     int currentIndex = _currentIndex;
-    int removingTabIndex = tabs.indexOf(tab);
-
+    int removingTabIndex = _tabs.keys.toList().indexOf(tab);
+    _tabs[tab].close();
     tabs.remove(tab);
-    _blocs.removeWhere((bloc) {
-      if (bloc.key == ValueKey(tab)) {
-        bloc.close();
-        return true;
-      }
-      return false;
-    });
     refreshController();
     if (currentIndex == removingTabIndex) {
       // if you close the current tab
@@ -90,12 +87,12 @@ class TabProvider with ChangeNotifier {
         // if it doesn't exist, you will get an assertion error (indexOf returns -1)
         // so you go to the board list.
         // if you don't have previous tab, you go to the board list.
-        animateTo(tabs.indexOf(tab.prevTab ?? boardListTab));
+        animateTo(_tabs.keys.toList().indexOf(tab.prevTab ?? boardListTab));
 
         return;
       } on AssertionError {
         // if prevTab was closed before this tab
-        animateTo(tabs.indexOf(boardListTab));
+        animateTo(_tabs.keys.toList().indexOf(boardListTab));
         return;
       }
     }
@@ -113,12 +110,12 @@ class TabProvider with ChangeNotifier {
   }
 
   void goBack() {
-    DrawerTab currentTab = tabs[currentIndex];
+    DrawerTab currentTab = tabs.keys.elementAt(currentIndex);
     if (currentTab.prevTab == null) {
-      animateTo(tabs.indexOf(boardListTab));
+      animateTo(_tabs.keys.toList().indexOf(boardListTab));
       return;
     }
-    int prevTabId = tabs.indexOf(currentTab.prevTab!);
+    int prevTabId = tabs.keys.toList().indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
       if (_currentIndex > 0) {
         animateTo(currentIndex - 1);
@@ -138,7 +135,8 @@ class TabProvider with ChangeNotifier {
 
   void openCatalog({required String boardTag, required String searchTag}) {
     _catalog.add(Catalog(boardTag: boardTag, searchTag: searchTag));
-    final int index = _tabs
+    final int index = _tabs.keys
+        .toList()
         .indexWhere((tab) => tab.type == TabTypes.board && tab.tag == boardTag);
     if (index != -1) {
       animateTo(index);
@@ -155,64 +153,50 @@ class TabProvider with ChangeNotifier {
 
   /// Adds a new screen to the _blocs list.
   /// Called when a new tab is opened.
-  void addBloc(DrawerTab tab) {
+  dynamic createBloc(DrawerTab tab) {
     switch (tab.type) {
       case TabTypes.boardList:
-        _blocs.add(BoardListBloc(
+        return BoardListBloc(
             key: ValueKey(tab), boardListService: BoardListService())
-          ..add(LoadBoardListEvent()));
-        break;
+          ..add(LoadBoardListEvent());
       case TabTypes.board:
-        tab.isCatalog == null
-            ? _blocs.add(BoardBloc(
-                key: ValueKey(tab),
-                tabProvider: this,
-                boardService: BoardService(boardTag: tab.tag))
-              ..add(LoadBoardEvent()))
-            : _blocs.add(BoardBloc(
-                key: ValueKey(tab),
-                tabProvider: this,
-                boardService: BoardService(boardTag: tab.tag))
-              ..add(ChangeViewBoardEvent(null, searchTag: tab.searchTag)));
-        break;
+        if (tab.isCatalog == null) {
+          return BoardBloc(
+              key: ValueKey(tab),
+              tabProvider: this,
+              boardService: BoardService(boardTag: tab.tag))
+            ..add(LoadBoardEvent());
+        } else {
+          return BoardBloc(
+              key: ValueKey(tab),
+              tabProvider: this,
+              boardService: BoardService(boardTag: tab.tag))
+            ..add(ChangeViewBoardEvent(null, searchTag: tab.searchTag));
+        }
       case TabTypes.thread:
-        _blocs.add(ThreadBloc(
+        return ThreadBloc(
             key: ValueKey(tab),
             threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
             tab: tab,
             provider: this)
-          ..add(LoadThreadEvent()));
-        break;
+          ..add(LoadThreadEvent());
       case TabTypes.branch:
-        _blocs.add(BranchBloc(
+        return BranchBloc(
             // find a thread related to the branch
-            threadBloc: _blocs.firstWhere(
-                (bloc) => bloc is ThreadBloc && bloc.tab == tab.prevTab),
+            threadBloc: _tabs.entries
+                .firstWhere((entry) =>
+                    entry.value is ThreadBloc && entry.key == tab.prevTab)
+                .value,
             postId: tab.id!,
             prevTab: tab.prevTab!,
             key: ValueKey(tab))
-          ..add(LoadBranchEvent()));
+          ..add(LoadBranchEvent());
     }
-  }
-
-  /// Picks a bloc requested by BlocProvider with desired type.
-  T _getSpecificBloc<T>(DrawerTab tab) {
-    List<Type> allowedTypes = [
-      BoardListBloc,
-      BoardBloc,
-      ThreadBloc,
-      BranchBloc
-    ];
-    if (!allowedTypes.contains(T)) {
-      throw Exception('Wrong bloc type.');
-    }
-    return _blocs.firstWhere(
-        (bloc) => bloc.runtimeType == T && bloc.key == ValueKey(tab));
   }
 
   /// Called when a thread has been refreshed.
   void refreshRelatedBranches(DrawerTab threadTab, int lastIndex) {
-    for (var bloc in _blocs) {
+    for (var bloc in _tabs.values) {
       if (bloc.runtimeType == BranchBloc && bloc.prevTab == threadTab) {
         (bloc as BranchBloc).add(
             RefreshBranchEvent(RefreshSource.thread, lastIndex: lastIndex));
@@ -223,8 +207,8 @@ class TabProvider with ChangeNotifier {
   /// Returns BoardListScreen for TabBarView children.
   BlocProvider<BoardListBloc> getBoardListScreen(DrawerTab tab) {
     return BlocProvider.value(
-      key: ValueKey(tab),
-      value: _getSpecificBloc<BoardListBloc>(tab),
+      key: GlobalObjectKey(tab),
+      value: _tabs[tab],
       child: const BoardListScreen(title: "Доски"),
     );
   }
@@ -232,9 +216,10 @@ class TabProvider with ChangeNotifier {
   /// Returns BoardScreen for TabBarView children.
   BlocProvider<BoardBloc> getBoardScreen(DrawerTab tab) {
     return BlocProvider.value(
-      key: ValueKey(tab),
-      value: _getSpecificBloc<BoardBloc>(tab),
+      key: GlobalObjectKey(tab),
+      value: _tabs[tab],
       child: BoardScreen(
+        key: ValueKey(tab),
         currentTab: tab,
       ),
     );
@@ -243,8 +228,8 @@ class TabProvider with ChangeNotifier {
   /// Returns ThreadScreen for TabBarView children.
   BlocProvider<ThreadBloc> getThreadScreen(DrawerTab tab) {
     return BlocProvider.value(
-      key: ValueKey(tab),
-      value: _getSpecificBloc<ThreadBloc>(tab),
+      key: GlobalObjectKey(tab),
+      value: _tabs[tab],
       child: ThreadScreen(
         currentTab: tab,
         prevTab: tab.prevTab ?? boardListTab,
@@ -254,8 +239,8 @@ class TabProvider with ChangeNotifier {
 
   BlocProvider<BranchBloc> getBranchScreen(DrawerTab tab) {
     return BlocProvider.value(
-      key: ValueKey(tab),
-      value: _getSpecificBloc<BranchBloc>(tab),
+      key: GlobalObjectKey(tab),
+      value: _tabs[tab],
       child: BranchScreen(
         currentTab: tab,
       ),
