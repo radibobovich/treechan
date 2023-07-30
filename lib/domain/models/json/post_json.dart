@@ -1,3 +1,5 @@
+import "package:treechan/presentation/widgets/shared/html_container_widget.dart";
+
 import "json.dart";
 import "package:flutter/material.dart";
 
@@ -71,6 +73,8 @@ class Post {
   /// Children indexes in posts list
   List<int> children = [];
 
+  int aTagsCount = 0;
+
   /// If the post should be highlighted as a new post.
   /// Sets to true when added by refreshThread.
   bool isHighlighted = false;
@@ -123,6 +127,8 @@ class Post {
     timestamp = json['timestamp'];
     trip = json['trip'];
     views = json['views'];
+
+    aTagsCount = countATags(comment);
   }
 
   Map<String, dynamic> toJson() {
