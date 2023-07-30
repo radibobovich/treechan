@@ -128,7 +128,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     // highlight current parent in the post text if
                     // there are multiple parents
                     fontWeight: (widget.treeNode != null &&
-                            countATags(widget.post.comment) > 1 &&
+                            widget.post.aTagsCount > 1 &&
                             widget.treeNode!.parent != null &&
                             node.tree.element!.text.contains(
                                 '>>${widget.treeNode!.parent!.data.id}'))
@@ -209,13 +209,16 @@ class _HtmlContainerState extends State<HtmlContainer> {
 }
 
 int countATags(String text) {
-  final document = html.parse(text);
-  final tags = document.getElementsByTagName('a');
   int count = 0;
-  for (var tag in tags) {
-    if (tag.className == 'post-reply-link') {
-      count += 1;
+  int index = 0;
+  String substring = 'class="post-reply-link"';
+  while (index < text.length) {
+    index = text.indexOf(substring, index);
+    if (index == -1) {
+      break;
     }
+    count++;
+    index += substring.length;
   }
   return count;
 }
