@@ -104,7 +104,7 @@ class TabsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<DrawerTab> tabs = context.watch<TabProvider>().tabs;
+    List<DrawerTab> tabs = context.watch<TabProvider>().tabs.keys.toList();
     return Expanded(
       child: MediaQuery.removePadding(
         context: context,
