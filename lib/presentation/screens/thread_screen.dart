@@ -44,35 +44,34 @@ class _ThreadScreenState extends State<ThreadScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return rebuild.ShouldRebuild(
-      shouldRebuild: (oldWidget, newWidget) =>
-          oldWidget.appBar.hashCode != newWidget.appBar.hashCode,
-      child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              widget.currentTab.name ?? "Загрузка...",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            leading: !Platform.isWindows
-                ? GoBackButton(currentTab: widget.currentTab)
-                : IconButton(
-                    icon: const Icon(Icons.menu),
-                    onPressed: () {
-                      Scaffold.of(context).openDrawer();
-                    },
-                  ),
-            actions: <Widget>[
-              IconButton(
-                  onPressed: () async {
-                    BlocProvider.of<ThreadBloc>(context)
-                        .add(RefreshThreadEvent());
-                  },
-                  icon: const Icon(Icons.refresh)),
-              const PopupMenuThread()
-            ],
+    return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.currentTab.name ?? "Загрузка...",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          body: BlocBuilder<ThreadBloc, ThreadState>(
+          leading: !Platform.isWindows
+              ? GoBackButton(currentTab: widget.currentTab)
+              : IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+          actions: <Widget>[
+            IconButton(
+                onPressed: () async {
+                  BlocProvider.of<ThreadBloc>(context)
+                      .add(RefreshThreadEvent());
+                },
+                icon: const Icon(Icons.refresh)),
+            const PopupMenuThread()
+          ],
+        ),
+        body: rebuild.ShouldRebuild(
+          shouldRebuild: (oldWidget, newWidget) => false,
+          child: BlocBuilder<ThreadBloc, ThreadState>(
             builder: (context, state) {
               if (state is ThreadLoadedState) {
                 if (widget.currentTab.name == null) {
@@ -111,7 +110,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                 return const Center(child: CircularProgressIndicator());
               }
             },
-          )),
-    );
+          ),
+        ));
   }
 }
