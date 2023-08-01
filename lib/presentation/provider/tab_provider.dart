@@ -29,13 +29,9 @@ class TabProvider with ChangeNotifier {
   final Map<DrawerTab, dynamic> _tabs = {};
   Map<DrawerTab, dynamic> get tabs => _tabs;
 
-  /// Contains all opened screens.
-  // final List<dynamic> _blocs = [];
-  // List<dynamic> get blocs => _blocs;
-
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
-
+  int dummy = 0;
   late TabController tabController;
   late TabNavigatorState state;
   void initController(TabNavigatorState gotState) {
@@ -43,14 +39,14 @@ class TabProvider with ChangeNotifier {
     tabController = TabController(length: 0, vsync: state);
   }
 
-  void refreshController() {
+  void _refreshController() {
     tabController = TabController(length: tabs.length, vsync: state);
   }
 
   void animateTo(int index) {
     _currentIndex = index;
     tabController.animateTo(index);
-    // notifyListeners();
+    notifyListeners();
   }
 
   bool isActive(DrawerTab tab) {
@@ -61,9 +57,9 @@ class TabProvider with ChangeNotifier {
   void addTab(DrawerTab tab) async {
     assert(tab.prevTab != null || tab.type == TabTypes.boardList);
     if (!_tabs.containsKey(tab)) {
-      _tabs[tab] = createBloc(tab);
+      _tabs[tab] = _createBloc(tab);
       int currentIndex = tabController.index;
-      refreshController();
+      _refreshController();
       // avoid blinking first page during opening new tab
       tabController.index = currentIndex;
     }
@@ -79,7 +75,7 @@ class TabProvider with ChangeNotifier {
     int removingTabIndex = _tabs.keys.toList().indexOf(tab);
     _tabs[tab].close();
     tabs.remove(tab);
-    refreshController();
+    _refreshController();
     if (currentIndex == removingTabIndex) {
       // if you close the current tab
       try {
@@ -153,7 +149,7 @@ class TabProvider with ChangeNotifier {
 
   /// Adds a new screen to the _blocs list.
   /// Called when a new tab is opened.
-  dynamic createBloc(DrawerTab tab) {
+  dynamic _createBloc(DrawerTab tab) {
     switch (tab.type) {
       case TabTypes.boardList:
         return BoardListBloc(
