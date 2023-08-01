@@ -45,7 +45,8 @@ class _ThreadScreenState extends State<ThreadScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return rebuild.ShouldRebuild(
-      shouldRebuild: (oldWidget, newWidget) => false,
+      shouldRebuild: (oldWidget, newWidget) =>
+          oldWidget.appBar.hashCode != newWidget.appBar.hashCode,
       child: Scaffold(
           appBar: AppBar(
             title: Text(
