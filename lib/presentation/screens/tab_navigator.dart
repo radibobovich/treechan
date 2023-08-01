@@ -73,7 +73,7 @@ class TabNavigatorState extends State<TabNavigator>
 }
 
 /// The widget showing current tab.
-class Screen extends StatefulWidget {
+class Screen extends StatelessWidget {
   const Screen({
     super.key,
     required this.provider,
@@ -82,30 +82,21 @@ class Screen extends StatefulWidget {
   final TabProvider provider;
 
   @override
-  State<Screen> createState() => _ScreenState();
-}
-
-class _ScreenState extends State<Screen> with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
     return TabBarView(
       physics: const NeverScrollableScrollPhysics(),
       controller:
           Provider.of<TabProvider>(context, listen: false).tabController,
-      children: widget.provider.tabs.keys.map((tab) {
+      children: provider.tabs.keys.map((tab) {
         switch (tab.type) {
           case TabTypes.boardList:
-            return widget.provider.getBoardListScreen(tab);
+            return provider.getBoardListScreen(tab);
           case TabTypes.board:
-            return widget.provider.getBoardScreen(tab);
+            return provider.getBoardScreen(tab);
           case TabTypes.thread:
-            return widget.provider.getThreadScreen(tab);
+            return provider.getThreadScreen(tab);
           case TabTypes.branch:
-            return widget.provider.getBranchScreen(tab);
+            return provider.getBranchScreen(tab);
         }
       }).toList(),
     );
