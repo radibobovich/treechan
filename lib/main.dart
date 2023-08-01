@@ -13,6 +13,7 @@ bool flagDebugThread = false;
 late SharedPreferences prefs;
 StreamController<String> theme = StreamController();
 late DatabaseFactory databaseFactory;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Flutter Demo',
           theme: getTheme(snapshot.data!),
-          home: ListenableProvider(
+          home: ChangeNotifierProvider(
               create: (context) => TabProvider(), child: const TabNavigator()),
           initialRoute: '/',
         );
