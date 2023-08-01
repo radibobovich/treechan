@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/provider/tab_provider.dart';
 import 'package:treechan/presentation/widgets/shared/no_connection_placeholder.dart';
@@ -27,7 +28,6 @@ class _BoardListScreenState extends State<BoardListScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  bool firstRun = true;
 
   late Future<List<Category>> categories;
 
@@ -134,13 +134,12 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
     );
   }
 
-  openBoard(Board board) {
-    context.read<TabProvider>().addTab(DrawerTab(
+  openBoard(Board board) async {
+    Provider.of<TabProvider>(context, listen: false).addTab(DrawerTab(
         type: TabTypes.board,
         name: board.name,
         tag: board.id!,
-        prevTab:
-            DrawerTab(type: TabTypes.boardList, name: "Доски", tag: "boards")));
+        prevTab: boardListTab));
   }
 
   /// Calls when user reorder favorite boards.
