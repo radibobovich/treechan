@@ -21,6 +21,7 @@ class ThreadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('build card $key');
     return Card(
       margin: const EdgeInsets.all(2),
       child: InkWell(
