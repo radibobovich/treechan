@@ -69,7 +69,7 @@ class _SpoilerTextState extends State<_SpoilerText> {
 
 /// Represents post text.
 /// Extracted from PostWidget because of a large onLinkTap function.
-class HtmlContainer extends StatefulWidget {
+class HtmlContainer extends StatelessWidget {
   const HtmlContainer(
       {Key? key,
       required this.post,
@@ -86,20 +86,15 @@ class HtmlContainer extends StatefulWidget {
 
   final ScrollService? scrollService;
   @override
-  State<HtmlContainer> createState() => _HtmlContainerState();
-}
-
-class _HtmlContainerState extends State<HtmlContainer> {
-  @override
   Widget build(BuildContext context) {
     // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
     return ExcludeSemantics(
       child: Html(
         // limit text on BoardScreen
-        style: widget.currentTab.type == TabTypes.thread
+        style: currentTab.type == TabTypes.thread
             ? {}
             : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
-        data: widget.post.comment,
+        data: post.comment,
         customRender: {
           "span": (node, children) {
             List<String> spanClasses = node.tree.elementClasses;
@@ -119,7 +114,7 @@ class _HtmlContainerState extends State<HtmlContainer> {
           },
           "a": (node, children) {
             return GestureDetector(
-              onTap: () => openLink(node),
+              onTap: () => openLink(node, context),
               child: Text(
                 // custom link color render
                 style: TextStyle(
@@ -127,11 +122,11 @@ class _HtmlContainerState extends State<HtmlContainer> {
                     decoration: TextDecoration.underline,
                     // highlight current parent in the post text if
                     // there are multiple parents
-                    fontWeight: (widget.treeNode != null &&
-                            widget.post.aTagsCount > 1 &&
-                            widget.treeNode!.parent != null &&
-                            node.tree.element!.text.contains(
-                                '>>${widget.treeNode!.parent!.data.id}'))
+                    fontWeight: (treeNode != null &&
+                            post.aTagsCount > 1 &&
+                            treeNode!.parent != null &&
+                            node.tree.element!.text
+                                .contains('>>${treeNode!.parent!.data.id}'))
                         ? FontWeight.bold
                         : FontWeight.normal),
                 node.tree.element!.text,
@@ -143,38 +138,37 @@ class _HtmlContainerState extends State<HtmlContainer> {
     );
   }
 
-  void openLink(RenderContext node) {
+  void openLink(RenderContext node, BuildContext ccontext) {
     String url = node.tree.element!.attributes['href']!;
     String? searchTag = node.tree.element!.attributes['title'];
     // check if link points to some post in thread
-    if (widget.currentTab.type == TabTypes.thread &&
-        url.contains(
-            "/${widget.currentTab.tag}/res/${widget.currentTab.id}.html#")) {
+    if (currentTab.type == TabTypes.thread &&
+        url.contains("/${currentTab.tag}/res/${currentTab.id}.html#")) {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
-      if (Tree.findNode(widget.roots!, id) == null) {
+      if (Tree.findNode(roots!, id) == null) {
         return;
       }
-      openPostPreview(context, id);
+      openPostPreview(ccontext, id);
 
       // check if link is external relative to this thread
     } else {
       SearchBarService searchBarService =
-          SearchBarService(currentTab: widget.currentTab);
+          SearchBarService(currentTab: currentTab);
       try {
         DrawerTab newTab =
             searchBarService.parseInput(url, searchTag: searchTag);
         if (newTab.isCatalog != null) {
-          if (widget.currentTab.type == TabTypes.board) {
-            context
+          if (currentTab.type == TabTypes.board) {
+            ccontext
                 .read<BoardBloc>()
                 .add(ChangeViewBoardEvent(null, searchTag: newTab.searchTag));
-          } else if (widget.currentTab.type == TabTypes.thread) {
-            context.read<TabProvider>().openCatalog(
+          } else if (currentTab.type == TabTypes.thread) {
+            ccontext.read<TabProvider>().openCatalog(
                 boardTag: newTab.tag, searchTag: newTab.searchTag!);
           }
         } else {
-          context.read<TabProvider>().addTab(newTab);
+          ccontext.read<TabProvider>().addTab(newTab);
         }
       } catch (e) {
         tryLaunchUrl(url);
@@ -190,10 +184,10 @@ class _HtmlContainerState extends State<HtmlContainer> {
               child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               PostWidget(
-                node: Tree.findNode(widget.roots!, id)!,
-                roots: widget.roots!,
-                currentTab: widget.currentTab,
-                scrollService: widget.scrollService,
+                node: Tree.findNode(roots!, id)!,
+                roots: roots!,
+                currentTab: currentTab,
+                scrollService: scrollService,
               )
             ]),
           ));
