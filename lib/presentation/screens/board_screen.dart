@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 
@@ -11,7 +13,6 @@ import '../bloc/board_bloc.dart';
 
 import '../provider/tab_provider.dart';
 import '../../domain/models/tab.dart';
-import '../widgets/board/refresh_custom_footer.dart';
 import '../widgets/board/thread_card.dart';
 import '../widgets/shared/go_back_widget.dart';
 import '../widgets/shared/no_connection_placeholder.dart';
@@ -122,7 +123,6 @@ class _BoardScreenState extends State<BoardScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  bool firstRun = true;
 
   @override
   void dispose() {
@@ -134,41 +134,30 @@ class _BoardScreenState extends State<BoardScreen>
   Widget build(BuildContext context) {
     super.build(context);
     RefreshController controller = RefreshController();
-    return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: BoardAppBar(currentTab: widget.currentTab)),
-      body: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-          child: BlocBuilder<BoardBloc, BoardState>(
-            builder: (context, state) {
-              if (state is BoardLoadedState) {
-                if (widget.currentTab.name == null) {
-                  context
-                      .read<TabProvider>()
-                      .setName(widget.currentTab, state.boardName);
-                  widget.currentTab.name = state.boardName;
-                }
-                if (state.completeRefresh) {
-                  controller.resetNoData();
-                  controller.refreshCompleted();
-                  controller.loadComplete();
-                } else {
-                  controller.loadNoData();
-                }
-                return SmartRefresher(
-                  controller: controller,
-                  enablePullUp: true,
-                  onRefresh: () {
-                    BlocProvider.of<BoardBloc>(context)
-                        .add(RefreshBoardEvent(refreshFromScratch: true));
-                  },
-                  onLoading: () {
-                    BlocProvider.of<BoardBloc>(context)
-                        .add(RefreshBoardEvent());
-                  },
-                  footer: RefreshCustomFooter(controller: controller),
-                  child: ListView.builder(
+    return rebuild.ShouldRebuild(
+      shouldRebuild: (oldWidget, newWidget) => false,
+      child: Scaffold(
+        appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: BoardAppBar(currentTab: widget.currentTab)),
+        body: Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+            child: BlocBuilder<BoardBloc, BoardState>(
+              builder: (context, state) {
+                if (state is BoardLoadedState) {
+                  if (widget.currentTab.name == null) {
+                    Provider.of<TabProvider>(context, listen: false)
+                        .setName(widget.currentTab, state.boardName);
+                    widget.currentTab.name = state.boardName;
+                  }
+                  if (state.completeRefresh) {
+                    controller.resetNoData();
+                    controller.refreshCompleted();
+                    controller.loadComplete();
+                  } else {
+                    controller.loadNoData();
+                  }
+                  return ListView.builder(
                     controller:
                         BlocProvider.of<BoardBloc>(context).scrollController,
                     itemCount: state.threads!.length,
@@ -179,29 +168,29 @@ class _BoardScreenState extends State<BoardScreen>
                         currentTab: widget.currentTab,
                       );
                     },
-                  ),
-                );
-              } else if (state is BoardSearchState) {
-                return ListView.builder(
-                  itemCount: state.searchResult.length,
-                  itemBuilder: (context, index) {
-                    return ThreadCard(
-                      key: ValueKey(state.searchResult[index].posts.first.id),
-                      thread: state.searchResult[index],
-                      currentTab: widget.currentTab,
-                    );
-                  },
-                );
-              } else if (state is BoardErrorState) {
-                if (state.exception is NoConnectionException) {
-                  return const NoConnectionPlaceholder();
+                  );
+                } else if (state is BoardSearchState) {
+                  return ListView.builder(
+                    itemCount: state.searchResult.length,
+                    itemBuilder: (context, index) {
+                      return ThreadCard(
+                        key: ValueKey(state.searchResult[index].posts.first.id),
+                        thread: state.searchResult[index],
+                        currentTab: widget.currentTab,
+                      );
+                    },
+                  );
+                } else if (state is BoardErrorState) {
+                  if (state.exception is NoConnectionException) {
+                    return const NoConnectionPlaceholder();
+                  }
+                  return Center(child: Text(state.message));
+                } else {
+                  return const Center(child: CircularProgressIndicator());
                 }
-                return Center(child: Text(state.message));
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          )),
+              },
+            )),
+      ),
     );
   }
 }
