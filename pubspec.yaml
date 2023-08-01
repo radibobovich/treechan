@@ -71,6 +71,7 @@ dependencies:
   pausable_timer: ^1.0.0+7
   test: ^1.22.0
   noob: ^0.0.8
+  should_rebuild: ^1.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
