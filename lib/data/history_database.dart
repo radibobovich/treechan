@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../utils/constants/enums.dart';
 import '../domain/models/tab.dart';
 
 class HistoryDatabase {
@@ -43,13 +42,13 @@ class HistoryDatabase {
     }
   }
 
-  Future<void> add(HistoryTab tab) async {
-    if (tab.type != TabTypes.thread || tab.name == null) {
+  Future<void> add(DrawerTab tab) async {
+    if (tab.name == null || tab is! ThreadTab) {
       return;
     }
     final Database db = await _database;
 
-    await db.insert('history', tab.toMap(),
+    await db.insert('history', tab.toHistoryTab().toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -59,10 +58,9 @@ class HistoryDatabase {
     await db.delete('history',
         where: 'type = ? AND tag = ? AND threadId = ? AND timestamp = ?',
         whereArgs: [
-          tab.type.toString(),
           tab.tag,
           tab.id,
-          tab.timestamp.toString()
+          tab.timestamp.toString(),
         ]);
   }
 
@@ -73,10 +71,9 @@ class HistoryDatabase {
       await db.delete('history',
           where: 'type = ? AND tag = ? AND threadId = ? AND timestamp = ?',
           whereArgs: [
-            tab.type.toString(),
             tab.tag,
             tab.id,
-            tab.timestamp.toString()
+            tab.timestamp.toString(),
           ]);
     }
   }
@@ -94,14 +91,12 @@ class HistoryDatabase {
 
     return List.generate(maps.length, (i) {
       final map = maps[i];
-      TabTypes type = TabTypes.values
-          .firstWhere((element) => element.toString() == map['type']);
 
       return HistoryTab(
-          type: type,
           tag: map['tag'],
           id: map['threadId'],
           name: map['name'],
+          prevTab: boardListTab,
           timestamp: DateTime.parse(map['timestamp']));
     }).reversed.toList();
   }

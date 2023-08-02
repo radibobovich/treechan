@@ -135,11 +135,8 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
   }
 
   openBoard(Board board) async {
-    Provider.of<TabProvider>(context, listen: false).addTab(DrawerTab(
-        type: TabTypes.board,
-        name: board.name,
-        tag: board.id!,
-        prevTab: boardListTab));
+    Provider.of<TabProvider>(context, listen: false).addTab(
+        BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
   }
 
   /// Calls when user reorder favorite boards.
