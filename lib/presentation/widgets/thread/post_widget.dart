@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
-import 'package:treechan/utils/constants/enums.dart';
 import 'package:treechan/utils/remove_html.dart';
 import '../../../domain/models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
@@ -238,8 +237,7 @@ class ActionMenu extends StatelessWidget {
                   title: const Text('Открыть в новой вкладке'),
                   onTap: () {
                     providerContext.read<TabProvider>().addTab(
-                          DrawerTab(
-                            type: TabTypes.branch,
+                          BranchTab(
                             tag: currentTab.tag,
                             id: node.data.id,
                             name:
