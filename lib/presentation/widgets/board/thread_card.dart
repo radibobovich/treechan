@@ -58,8 +58,7 @@ class ThreadCard extends StatelessWidget {
   }
 
   void openThread(BuildContext context) {
-    context.read<TabProvider>().addTab(DrawerTab(
-        type: TabTypes.thread,
+    context.read<TabProvider>().addTab(ThreadTab(
         id: thread!.posts[0].id,
         tag: thread!.posts[0].board,
         name: thread!.posts[0].subject,

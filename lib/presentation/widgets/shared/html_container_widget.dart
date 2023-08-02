@@ -91,7 +91,7 @@ class HtmlContainer extends StatelessWidget {
     return ExcludeSemantics(
       child: Html(
         // limit text on BoardScreen
-        style: currentTab.type == TabTypes.thread
+        style: currentTab is ThreadTab
             ? {}
             : {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)},
         data: post.comment,
@@ -142,8 +142,9 @@ class HtmlContainer extends StatelessWidget {
     String url = node.tree.element!.attributes['href']!;
     String? searchTag = node.tree.element!.attributes['title'];
     // check if link points to some post in thread
-    if (currentTab.type == TabTypes.thread &&
-        url.contains("/${currentTab.tag}/res/${currentTab.id}.html#")) {
+    if (currentTab is ThreadTab &&
+        url.contains(
+            "/${currentTab.tag}/res/${(currentTab as ThreadTab).id}.html#")) {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
       if (Tree.findNode(roots!, id) == null) {
@@ -156,14 +157,13 @@ class HtmlContainer extends StatelessWidget {
       SearchBarService searchBarService =
           SearchBarService(currentTab: currentTab);
       try {
-        DrawerTab newTab =
-            searchBarService.parseInput(url, searchTag: searchTag);
-        if (newTab.isCatalog != null) {
-          if (currentTab.type == TabTypes.board) {
+        final newTab = searchBarService.parseInput(url, searchTag: searchTag);
+        if (newTab is BoardTab && newTab.isCatalog == true) {
+          if (currentTab is BoardTab) {
             ccontext
                 .read<BoardBloc>()
                 .add(ChangeViewBoardEvent(null, searchTag: newTab.searchTag));
-          } else if (currentTab.type == TabTypes.thread) {
+          } else if (currentTab is ThreadTab) {
             ccontext.read<TabProvider>().openCatalog(
                 boardTag: newTab.tag, searchTag: newTab.searchTag!);
           }
