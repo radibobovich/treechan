@@ -141,6 +141,7 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       if (firstTimeSeen) {
         timer = PausableTimer(const Duration(seconds: 15), () {
           animationController.forward();
+          post.isHighlighted = false;
         });
         timer?.start();
         firstTimeSeen = false;
