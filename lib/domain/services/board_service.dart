@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:treechan/data/board_fetcher.dart';
 import 'package:treechan/utils/fix_blank_space.dart';
 
@@ -58,6 +59,14 @@ class BoardService {
     if (newThreads.isNotEmpty) {
       currentPage += 1;
     }
-    _threads = _threads + newThreads;
+    debugPrint(currentPage.toString());
+    for (var newThread in newThreads) {
+      // if this thread has not been added before
+      if (_threads.indexWhere((oldThread) =>
+              oldThread.posts.first.id == newThread.posts.first.id) ==
+          -1) {
+        _threads.add(newThread);
+      }
+    }
   }
 }
