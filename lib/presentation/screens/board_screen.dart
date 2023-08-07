@@ -41,14 +41,7 @@ class _BoardAppBarState extends State<BoardAppBar> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            leading: !Platform.isWindows
-                ? GoBackButton(currentTab: widget.currentTab)
-                : IconButton(
-                    icon: const Icon(Icons.menu),
-                    onPressed: () {
-                      Scaffold.of(context).openDrawer();
-                    },
-                  ),
+            leading: _getLeading(context),
             actions: [
               IconButton(
                 icon: const Icon(Icons.search),
@@ -102,10 +95,22 @@ class _BoardAppBarState extends State<BoardAppBar> {
             ),
           );
         } else {
-          return AppBar(title: const Text("Загрузка..."));
+          return AppBar(
+              title: const Text("Загрузка..."), leading: _getLeading(context));
         }
       },
     );
+  }
+
+  StatelessWidget _getLeading(BuildContext context) {
+    return !Platform.isWindows
+        ? GoBackButton(currentTab: widget.currentTab)
+        : IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          );
   }
 }
 
