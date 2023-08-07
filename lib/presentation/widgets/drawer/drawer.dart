@@ -146,14 +146,13 @@ class TabTile extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              (item.type == TabTypes.board ? "/${item.tag}/ - " : "") +
-                  (item.name ??
-                      (item.type == TabTypes.board ? "Доска" : "Тред")),
+              (item is BoardTab ? "/${item.tag}/ - " : "") +
+                  (item.name ?? (item is BoardTab ? "Доска" : "Тред")),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          item.type != TabTypes.boardList
+          item is! BoardListTab
               ? IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () {
