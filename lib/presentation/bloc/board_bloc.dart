@@ -52,15 +52,21 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         emit(BoardErrorState(message: e.toString(), exception: e));
       }
     });
+    on<ReloadBoardEvent>(
+      (event, emit) async {
+        try {
+          await boardService.load();
+          scrollToTop();
+        } on Exception catch (e) {
+          emit(BoardErrorState(message: e.toString(), exception: e));
+        }
+      },
+    );
     on<RefreshBoardEvent>(
       (event, emit) async {
         try {
-          if (event.refreshFromScratch) {
-            await boardService.load();
-            scrollToTop();
-          } else {
-            await boardService.refresh();
-          }
+          await boardService.refresh();
+
           add(LoadBoardEvent());
         } catch (e) {
           // emit(BoardErrorState(e.toString()));
@@ -111,10 +117,9 @@ class LoadBoardEvent extends BoardEvent {
   final bool refreshCompleted;
 }
 
-class RefreshBoardEvent extends BoardEvent {
-  RefreshBoardEvent({this.refreshFromScratch = false});
-  bool refreshFromScratch;
-}
+class ReloadBoardEvent extends BoardEvent {}
+
+class RefreshBoardEvent extends BoardEvent {}
 
 class ChangeViewBoardEvent extends BoardEvent {
   ChangeViewBoardEvent(this.sortType, {this.searchTag}) {
