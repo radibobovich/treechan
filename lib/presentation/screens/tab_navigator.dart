@@ -36,12 +36,8 @@ class TabNavigatorState extends State<TabNavigator>
   void debugThread(TabProvider provider) {
     if (kDebugMode && const String.fromEnvironment('thread') == 'true') {
       debugPrint('debugging thread');
-      DrawerTab debugThreadTab = DrawerTab(
-          type: TabTypes.thread,
-          name: "debug",
-          tag: "b",
-          prevTab: boardListTab,
-          id: 282647314);
+      DrawerTab debugThreadTab = ThreadTab(
+          name: "debug", tag: "b", prevTab: boardListTab, id: 282647314);
       provider.addTab(debugThreadTab);
     }
   }
@@ -88,15 +84,17 @@ class Screen extends StatelessWidget {
       controller:
           Provider.of<TabProvider>(context, listen: false).tabController,
       children: provider.tabs.keys.map((tab) {
-        switch (tab.type) {
-          case TabTypes.boardList:
+        switch (tab.runtimeType) {
+          case BoardListTab:
             return provider.getBoardListScreen(tab);
-          case TabTypes.board:
+          case BoardTab:
             return provider.getBoardScreen(tab);
-          case TabTypes.thread:
+          case ThreadTab:
             return provider.getThreadScreen(tab);
-          case TabTypes.branch:
+          case BranchTab:
             return provider.getBranchScreen(tab);
+          default:
+            throw Exception('Failed to get BlocProvider: no such tab type');
         }
       }).toList(),
     );
