@@ -108,6 +108,11 @@ class HtmlContainer extends StatelessWidget {
               if (prefs.getBool('spoilers') == true) {
                 return _SpoilerText(node: node, children: children);
               }
+            } else if (spanClasses.contains("s")) {
+              return TextSpan(
+                  text: node.tree.element!.text,
+                  style:
+                      const TextStyle(decoration: TextDecoration.lineThrough));
             } else {
               return children;
             }
