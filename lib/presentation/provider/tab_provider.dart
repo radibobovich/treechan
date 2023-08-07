@@ -55,7 +55,6 @@ class TabProvider with ChangeNotifier {
   }
 
   void addTab(DrawerTab tab) async {
-    assert(tab.prevTab != null || tab.type == TabTypes.boardList);
     if (!_tabs.containsKey(tab)) {
       _tabs[tab] = _createBloc(tab);
       int currentIndex = tabController.index;
@@ -67,7 +66,7 @@ class TabProvider with ChangeNotifier {
     await Future.delayed(
         const Duration(milliseconds: 20)); // enables transition animation
     animateTo(_tabs.keys.toList().indexOf(tab));
-    HistoryDatabase().add(tab.toHistoryTab());
+    HistoryDatabase().add(tab);
   }
 
   void removeTab(DrawerTab tab) {
@@ -83,7 +82,7 @@ class TabProvider with ChangeNotifier {
         // if it doesn't exist, you will get an assertion error (indexOf returns -1)
         // so you go to the board list.
         // if you don't have previous tab, you go to the board list.
-        animateTo(_tabs.keys.toList().indexOf(tab.prevTab ?? boardListTab));
+        animateTo(_tabs.keys.toList().indexOf(tab.prevTab!));
 
         return;
       } on AssertionError {
@@ -107,10 +106,6 @@ class TabProvider with ChangeNotifier {
 
   void goBack() {
     DrawerTab currentTab = tabs.keys.elementAt(currentIndex);
-    if (currentTab.prevTab == null) {
-      animateTo(_tabs.keys.toList().indexOf(boardListTab));
-      return;
-    }
     int prevTabId = tabs.keys.toList().indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
       if (_currentIndex > 0) {
@@ -125,7 +120,7 @@ class TabProvider with ChangeNotifier {
   void setName(DrawerTab tab, String name) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       tab.name = name;
-      HistoryDatabase().add(tab.toHistoryTab());
+      HistoryDatabase().add(tab);
     });
   }
 
@@ -133,12 +128,11 @@ class TabProvider with ChangeNotifier {
     _catalog.add(Catalog(boardTag: boardTag, searchTag: searchTag));
     final int index = _tabs.keys
         .toList()
-        .indexWhere((tab) => tab.type == TabTypes.board && tab.tag == boardTag);
+        .indexWhere((tab) => tab is BoardTab && tab.tag == boardTag);
     if (index != -1) {
       animateTo(index);
     } else {
-      addTab(DrawerTab(
-        type: TabTypes.board,
+      addTab(BoardTab(
         tag: boardTag,
         prevTab: _tabs[_currentIndex],
         isCatalog: true,
@@ -150,13 +144,13 @@ class TabProvider with ChangeNotifier {
   /// Adds a new screen to the _blocs list.
   /// Called when a new tab is opened.
   dynamic _createBloc(DrawerTab tab) {
-    switch (tab.type) {
-      case TabTypes.boardList:
+    switch (tab.runtimeType) {
+      case BoardListTab:
         return BoardListBloc(
             key: ValueKey(tab), boardListService: BoardListService())
           ..add(LoadBoardListEvent());
-      case TabTypes.board:
-        if (tab.isCatalog == null) {
+      case BoardTab:
+        if ((tab as BoardTab).isCatalog == false) {
           return BoardBloc(
               key: ValueKey(tab),
               tabProvider: this,
@@ -169,21 +163,22 @@ class TabProvider with ChangeNotifier {
               boardService: BoardService(boardTag: tab.tag))
             ..add(ChangeViewBoardEvent(null, searchTag: tab.searchTag));
         }
-      case TabTypes.thread:
+      case ThreadTab:
         return ThreadBloc(
             key: ValueKey(tab),
-            threadService: ThreadService(boardTag: tab.tag, threadId: tab.id!),
+            threadService: ThreadService(
+                boardTag: tab.tag, threadId: (tab as ThreadTab).id),
             tab: tab,
             provider: this)
           ..add(LoadThreadEvent());
-      case TabTypes.branch:
+      case BranchTab:
         return BranchBloc(
             // find a thread related to the branch
             threadBloc: _tabs.entries
                 .firstWhere((entry) =>
                     entry.value is ThreadBloc && entry.key == tab.prevTab)
                 .value,
-            postId: tab.id!,
+            postId: (tab as BranchTab).id,
             prevTab: tab.prevTab!,
             key: ValueKey(tab))
           ..add(LoadBranchEvent());
@@ -228,7 +223,7 @@ class TabProvider with ChangeNotifier {
       value: _tabs[tab],
       child: ThreadScreen(
         currentTab: tab,
-        prevTab: tab.prevTab ?? boardListTab,
+        prevTab: tab.prevTab!,
       ),
     );
   }

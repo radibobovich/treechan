@@ -1,5 +1,3 @@
-enum TabTypes { boardList, board, thread, branch }
-
 // Actions in the favorite list of boards in BoardListScreen
 enum FavoriteListAction { add, remove, toggleReorder, saveAll }
 

@@ -32,14 +32,8 @@ class CategoryWidget extends StatelessWidget {
             return ListTile(
               title: Text(board.name!),
               onTap: () {
-                context.read<TabProvider>().addTab(DrawerTab(
-                    type: TabTypes.board,
-                    name: board.name,
-                    tag: board.id!,
-                    prevTab: DrawerTab(
-                        type: TabTypes.boardList,
-                        name: "Доски",
-                        tag: "boards")));
+                context.read<TabProvider>().addTab(BoardTab(
+                    name: board.name, tag: board.id!, prevTab: boardListTab));
               },
               onLongPress: () {
                 showContextMenu(context, board);
