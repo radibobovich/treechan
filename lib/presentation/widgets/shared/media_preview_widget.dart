@@ -41,7 +41,7 @@ void fixLinks(List<File>? files) {
   }
 }
 
-List<int> _galleryTypes = [0, 1, 2, 4]; // none jpg png gif respectively
+List<int> _galleryTypes = [0, 1, 2, 4, 9]; // none jpg png gif jpg respectively
 List<int> _videoTypes = [6, 10]; // webm mp4
 
 List<Widget> _getImages(List<File>? files, BuildContext context) {
@@ -50,9 +50,9 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
     return List<Widget>.filled(1, const SizedBox.shrink());
   }
 
-  List<Widget> media = List<Widget>.empty(growable: true);
-  List<String> fullResLinks = List<String>.empty(growable: true);
-  List<String> videoLinks = List<String>.empty(growable: true);
+  List<Widget> media = [];
+  List<String> fullResLinks = [];
+  List<String> videoLinks = [];
 
   for (var file in files) {
     if (_galleryTypes.contains(file.type)) {
