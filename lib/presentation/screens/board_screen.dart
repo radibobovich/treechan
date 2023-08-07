@@ -1,9 +1,10 @@
 import 'dart:io';
 
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+// import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
@@ -67,8 +68,7 @@ class _BoardAppBarState extends State<BoardAppBar> {
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: () {
-                  BlocProvider.of<BoardBloc>(context)
-                      .add(RefreshBoardEvent(refreshFromScratch: true));
+                  BlocProvider.of<BoardBloc>(context).add(ReloadBoardEvent());
                 },
               ),
               const PopupMenuBoard()
@@ -133,7 +133,9 @@ class _BoardScreenState extends State<BoardScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    RefreshController controller = RefreshController();
+    // RefreshController controller = RefreshController();
+    EasyRefreshController controller =
+        EasyRefreshController(controlFinishLoad: true);
     return rebuild.ShouldRebuild(
       shouldRebuild: (oldWidget, newWidget) => false,
       child: Scaffold(
@@ -151,23 +153,45 @@ class _BoardScreenState extends State<BoardScreen>
                     widget.currentTab.name = state.boardName;
                   }
                   if (state.completeRefresh) {
-                    controller.resetNoData();
-                    controller.refreshCompleted();
-                    controller.loadComplete();
+                    // controller.resetNoData();
+                    // controller.refreshCompleted();
+                    // controller.loadComplete();
                   } else {
-                    controller.loadNoData();
+                    // controller.loadNoData();
                   }
-                  return ListView.builder(
-                    controller:
-                        BlocProvider.of<BoardBloc>(context).scrollController,
-                    itemCount: state.threads!.length,
-                    itemBuilder: (context, index) {
-                      return ThreadCard(
-                        key: ValueKey(state.threads![index].posts.first.id),
-                        thread: state.threads![index],
-                        currentTab: widget.currentTab,
-                      );
+                  return EasyRefresh(
+                    footer: const ClassicFooter(
+                      dragText: 'Потяните для загрузки',
+                      armedText: 'Готово к загрузке',
+                      readyText: 'Загрузка...',
+                      processingText: 'Загрузка...',
+                      processedText: 'Загружено',
+                      noMoreText: 'Все прочитано',
+                      failedText: 'Ошибка',
+                      messageText: 'Последнее обновление - %T',
+                    ),
+                    controller: controller,
+                    onRefresh: () => BlocProvider.of<BoardBloc>(context)
+                        .add(ReloadBoardEvent()),
+                    onLoad: () {
+                      BlocProvider.of<BoardBloc>(context)
+                          .add(RefreshBoardEvent());
+                      if (state.completeRefresh) {
+                        controller.finishLoad();
+                      } else {}
                     },
+                    child: ListView.builder(
+                      controller:
+                          BlocProvider.of<BoardBloc>(context).scrollController,
+                      itemCount: state.threads!.length,
+                      itemBuilder: (context, index) {
+                        return ThreadCard(
+                          key: ValueKey(state.threads![index].posts.first.id),
+                          thread: state.threads![index],
+                          currentTab: widget.currentTab,
+                        );
+                      },
+                    ),
                   );
                 } else if (state is BoardSearchState) {
                   return ListView.builder(
