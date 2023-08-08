@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:treechan/data/history_database.dart';
 
 import '../bloc/history_bloc.dart';
 import '../../domain/models/tab.dart';
@@ -166,8 +167,14 @@ class _HistoryListViewState extends State<HistoryListView> {
             itemCount: state.history.length,
             itemBuilder: (context, index) {
               final HistoryTab item = state.history[index];
-              return ListTileIdle(
-                  item: item, formatter: formatter, onOpen: widget.onOpen);
+              return Dismissible(
+                key: UniqueKey(),
+                onDismissed: (direction) {
+                  HistoryDatabase().remove(item);
+                },
+                child: ListTileIdle(
+                    item: item, formatter: formatter, onOpen: widget.onOpen),
+              );
             },
           );
         } else if (state is HistorySelectedState) {
