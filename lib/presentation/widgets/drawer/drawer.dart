@@ -164,7 +164,6 @@ class TabTile extends StatelessWidget {
         ],
       ),
       onTap: () {
-        // tabController.animateTo(index);
         context.read<TabProvider>().animateTo(index);
         scaffoldKey.currentState!.closeDrawer();
       },
