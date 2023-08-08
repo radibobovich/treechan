@@ -21,18 +21,18 @@ class ScrollService {
   /// Saves current first visible post and its offset before thread refresh.
   void saveCurrentScrollInfo() async {
     _firstVisiblePost = _getFirstVisiblePost();
-    _initialOffset = _getInitialOffset(_firstVisiblePost!);
+    _initialOffset = _getInitialOffset(_firstVisiblePost!.key!);
   }
 
   /// Sorts visible posts by its position and returns the topmost.
   PostWidget _getFirstVisiblePost() {
     Map<PostWidget, double> posts = {};
     for (PostWidget post in visiblePosts) {
-      RenderObject? obj =
-          (post.key as GlobalKey).currentContext?.findRenderObject();
-      RenderBox? box = obj != null ? obj as RenderBox : null;
-      Offset? position = box?.localToGlobal(Offset.zero);
-      double? y = position?.dy;
+      // RenderObject? obj =
+      //     (post.key as GlobalKey).currentContext?.findRenderObject();
+      // RenderBox? box = obj != null ? obj as RenderBox : null;
+      // Offset? position = box?.localToGlobal(Offset.zero);
+      double? y = _getInitialOffset(post.key!);
       if (y != null) {
         posts[post] = y;
       }
@@ -51,10 +51,10 @@ class ScrollService {
   }
 
   /// Gets offset of the post relative to the top of the screen.
-  double? _getInitialOffset(PostWidget post) {
+  double? _getInitialOffset(Key key) {
     RenderObject? obj;
     RenderBox? box;
-    obj = (post.key as GlobalKey).currentContext?.findRenderObject(); // null
+    obj = (key as GlobalKey).currentContext?.findRenderObject(); // null
     box = obj != null ? obj as RenderBox : null;
     Offset? position = box?.localToGlobal(Offset.zero);
     return position?.dy;
@@ -63,18 +63,13 @@ class ScrollService {
   /// Scrolls down until the post that was at the top of the screen
   /// returns to its place.
   Future<void> updateScrollPosition() async {
-    RenderObject? obj;
-    RenderBox? box;
-    Offset? position;
+    // RenderObject? obj;
+    // RenderBox? box;
+    // Offset? position;
     double? currentOffset;
     Completer<void> completer = Completer<void>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      obj = (_firstVisiblePost!.key as GlobalKey)
-          .currentContext
-          ?.findRenderObject(); // null
-      box = obj != null ? obj as RenderBox : null;
-      position = box?.localToGlobal(Offset.zero);
-      currentOffset = position?.dy;
+      currentOffset = _getInitialOffset(_firstVisiblePost!.key!);
       completer.complete();
     });
     await completer.future;
@@ -98,12 +93,7 @@ class ScrollService {
             curve: Curves.easeOut);
         timer.cancel();
       }
-      obj = (_firstVisiblePost!.key as GlobalKey)
-          .currentContext
-          ?.findRenderObject();
-      box = obj != null ? obj as RenderBox : null;
-      position = box?.localToGlobal(Offset.zero);
-      currentOffset = position?.dy;
+      currentOffset = _getInitialOffset(_firstVisiblePost!.key!);
     });
 
     return;
@@ -135,5 +125,30 @@ class ScrollService {
         partiallyVisiblePosts.remove(widget);
       }
     }
+  }
+
+  void scrollUpToPost(GlobalKey key) async {
+    double? currentOffset;
+    // Completer<void> completer = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      currentOffset = _getInitialOffset(key);
+      // completer.complete();
+    });
+    // await completer.future;
+    Timer.periodic(const Duration(milliseconds: 40), (timer) {
+      if (currentOffset == null) {
+        _scrollController.animateTo(
+            _scrollController.offset - _screenHeight / 2,
+            duration: const Duration(milliseconds: 20),
+            curve: Curves.easeOut);
+      } else {
+        timer.cancel();
+        Scrollable.ensureVisible(key.currentContext!,
+            duration: const Duration(milliseconds: 50), curve: Curves.easeOut);
+
+        return;
+      }
+      currentOffset = _getInitialOffset(key);
+    });
   }
 }
