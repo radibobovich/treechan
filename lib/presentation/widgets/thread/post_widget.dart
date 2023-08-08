@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
@@ -10,6 +11,7 @@ import 'package:pausable_timer/pausable_timer.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../domain/services/scroll_service.dart';
+import '../../bloc/thread_bloc.dart';
 import '../../provider/tab_provider.dart';
 import '../shared/media_preview_widget.dart';
 import '../shared/html_container_widget.dart';
@@ -249,7 +251,27 @@ class ActionMenu extends StatelessWidget {
                     Navigator.pop(context);
                   },
                 )
-              : const SizedBox.shrink()
+              : const SizedBox.shrink(),
+          node.parent != null
+              ? ListTile(
+                  title: const Text('Свернуть ветку'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    BlocProvider.of<ThreadBloc>(providerContext)
+                        .shrinkBranch(node);
+                  },
+                )
+              : const SizedBox.shrink(),
+          node.parent != null
+              ? ListTile(
+                  title: const Text('Свернуть корневую ветку'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    BlocProvider.of<ThreadBloc>(providerContext)
+                        .shrinkRootBranch(node);
+                  },
+                )
+              : const SizedBox.shrink(),
         ]));
   }
 }
