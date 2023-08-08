@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/data/hidden_threads_database.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/board_service.dart';
@@ -10,14 +11,12 @@ import '../../utils/constants/enums.dart';
 import '../../domain/services/board_search_service.dart';
 import '../../domain/models/json/json.dart';
 import '../provider/tab_provider.dart';
-// import 'tab_bloc.dart';
 
 class BoardBloc extends Bloc<BoardEvent, BoardState> {
-  // late final TabBloc tabBloc;
-  // late StreamSubscription tabSub;
   late final TabProvider tabProvider;
   late final StreamSubscription tabSub;
   late final BoardService boardService;
+  List<int> hiddenThreads = [];
   late BoardSearchService searchService;
   final ScrollController scrollController = ScrollController();
   Key key;
@@ -35,6 +34,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
 
     on<LoadBoardEvent>((event, emit) async {
       try {
+        hiddenThreads = await HiddenThreadsDatabase()
+            .getHiddenThreadIds(boardService.boardTag);
         final List<Thread>? threads = await boardService.getThreads();
         searchService = BoardSearchService(threads: threads!);
         emit(BoardLoadedState(
@@ -56,7 +57,10 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       (event, emit) async {
         try {
           await boardService.load();
+          hiddenThreads = await HiddenThreadsDatabase()
+              .getHiddenThreadIds(boardService.boardTag);
           scrollToTop();
+          add(LoadBoardEvent());
         } on Exception catch (e) {
           emit(BoardErrorState(message: e.toString(), exception: e));
         }
