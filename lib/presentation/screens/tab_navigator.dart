@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/domain/models/json/board_json.dart';
 
 import '../../utils/constants/enums.dart';
 
@@ -86,13 +87,13 @@ class Screen extends StatelessWidget {
       children: provider.tabs.keys.map((tab) {
         switch (tab.runtimeType) {
           case BoardListTab:
-            return provider.getBoardListScreen(tab);
+            return provider.getBoardListScreen(tab as BoardListTab);
           case BoardTab:
-            return provider.getBoardScreen(tab);
+            return provider.getBoardScreen(tab as BoardTab);
           case ThreadTab:
-            return provider.getThreadScreen(tab);
+            return provider.getThreadScreen(tab as ThreadTab);
           case BranchTab:
-            return provider.getBranchScreen(tab);
+            return provider.getBranchScreen(tab as BranchTab);
           default:
             throw Exception('Failed to get BlocProvider: no such tab type');
         }
