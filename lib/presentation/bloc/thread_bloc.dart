@@ -7,9 +7,11 @@ import 'package:treechan/domain/models/tab.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
 
+import '../../domain/models/tree.dart';
 import '../../domain/services/thread_service.dart';
 import '../../domain/models/json/json.dart';
 import '../provider/tab_provider.dart';
+import '../widgets/thread/post_widget.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ThreadService threadService;
@@ -82,6 +84,23 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
         }
       },
     );
+  }
+
+  void shrinkBranch(TreeNode<Post> node) async {
+    node.parent!.expanded = !node.parent!.expanded;
+    // await Future.delayed(
+    //     const Duration(milliseconds: 20),
+    //     () => scrollService
+    //         .scrollUpToPost(node.parent!.getGlobalKey(threadInfo!.opPostId!)));
+    scrollService
+        .scrollUpToPost(node.parent!.getGlobalKey(threadInfo!.opPostId!));
+  }
+
+  void shrinkRootBranch(TreeNode<Post> node) {
+    final rootNode = Tree.findRootNode(node);
+    rootNode.expanded = !rootNode.expanded;
+    final rootPostKey = rootNode.getGlobalKey(threadInfo!.opPostId!);
+    scrollService.scrollUpToPost(rootPostKey);
   }
 }
 
