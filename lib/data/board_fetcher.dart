@@ -11,9 +11,9 @@ class BoardFetcher {
   final String boardTag;
   final SortBy sortType;
   Future<http.Response> getBoardResponse(int currentPage) async {
-    // List<String> cloudflareBoards = ['vn', 'ruvn', 'fg', 'ga', 'h', 'ho'];
+    List<String> buggedBoards = ['vn', 'ruvn', 'fg', 'ga', 'h', 'ho'];
     String url = "";
-    if (sortType == SortBy.bump) {
+    if (sortType == SortBy.bump || buggedBoards.contains(boardTag)) {
       url = "https://2ch.hk/$boardTag/catalog.json";
     } else if (sortType == SortBy.time) {
       url = "https://2ch.hk/$boardTag/catalog_num.json";
