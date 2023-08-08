@@ -182,10 +182,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "030a0c6f239e94c467327c2480ae7b963455c8c5"
+      resolved-ref: "00eb4a0a91f1cce9d3ab4006f1669a969ce8b01a"
       url: "https://github.com/radeonovich/flutter_easy_refresh.git"
     source: git
-    version: "3.3.0+1"
+    version: "3.3.2+1"
   extended_image:
     dependency: "direct main"
     description:
@@ -667,14 +667,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-  pull_to_refresh:
-    dependency: "direct main"
-    description:
-      name: pull_to_refresh
-      sha256: bbadd5a931837b57739cf08736bea63167e284e71fb23b218c8c9a6e042aad12
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   quiver:
     dependency: transitive
     description:
