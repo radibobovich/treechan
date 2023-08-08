@@ -79,6 +79,13 @@ class Tree {
     return null;
   }
 
+  static TreeNode<Post> findRootNode(TreeNode<Post> node) {
+    if (node.parent == null) {
+      return node;
+    }
+    return findRootNode(node.parent!);
+  }
+
   /// Called recursively.
   static TreeNode<Post>? _findPostInChildren(TreeNode<Post> node, int id) {
     // for (var child in node.children) doesn't work for some reason
