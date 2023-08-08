@@ -69,10 +69,9 @@ class TabProvider with ChangeNotifier {
     HistoryDatabase().add(tab);
   }
 
-  void removeTab(DrawerTab tab) {
+  void removeTab(DrawerTab tab) async {
     int currentIndex = _currentIndex;
     int removingTabIndex = _tabs.keys.toList().indexOf(tab);
-    _tabs[tab].close();
     tabs.remove(tab);
     _refreshController();
     if (currentIndex == removingTabIndex) {
@@ -196,7 +195,7 @@ class TabProvider with ChangeNotifier {
   }
 
   /// Returns BoardListScreen for TabBarView children.
-  BlocProvider<BoardListBloc> getBoardListScreen(DrawerTab tab) {
+  BlocProvider<BoardListBloc> getBoardListScreen(BoardListTab tab) {
     return BlocProvider.value(
       key: GlobalObjectKey(tab),
       value: _tabs[tab],
@@ -205,7 +204,7 @@ class TabProvider with ChangeNotifier {
   }
 
   /// Returns BoardScreen for TabBarView children.
-  BlocProvider<BoardBloc> getBoardScreen(DrawerTab tab) {
+  BlocProvider<BoardBloc> getBoardScreen(BoardTab tab) {
     return BlocProvider.value(
       key: GlobalObjectKey(tab),
       value: _tabs[tab],
@@ -217,7 +216,7 @@ class TabProvider with ChangeNotifier {
   }
 
   /// Returns ThreadScreen for TabBarView children.
-  BlocProvider<ThreadBloc> getThreadScreen(DrawerTab tab) {
+  BlocProvider<ThreadBloc> getThreadScreen(ThreadTab tab) {
     return BlocProvider.value(
       key: GlobalObjectKey(tab),
       value: _tabs[tab],
@@ -228,7 +227,7 @@ class TabProvider with ChangeNotifier {
     );
   }
 
-  BlocProvider<BranchBloc> getBranchScreen(DrawerTab tab) {
+  BlocProvider<BranchBloc> getBranchScreen(BranchTab tab) {
     return BlocProvider.value(
       key: GlobalObjectKey(tab),
       value: _tabs[tab],
