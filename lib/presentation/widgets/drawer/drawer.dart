@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../utils/constants/enums.dart';
 import '../../bloc/history_bloc.dart';
 import '../../provider/tab_provider.dart';
 import '../../../domain/models/tab.dart';
