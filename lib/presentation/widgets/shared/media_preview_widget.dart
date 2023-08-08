@@ -19,6 +19,7 @@ class MediaPreview extends StatelessWidget {
           (files == null ? const EdgeInsets.all(0) : const EdgeInsets.all(8.0)),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        physics: const ClampingScrollPhysics(),
         child: Row(
           children: _getImages(files, context),
         ),
