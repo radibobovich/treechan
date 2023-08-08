@@ -1,30 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/presentation/bloc/board_bloc.dart';
+import 'package:treechan/presentation/screens/hidden_threads_screen.dart';
 
+import '../../../domain/models/tab.dart';
 import '../../../utils/constants/enums.dart';
+import '../../provider/tab_provider.dart';
 
 class PopupMenuBoard extends StatelessWidget {
-  const PopupMenuBoard({super.key});
+  final BoardTab currentTab;
+  final Function onOpen;
+  const PopupMenuBoard({
+    super.key,
+    required this.currentTab,
+    required this.onOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
       icon: const Icon(Icons.more_vert),
       padding: EdgeInsets.zero,
-      itemBuilder: (context) {
-        if (BlocProvider.of<BoardBloc>(context).boardService.sortType !=
+      itemBuilder: (popupContext) {
+        if (BlocProvider.of<BoardBloc>(popupContext).boardService.sortType !=
             SortBy.page) {
           // catalog mode: can return to page mode, sort by time or bump and search
           return <PopupMenuEntry<dynamic>>[
-            getViewButton(context),
-            getSortButton(context),
+            getViewButton(popupContext),
+            getSortButton(popupContext),
+            getHiddenThreadsButton(context, onOpen),
           ];
         } else {
           // page sort mode: can go to catalog
           return <PopupMenuEntry<dynamic>>[
-            getViewButton(context),
+            getViewButton(popupContext),
+            getHiddenThreadsButton(context, onOpen),
           ];
         }
       },
@@ -80,14 +92,25 @@ class PopupMenuBoard extends StatelessWidget {
     }
   }
 
-  // PopupMenuItem<dynamic> getSearchButton(BuildContext context) {
-  //   return PopupMenuItem(
-  //     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-  //     child: const Text('Поиск'),
-  //     onTap: () {
-  //       // BlocProvider.of<BoardBloc>(context).add(ChangeViewBoardEvent(null));
-  //       BlocProvider.of<BoardBloc>(context).add(SearchQueryChangedEvent(""));
-  //     },
-  //   );
-  // }
+  PopupMenuItem<dynamic> getHiddenThreadsButton(
+      BuildContext context, Function onOpen) {
+    return PopupMenuItem(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: const Text('Скрытые треды'),
+      onTap: () {
+        /// Use delay because handleTap() calls Navigator.pop() and interferes
+        /// with the push()
+        Future.delayed(
+            const Duration(milliseconds: 50),
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HiddenThreadsScreen(
+                      tag: currentTab.tag,
+                      currentTab: currentTab,
+                      onOpen: onOpen),
+                )));
+      },
+    );
+  }
 }
