@@ -44,11 +44,11 @@ dependencies:
   shared_preferences: ^2.0.17
   flexible_tree_view:
     git:
-      url: https://github.com/radeonovich/flexible_tree_view.git
+      url: https://github.com/radibobovich/flexible_tree_view.git
   grouped_list: ^5.1.2
   url_launcher: ^6.1.8
   easy_refresh:
-    git: https://github.com/radeonovich/flutter_easy_refresh.git
+    git: https://github.com/radibobovich/flutter_easy_refresh.git
   visibility_detector: ^0.3.3
   args: ^2.4.0
   photo_view: ^0.14.0
@@ -59,7 +59,7 @@ dependencies:
   settings_ui: ^2.0.2
   image_downloader:
     git:
-      url: https://github.com/radeonovich/image_downloader.git
+      url: https://github.com/radibobovich/image_downloader.git
   sqflite: ^2.2.6
   path: ^1.8.2
   intl: ^0.17.0

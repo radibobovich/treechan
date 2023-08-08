@@ -183,7 +183,7 @@ packages:
       path: "."
       ref: HEAD
       resolved-ref: "00eb4a0a91f1cce9d3ab4006f1669a969ce8b01a"
-      url: "https://github.com/radeonovich/flutter_easy_refresh.git"
+      url: "https://github.com/radibobovich/flutter_easy_refresh.git"
     source: git
     version: "3.3.2+1"
   extended_image:
@@ -231,8 +231,8 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "97ab1557a9dea7da438c4d94e5ae60d70493db37"
-      url: "https://github.com/radeonovich/flexible_tree_view.git"
+      resolved-ref: d76d5cb2ff3d466f45fe94f7528d46572fda9455
+      url: "https://github.com/radibobovich/flexible_tree_view.git"
     source: git
     version: "0.0.6"
   flick_video_player:
@@ -408,7 +408,7 @@ packages:
       path: "."
       ref: HEAD
       resolved-ref: "4a2ab71bccb53f824a67960685dc8a769cd8f9c5"
-      url: "https://github.com/radeonovich/image_downloader.git"
+      url: "https://github.com/radibobovich/image_downloader.git"
     source: git
     version: "0.32.0"
   intl:
