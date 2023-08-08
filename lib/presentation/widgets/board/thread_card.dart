@@ -1,17 +1,17 @@
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
+import 'package:treechan/data/hidden_threads_database.dart';
 import 'package:treechan/presentation/provider/tab_provider.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
 
-import '../../../utils/constants/enums.dart';
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
 import '../shared/html_container_widget.dart';
 import '../shared/media_preview_widget.dart';
 
 // Represents thread in list of threads
-class ThreadCard extends StatelessWidget {
-  final Thread? thread;
+class ThreadCard extends StatefulWidget {
+  final Thread thread;
   final DrawerTab currentTab;
   const ThreadCard({
     Key? key,
@@ -20,11 +20,25 @@ class ThreadCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<ThreadCard> createState() => _ThreadCardState();
+}
+
+class _ThreadCardState extends State<ThreadCard> {
+  @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.all(2),
       child: InkWell(
-        onTap: () => openThread(context),
+        onTap: widget.thread.hidden
+            ? () {
+                HiddenThreadsDatabase().removeThread(
+                    widget.currentTab.tag, widget.thread.posts.first.id);
+
+                setState(() {
+                  widget.thread.hidden = false;
+                });
+              }
+            : () => openThread(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -35,22 +49,29 @@ class ThreadCard extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 8, 8, 16),
-                    child: _CardHeader(thread: thread),
+                    child: _CardHeader(thread: widget.thread),
                   ),
                   Text.rich(TextSpan(
-                    text: thread!.posts[0].subject,
+                    text: widget.thread.posts[0].subject,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )),
                 ],
               ),
             ),
-            MediaPreview(files: thread!.posts[0].files),
-            HtmlContainer(
-              post: thread!.posts[0],
-              currentTab: currentTab,
-              // onOpenCatalog: onOpenCatalog,
-            ),
-            _CardFooter(thread: thread)
+            widget.thread.hidden
+                ? const SizedBox.shrink()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MediaPreview(files: widget.thread.posts[0].files),
+                      HtmlContainer(
+                        post: widget.thread.posts[0],
+                        currentTab: widget.currentTab,
+                        // onOpenCatalog: onOpenCatalog,
+                      ),
+                      _CardFooter(thread: widget.thread),
+                    ],
+                  )
           ],
         ),
       ),
@@ -59,10 +80,10 @@ class ThreadCard extends StatelessWidget {
 
   void openThread(BuildContext context) {
     context.read<TabProvider>().addTab(ThreadTab(
-        id: thread!.posts[0].id,
-        tag: thread!.posts[0].board,
-        name: thread!.posts[0].subject,
-        prevTab: currentTab));
+        id: widget.thread.posts[0].id,
+        tag: widget.thread.posts[0].board,
+        name: widget.thread.posts[0].subject,
+        prevTab: widget.currentTab));
   }
 }
 
