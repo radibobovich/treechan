@@ -18,7 +18,7 @@ class HistoryDatabase {
 
   Future<Database> _createDatabase() async {
     const String sql =
-        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, type TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)';
+        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)';
     if (Platform.isWindows || Platform.isLinux) {
       databaseFactory = databaseFactoryFfi;
       return databaseFactory.openDatabase(
@@ -56,7 +56,7 @@ class HistoryDatabase {
     final Database db = await _database;
 
     await db.delete('history',
-        where: 'type = ? AND tag = ? AND threadId = ? AND timestamp = ?',
+        where: 'tag = ? AND threadId = ? AND timestamp = ?',
         whereArgs: [
           tab.tag,
           tab.id,
@@ -69,7 +69,7 @@ class HistoryDatabase {
 
     for (HistoryTab tab in tabs) {
       await db.delete('history',
-          where: 'type = ? AND tag = ? AND threadId = ? AND timestamp = ?',
+          where: 'tag = ? AND threadId = ? AND timestamp = ?',
           whereArgs: [
             tab.tag,
             tab.id,
