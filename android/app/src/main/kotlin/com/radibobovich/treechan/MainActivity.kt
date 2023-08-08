@@ -1,4 +1,4 @@
-package com.example.treechan
+package com.radibobovich.treechan
 
 import io.flutter.embedding.android.FlutterActivity
 
