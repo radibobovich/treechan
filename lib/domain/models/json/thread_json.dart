@@ -25,6 +25,7 @@ class Thread {
   // int? views;
   List<Post> posts = [];
 
+  bool hidden = false;
   Thread({
     // this.banned,
     // this.board,
