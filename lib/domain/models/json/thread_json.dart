@@ -105,7 +105,7 @@ class Thread {
         lasthit: json['lasthit'],
         name: json['name'],
         id: json['num'],
-        op: json['op'],
+        op: json['op'] == 1 ? true : false,
         parent: json['parent'],
         sticky: json['sticky'] > 0 ? true : false,
         subject: json['subject'],
