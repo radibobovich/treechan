@@ -17,7 +17,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late final StreamSubscription tabSub;
   late final BoardService boardService;
   List<int> hiddenThreads = [];
-  late BoardSearchService searchService;
+  late final BoardSearchService searchService;
   final ScrollController scrollController = ScrollController();
   Key key;
   bool isDisposed = false;
@@ -44,6 +44,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
             completeRefresh: event.refreshCompleted));
       } on BoardNotFoundException {
         emit(BoardErrorState(message: "404 - Доска не найдена"));
+      } on NoCookieException {
+        emit(BoardErrorState(message: 'Вы не можете просматривать эту доску.'));
       } on FailedResponseException catch (e) {
         emit(BoardErrorState(message: "Ошибка ${e.statusCode}.", exception: e));
       } on NoConnectionException catch (e) {
@@ -84,7 +86,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         add(LoadBoardEvent());
         scrollToTop();
         if (event.searchTag != null) {
-          add(SearchQueryChangedEvent(event.searchTag!));
+          Future.delayed(const Duration(milliseconds: 50),
+              () => add(SearchQueryChangedEvent(event.searchTag!)));
         }
       } on Exception catch (e) {
         emit(BoardErrorState(message: e.toString(), exception: e));
