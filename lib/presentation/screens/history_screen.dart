@@ -15,10 +15,20 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HistoryBloc, HistoryState>(
       builder: (context, state) {
-        return Scaffold(
-          appBar: const PreferredSize(
-              preferredSize: Size.fromHeight(56), child: HistoryAppBar()),
-          body: HistoryListView(onOpen: onOpen),
+        return WillPopScope(
+          onWillPop: () async {
+            if (state is HistorySearchState) {
+              BlocProvider.of<HistoryBloc>(context).add(LoadHistoryEvent());
+              return Future.value(false);
+            } else {
+              return Future.value(true);
+            }
+          },
+          child: Scaffold(
+            appBar: const PreferredSize(
+                preferredSize: Size.fromHeight(56), child: HistoryAppBar()),
+            body: HistoryListView(onOpen: onOpen),
+          ),
         );
       },
     );
