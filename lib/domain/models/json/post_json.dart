@@ -42,7 +42,7 @@ class Post {
   int? number;
 
   /// If this post made by OP.
-  late int op;
+  late bool op;
 
   /// Contains id of OP post of the thread. If this is OP post itself, it's 0.
   late int parent;
@@ -94,7 +94,7 @@ class Post {
       this.name = '',
       this.id = 0,
       this.number = 0,
-      this.op = 0,
+      this.op = false,
       this.parent = 0,
       this.sticky = false,
       this.subject = '',
@@ -122,7 +122,7 @@ class Post {
     name = json['name'];
     id = json['num'];
     number = json['number'];
-    op = json['op'];
+    op = json['op'] == 1 ? true : false;
     parent = json['parent'];
     sticky = json['sticky'] > 0 ? true : false;
     subject = json['subject'];
