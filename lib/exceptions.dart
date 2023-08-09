@@ -23,6 +23,11 @@ class BoardNotFoundException implements Exception {
   }
 }
 
+class NoCookieException implements Exception {
+  final String message;
+  NoCookieException({required this.message});
+}
+
 class FailedResponseException implements Exception {
   final String message;
   final int statusCode;
