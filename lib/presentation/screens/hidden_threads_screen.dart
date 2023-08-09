@@ -4,7 +4,7 @@ import 'package:treechan/domain/models/tab.dart';
 
 import '../../data/hidden_threads_database.dart';
 
-class HiddenThreadsScreen extends StatelessWidget {
+class HiddenThreadsScreen extends StatefulWidget {
   final String tag;
   final BoardTab currentTab;
   final Function onOpen;
@@ -16,20 +16,26 @@ class HiddenThreadsScreen extends StatelessWidget {
   });
 
   @override
+  State<HiddenThreadsScreen> createState() => _HiddenThreadsScreenState();
+}
+
+class _HiddenThreadsScreenState extends State<HiddenThreadsScreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Скрытые треды - /$tag/'),
+        title: Text('Скрытые треды - /${widget.tag}/'),
         actions: [
           IconButton(
               onPressed: () {
-                HiddenThreadsDatabase().removeBoardTable(tag);
+                HiddenThreadsDatabase().removeBoardTable(widget.tag);
+                setState(() {});
               },
               icon: const Icon(Icons.delete))
         ],
       ),
       body: FutureBuilder<List<HiddenThread>>(
-        future: HiddenThreadsDatabase().getHiddenThreads(tag),
+        future: HiddenThreadsDatabase().getHiddenThreads(widget.tag),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
@@ -39,13 +45,14 @@ class HiddenThreadsScreen extends StatelessWidget {
                 return Dismissible(
                     key: ValueKey(thread),
                     onDismissed: (direction) {
-                      HiddenThreadsDatabase().removeThread(tag, thread.id);
+                      HiddenThreadsDatabase()
+                          .removeThread(widget.tag, thread.id);
                     },
                     child: ThreadTile(
                       thread: thread,
-                      tag: tag,
-                      currentTab: currentTab,
-                      onOpen: onOpen,
+                      tag: widget.tag,
+                      currentTab: widget.currentTab,
+                      onOpen: widget.onOpen,
                     ));
               },
             );
