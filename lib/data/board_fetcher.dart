@@ -11,9 +11,8 @@ class BoardFetcher {
   final String boardTag;
   final SortBy sortType;
   Future<http.Response> getBoardResponse(int currentPage) async {
-    List<String> buggedBoards = ['vn', 'ruvn', 'fg', 'ga', 'h', 'ho'];
     String url = "";
-    if (sortType == SortBy.bump || buggedBoards.contains(boardTag)) {
+    if (sortType == SortBy.bump) {
       url = "https://2ch.hk/$boardTag/catalog.json";
     } else if (sortType == SortBy.time) {
       url = "https://2ch.hk/$boardTag/catalog_num.json";
@@ -31,6 +30,10 @@ class BoardFetcher {
       } else if (response.statusCode == 404) {
         throw BoardNotFoundException(
             message: 'Failed to load board $boardTag - board not found.');
+      } else if (response.statusCode == 500) {
+        throw NoCookieException(
+            message:
+                'Failed to load board $boardTag - user has to get a cookie before.');
       } else {
         throw FailedResponseException(
             message:
