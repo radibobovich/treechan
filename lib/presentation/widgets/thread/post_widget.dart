@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:share/share.dart';
 import 'package:treechan/data/hidden_posts.database.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
@@ -247,9 +248,18 @@ class ActionMenu extends StatelessWidget {
     return SizedBox(
         width: double.minPositive,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            title: Text('Пост #${node.data.id}'),
+            subtitle: const Text('Информация о посте'),
+            visualDensity: const VisualDensity(vertical: -3),
+            onTap: () {
+              showPostInfo(context);
+            },
+          ),
           node.data.number != 1
               ? ListTile(
                   title: const Text('Открыть в новой вкладке'),
+                  visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     providerContext.read<TabProvider>().addTab(
                           BranchTab(
@@ -267,6 +277,7 @@ class ActionMenu extends StatelessWidget {
           node.parent != null
               ? ListTile(
                   title: const Text('Свернуть ветку'),
+                  visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     Navigator.pop(context);
                     BlocProvider.of<ThreadBloc>(providerContext)
@@ -277,6 +288,7 @@ class ActionMenu extends StatelessWidget {
           node.parent != null
               ? ListTile(
                   title: const Text('Свернуть корневую ветку'),
+                  visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     Navigator.pop(context);
                     BlocProvider.of<ThreadBloc>(providerContext)
@@ -286,6 +298,7 @@ class ActionMenu extends StatelessWidget {
               : const SizedBox.shrink(),
           ListTile(
             title: const Text('Копировать текст'),
+            visualDensity: const VisualDensity(vertical: -3),
             onTap: () async {
               String comment = removeHtmlTags(node.data.comment,
                   links: true, replaceBr: true);
@@ -293,9 +306,16 @@ class ActionMenu extends StatelessWidget {
             },
           ),
           ListTile(
+              title: const Text('Поделиться'),
+              visualDensity: const VisualDensity(vertical: -3),
+              onTap: () {
+                Share.share(getPostLink(node));
+              }),
+          ListTile(
             title: node.data.hidden
                 ? const Text('Показать')
                 : const Text('Скрыть'),
+            visualDensity: const VisualDensity(vertical: -3),
             onTap: () {
               Navigator.pop(context);
 
@@ -341,6 +361,48 @@ class ActionMenu extends StatelessWidget {
         ]));
   }
 
+  Future<dynamic> showPostInfo(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Информация о посте'),
+          content: SizedBox(
+              // width: double.minPositive,
+              child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Пост #${node.data.id}'),
+              Text('Доска: ${node.data.board}'),
+              Text('Автор: ${node.data.name}'),
+              Text('Дата создания: ${node.data.date}'),
+              Text('Порядковый номер: ${node.data.number}'),
+              Text('Посты-родители: ${getParents(node)}'),
+              Text('Ответы: ${getChildren(node)}'),
+              Text(
+                  'ОП: ${node.data.op || node.data.number == 1 ? 'да' : 'нет'}'),
+              Text(
+                  'e-mail: ${node.data.email.isEmpty ? 'нет' : node.data.email}'),
+              SelectableText('Ссылка на пост: ${getPostLink(node)}'),
+              IconButton(
+                  onPressed: () async {
+                    await Clipboard.setData(
+                        ClipboardData(text: getPostLink(node)));
+                  },
+                  icon: const Icon(Icons.copy))
+            ],
+          )),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('ОК'))
+          ],
+        );
+      },
+    );
+  }
+
   dynamic getBloc(BuildContext context) {
     if (currentTab is ThreadTab) {
       return BlocProvider.of<ThreadBloc>(context);
@@ -348,4 +410,25 @@ class ActionMenu extends StatelessWidget {
       return BlocProvider.of<BranchBloc>(context);
     }
   }
+}
+
+String getParents(TreeNode<Post> node) {
+  List<int> parents = node.data.parents;
+  if (parents.isEmpty) return 'нет';
+  return parents.toString().replaceFirst('[', '').replaceFirst(']', '');
+}
+
+String getChildren(TreeNode<Post> node) {
+  List<String> children =
+      node.children.map((e) => e.data.id.toString()).toList();
+  if (children.isEmpty) return 'нет';
+  return children.toString().replaceFirst('[', '').replaceFirst(']', '');
+}
+
+String getPostLink(TreeNode<Post> node) {
+  /// If parent = 0 then it is an OP-post => threadId equals to the post id
+  int threadId = node.data.parent == 0 ? node.data.id : node.data.parent;
+  String link =
+      'https://2ch.hk/${node.data.board}/res/$threadId.html#${node.data.id}';
+  return link;
 }
