@@ -77,8 +77,8 @@ class ThreadService {
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
   Future<void> refresh() async {
-    // If thread hasn't been loaded properly you can't refresh it
-    // RefreshThreadEvent will fire LoadThreadEvent after so it will be loaded
+    /// If thread hasn't been loaded properly you can't refresh it
+    /// RefreshThreadEvent will fire LoadThreadEvent after so it will be loaded
     if (_posts.isEmpty) {
       return;
     }
@@ -91,9 +91,11 @@ class ThreadService {
     _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
     _threadInfo.maxNum = newPosts.last.id;
 
-    // highlight new posts
-    for (var post in newPosts) {
-      post.isHighlighted = true;
+    /// Highlight new posts and force update numbers
+    /// because refresh response does not contain numbers
+    for (int i = 0; i < newPosts.length; i++) {
+      newPosts[i].isHighlighted = true;
+      newPosts[i].number = i + _posts.length + 1;
     }
 
     _posts.addAll(newPosts);
