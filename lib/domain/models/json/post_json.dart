@@ -78,6 +78,9 @@ class Post {
   /// If the post should be highlighted as a new post.
   /// Sets to true when added by refreshThread.
   bool isHighlighted = false;
+
+  /// if user has hidden the post
+  bool hidden = false;
   Post(
       {this.banned = false,
       this.board = '',

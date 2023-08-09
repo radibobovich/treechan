@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
+import 'package:treechan/data/hidden_posts.database.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
 import 'package:treechan/utils/remove_html.dart';
@@ -11,6 +12,7 @@ import 'package:pausable_timer/pausable_timer.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../domain/services/scroll_service.dart';
+import '../../bloc/branch_bloc.dart';
 import '../../bloc/thread_bloc.dart';
 import '../../provider/tab_provider.dart';
 import '../shared/media_preview_widget.dart';
@@ -82,36 +84,42 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
               await Future.delayed(const Duration(milliseconds: 500));
             },
             onLongPress: () {
-              openActionMenu(context);
+              openActionMenu(context, setState);
             },
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Tooltip(
-                      message: "#${post.id}",
-                      child: _PostHeader(node: widget.node)),
-                  Divider(
-                    thickness: 1,
-                    color: colorAnimation.value,
-                  ),
-                  post.subject == ""
-                      ? const SizedBox.shrink()
-                      : Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text.rich(TextSpan(
-                            text: post.subject,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          )),
-                        ),
-                  MediaPreview(files: post.files),
-                  HtmlContainer(
-                      post: post,
-                      treeNode: widget.node,
-                      roots: widget.roots,
-                      currentTab: widget.currentTab,
-                      scrollService: widget.scrollService)
+                  _PostHeader(node: widget.node),
+                  !widget.node.data.hidden
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Divider(
+                              thickness: 1,
+                              color: colorAnimation.value,
+                            ),
+                            post.subject == ""
+                                ? const SizedBox.shrink()
+                                : Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text.rich(TextSpan(
+                                      text: post.subject,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    )),
+                                  ),
+                            MediaPreview(files: post.files),
+                            HtmlContainer(
+                                post: post,
+                                treeNode: widget.node,
+                                roots: widget.roots,
+                                currentTab: widget.currentTab,
+                                scrollService: widget.scrollService),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
                 ],
               ),
             ),
@@ -121,7 +129,8 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
     );
   }
 
-  Future<dynamic> openActionMenu(BuildContext context) {
+  Future<dynamic> openActionMenu(
+      BuildContext context, Function setStateCallback) {
     return showDialog(
         context: context,
         builder: (BuildContext bcontext) {
@@ -131,6 +140,7 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
                 currentTab: widget.currentTab,
                 node: widget.node,
                 providerContext: context,
+                setStateCallBack: setStateCallback,
               ));
         });
   }
@@ -224,11 +234,13 @@ class ActionMenu extends StatelessWidget {
   final DrawerTab currentTab;
   final TreeNode<Post> node;
   final BuildContext providerContext;
+  final Function setStateCallBack;
   const ActionMenu(
       {super.key,
       required this.currentTab,
       required this.node,
-      required this.providerContext});
+      required this.providerContext,
+      required this.setStateCallBack});
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +256,7 @@ class ActionMenu extends StatelessWidget {
                             tag: currentTab.tag,
                             id: node.data.id,
                             name:
-                                'Ответ: "${removeHtmlTags(node.data.comment)}"',
+                                'Ответ: "${removeHtmlTags(node.data.comment, links: false)}"',
                             prevTab: currentTab,
                           ),
                         );
@@ -272,6 +284,68 @@ class ActionMenu extends StatelessWidget {
                   },
                 )
               : const SizedBox.shrink(),
+          ListTile(
+            title: const Text('Копировать текст'),
+            onTap: () async {
+              String comment = removeHtmlTags(node.data.comment,
+                  links: true, replaceBr: true);
+              await Clipboard.setData(ClipboardData(text: comment));
+            },
+          ),
+          ListTile(
+            title: node.data.hidden
+                ? const Text('Показать')
+                : const Text('Скрыть'),
+            onTap: () {
+              Navigator.pop(context);
+
+              /// Action can be called from branch screen too
+              late final int threadId;
+              if (currentTab is ThreadTab) {
+                threadId = (currentTab as ThreadTab).id;
+              } else if (currentTab is BranchTab) {
+                /// This branch tab can be opened from another branch tab
+                /// so we need to find thread tab
+                DrawerTab tab = currentTab;
+                while (tab is! ThreadTab) {
+                  tab = tab.prevTab!;
+                }
+                threadId = tab.id;
+              }
+              final bloc = getBloc(providerContext);
+
+              if (node.data.hidden) {
+                HiddenPostsDatabase().removePost(
+                  currentTab.tag,
+                  threadId,
+                  node.data.id,
+                );
+                bloc.threadService.hiddenPosts.remove(node.data.id);
+                setStateCallBack(() {
+                  node.data.hidden = false;
+                });
+                return;
+              }
+              HiddenPostsDatabase().addPost(
+                currentTab.tag,
+                threadId,
+                node.data.id,
+                node.data.comment,
+              );
+              bloc.threadService.hiddenPosts.add(node.data.id);
+              setStateCallBack(() {
+                node.data.hidden = true;
+              });
+            },
+          )
         ]));
+  }
+
+  dynamic getBloc(BuildContext context) {
+    if (currentTab is ThreadTab) {
+      return BlocProvider.of<ThreadBloc>(context);
+    } else if (currentTab is BranchTab) {
+      return BlocProvider.of<BranchBloc>(context);
+    }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:treechan/data/hidden_posts.database.dart';
 import 'package:treechan/data/thread_fetcher.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/fix_html_video.dart';
@@ -45,6 +46,8 @@ class ThreadService {
   Root _threadInfo = Root();
   Root get getThreadInfo => _threadInfo;
 
+  List<int> hiddenPosts = [];
+
   /// Sends GET request and gets thread information and list of posts.
 
   /// Loads thread from scratch.
@@ -68,6 +71,8 @@ class ThreadService {
     final stopwatch = Stopwatch()..start();
     _setShowLinesProperty(_roots);
     debugPrint("Set showLines property in ${stopwatch.elapsedMilliseconds}");
+    hiddenPosts =
+        await HiddenPostsDatabase().getHiddenPostIds(boardTag, threadId);
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.

@@ -11,6 +11,7 @@ import '../../domain/models/tab.dart';
 import '../../exceptions.dart';
 import '../../main.dart';
 import '../bloc/branch_bloc.dart';
+import '../bloc/thread_bloc.dart';
 import '../widgets/shared/go_back_widget.dart';
 import '../widgets/shared/no_connection_placeholder.dart';
 import '../widgets/thread/post_widget.dart';
@@ -72,6 +73,10 @@ class _BranchScreenState extends State<BranchScreen>
                   nodes: [state.branch],
                   nodeWidth: MediaQuery.of(context).size.width / 1.5,
                   nodeItemBuilder: (context, node) {
+                    node.data.hidden = BlocProvider.of<BranchBloc>(context)
+                        .threadService
+                        .hiddenPosts
+                        .contains(node.data.id);
                     return PostWidget(
                       // get separated key set based on branch node id
                       key: node.getGlobalKey(state.branch.data.id),
