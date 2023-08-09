@@ -11,12 +11,11 @@ import '../../domain/models/tree.dart';
 import '../../domain/services/thread_service.dart';
 import '../../domain/models/json/json.dart';
 import '../provider/tab_provider.dart';
-import '../widgets/thread/post_widget.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ThreadService threadService;
   Key key;
-  final DrawerTab tab;
+  final ThreadTab tab;
   final TabProvider provider;
   final ScrollController scrollController = ScrollController();
   late final ScrollService scrollService;
