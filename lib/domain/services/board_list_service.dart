@@ -10,6 +10,8 @@ class BoardListService {
 
   bool? openAsCatalog = false;
   List<Category> _categories = List.empty(growable: true);
+  List<Board> _boards = [];
+  List<Board> get boards => _boards;
   List<Board> _favoriteBoards = List.empty(growable: true);
 
   Future<List<Category>> getCategories() async {
@@ -35,9 +37,9 @@ class BoardListService {
     if (downloadedBoards == null) {
       return;
     }
-    List<Board>? boardList = boardListFromJson(jsonDecode(downloadedBoards));
+    _boards = boardListFromJson(jsonDecode(downloadedBoards));
 
-    for (Board board in boardList) {
+    for (Board board in _boards) {
       if (board.category == "") {
         board.category = "Скрытые";
       }
