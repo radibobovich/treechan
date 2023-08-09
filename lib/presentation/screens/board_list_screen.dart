@@ -12,6 +12,7 @@ import '../bloc/board_list_bloc.dart';
 import '../../domain/models/category.dart';
 import '../../domain/models/json/json.dart';
 
+import '../widgets/board_list/board_list_appbar.dart';
 import '../widgets/board_list/category_widget.dart';
 
 class BoardListScreen extends StatefulWidget {
@@ -30,56 +31,144 @@ class _BoardListScreenState extends State<BoardListScreen>
   bool get wantKeepAlive => true;
 
   late Future<List<Category>> categories;
+  final controller = TextEditingController(text: '');
 
-  bool allowReorder = false;
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-        appBar: AppBar(
-            title: Text(widget.title),
-            leading: IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-            actions: [
-              BlocBuilder<BoardListBloc, BoardListState>(
-                builder: (context, state) {
-                  if (state is BoardListLoadedState) {
-                    return state.allowReorder
-                        ? const IconCompleteReorder()
-                        : const IconRefreshBoards();
-                  } else {
-                    return const IconRefreshBoards();
-                  }
-                },
-              )
-            ]),
-        body: BlocBuilder<BoardListBloc, BoardListState>(
+    return DefaultTabController(
+        length: 2,
+        child: BlocBuilder<BoardListBloc, BoardListState>(
           builder: (context, state) {
-            if (state is BoardListLoadedState) {
-              return ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  FavoriteBoardsList(
-                    favorites: state.favorites,
+            if (state is BoardListSearchState) {
+              // if (controller.text == 'INITIALCONTROLLERTEXT') {
+              //   controller.text = state.query;
+              // }
+              return WillPopScope(
+                onWillPop: () async {
+                  BlocProvider.of<BoardListBloc>(context)
+                      .add(LoadBoardListEvent());
+                  return Future.value(false);
+                },
+                child: Scaffold(
+                  appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(56),
+                    child: SearchAppBar(
+                      controller: controller,
+                    ),
                   ),
-                  CategoriesList(
-                    categories: state.categories,
+                  body: ListView.builder(
+                    itemCount: state.searchResult.length,
+                    itemBuilder: (context, index) {
+                      final Board board = state.searchResult[index];
+                      return BoardTile(board: board);
+                    },
                   ),
-                ],
+                ),
               );
-            } else if (state is BoardListErrorState) {
-              if (state.exception is NoConnectionException) {
-                return const NoConnectionPlaceholder();
-              }
-              return Center(child: Text(state.message));
+            } else {
+              return Scaffold(
+                appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(100),
+                  child: NormalAppBar(
+                    allowReorder:
+                        BlocProvider.of<BoardListBloc>(context).allowReorder,
+                  ),
+                ),
+                body: const TabBarView(children: [
+                  MainBoards(),
+                  UserBoards(),
+                ]),
+              );
             }
-            return const Center(child: CircularProgressIndicator());
           },
         ));
+  }
+}
+
+class MainBoards extends StatelessWidget {
+  const MainBoards({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<BoardListBloc, BoardListState>(
+      builder: (context, state) {
+        if (state is BoardListLoadedState) {
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              FavoriteBoardsList(
+                favorites: state.favorites,
+              ),
+              CategoriesList(
+                categories: state.categories,
+              ),
+            ],
+          );
+        } else if (state is BoardListErrorState) {
+          if (state.exception is NoConnectionException) {
+            return const NoConnectionPlaceholder();
+          }
+          return Center(child: Text(state.message));
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+}
+
+class UserBoards extends StatelessWidget {
+  const UserBoards({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<BoardListBloc, BoardListState>(
+        builder: (context, state) {
+      if (state is BoardListLoadedState) {
+        final List<Board> userBoards = state.categories
+            .firstWhere(
+                (category) => category.categoryName == 'Пользовательские')
+            .boards;
+        return ListView.builder(
+          itemCount: userBoards.length,
+          itemBuilder: (context, index) {
+            final board = userBoards[index];
+            return BoardTile(board: board);
+          },
+        );
+      } else if (state is BoardListErrorState) {
+        if (state.exception is NoConnectionException) {
+          return const NoConnectionPlaceholder();
+        }
+        return Center(child: Text(state.message));
+      }
+      return const Center(child: CircularProgressIndicator());
+    });
+  }
+}
+
+class BoardTile extends StatelessWidget {
+  const BoardTile({
+    super.key,
+    required this.board,
+  });
+
+  final Board board;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(board.name!),
+      onTap: () {
+        context.read<TabProvider>().addTab(
+            BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
+      },
+      onLongPress: () {
+        showContextMenu(context, board);
+      },
+    );
   }
 }
 
@@ -198,39 +287,6 @@ class CategoriesList extends StatelessWidget {
                           .isNotEmpty));
         }
         return const SizedBox();
-      },
-    );
-  }
-}
-
-class IconCompleteReorder extends StatelessWidget {
-  const IconCompleteReorder({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.done),
-      onPressed: () {
-        BlocProvider.of<BoardListBloc>(context)
-            .add(EditFavoritesEvent(action: FavoriteListAction.toggleReorder));
-      },
-    );
-  }
-}
-
-class IconRefreshBoards extends StatelessWidget {
-  const IconRefreshBoards({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.refresh),
-      onPressed: () {
-        BlocProvider.of<BoardListBloc>(context).add(RefreshBoardListEvent());
       },
     );
   }

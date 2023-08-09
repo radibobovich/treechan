@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/presentation/screens/board_list_screen.dart';
 
 import '../../../utils/constants/enums.dart';
 import '../../bloc/board_list_bloc.dart';
 import '../../../domain/models/category.dart';
-import '../../provider/tab_provider.dart';
-import '../../../domain/models/tab.dart';
 import 'package:treechan/domain/models/json/board_json.dart';
 
 /// Used in BoardListScreen to display a list of board categories..
@@ -29,16 +28,7 @@ class CategoryWidget extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           children: category.boards.map((board) {
-            return ListTile(
-              title: Text(board.name!),
-              onTap: () {
-                context.read<TabProvider>().addTab(BoardTab(
-                    name: board.name, tag: board.id!, prevTab: boardListTab));
-              },
-              onLongPress: () {
-                showContextMenu(context, board);
-              },
-            );
+            return BoardTile(board: board);
           }).toList(),
         )
       ],
