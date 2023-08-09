@@ -104,7 +104,7 @@ void main() async {
   test('Remove html tags', () {
     String htmlString =
         '<a href="/b/res/282647314.html#282647314" class="post-reply-link" data-thread="282647314" data-num="282647314">>>282647314 (OP)</a><br>А в чем он неправ? На работе надо максимально ловить проеб, считаешь по другому - гречневая пидораха.';
-    String cleanedString = removeHtmlTags(htmlString);
+    String cleanedString = removeHtmlTags(htmlString, links: false);
     expect(cleanedString,
         'А в чем он неправ? На работе надо максимально ловить проеб, считаешь по другому - гречневая пидораха.');
   });
