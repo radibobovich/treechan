@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:treechan/domain/models/json/board_json.dart';
-
-import '../../utils/constants/enums.dart';
 
 import '../widgets/drawer/drawer.dart';
 import '../../domain/models/tab.dart';
 
 import '../provider/tab_provider.dart';
+
+// TODO: encapsulate
+final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
 /// Root widget of the app.
 /// Controls tabs and creates a drawer with tabs.
@@ -22,7 +22,6 @@ class TabNavigator extends StatefulWidget {
 
 class TabNavigatorState extends State<TabNavigator>
     with TickerProviderStateMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
@@ -60,9 +59,9 @@ class TabNavigatorState extends State<TabNavigator>
       },
       child: ScaffoldMessenger(
         child: Scaffold(
-          key: _scaffoldKey,
+          key: scaffoldKey,
           body: Screen(provider: provider),
-          drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
+          drawer: AppDrawer(provider: provider, scaffoldKey: scaffoldKey),
         ),
       ),
     );
