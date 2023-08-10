@@ -18,6 +18,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   final ThreadTab tab;
   final TabProvider provider;
   final ScrollController scrollController = ScrollController();
+  final ScrollController endDrawerScrollController = ScrollController();
+  double? endDrawerScrollPosition;
   late final ScrollService scrollService;
   late Root? threadInfo;
   ThreadBloc(
@@ -27,7 +29,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
       required this.provider})
       : super(ThreadInitialState()) {
     scrollService = ScrollService(scrollController,
-        (window.physicalSize / window.devicePixelRatio).width);
+        (window.physicalSize / window.devicePixelRatio).height);
     on<LoadThreadEvent>(
       (event, emit) async {
         try {
@@ -65,7 +67,6 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           int newPostCount = threadService.getPosts.length;
 
           await Future.delayed(const Duration(milliseconds: 10));
-
           if (oldPostCount > 0 &&
               newPostCount > oldPostCount &&
               scrollController.offset != 0) {
@@ -83,6 +84,24 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
         }
       },
     );
+  }
+  void restoreEndDrawerScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (endDrawerScrollController.hasClients) {
+        if (endDrawerScrollPosition != null) {
+          endDrawerScrollController.jumpTo(endDrawerScrollPosition!);
+          return;
+        } else {
+          endDrawerScrollController.jumpTo(
+            endDrawerScrollController.position.maxScrollExtent * 2,
+          );
+        }
+      }
+    });
+  }
+
+  void storeEndDrawerScrollPosition() {
+    endDrawerScrollPosition = endDrawerScrollController.offset;
   }
 
   void shrinkBranch(TreeNode<Post> node) async {
