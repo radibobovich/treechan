@@ -162,6 +162,11 @@ class BoardTile extends StatelessWidget {
     return ListTile(
       title: Text(board.name!),
       onTap: () {
+        if (BlocProvider.of<BoardListBloc>(context).state
+            is BoardListSearchState) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          BlocProvider.of<BoardListBloc>(context).add(LoadBoardListEvent());
+        }
         context.read<TabProvider>().addTab(
             BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
       },
