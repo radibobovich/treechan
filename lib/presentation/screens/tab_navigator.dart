@@ -9,8 +9,14 @@ import '../../domain/models/tab.dart';
 
 import '../provider/tab_provider.dart';
 
-// TODO: encapsulate
-final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+void openDrawer() {
+  _scaffoldKey.currentState!.openDrawer();
+}
+
+void closeDrawer() {
+  _scaffoldKey.currentState!.closeDrawer();
+}
 
 /// Root widget of the app.
 /// Controls tabs and creates a drawer with tabs.
@@ -59,9 +65,9 @@ class TabNavigatorState extends State<TabNavigator>
       },
       child: ScaffoldMessenger(
         child: Scaffold(
-          key: scaffoldKey,
+          key: _scaffoldKey,
           body: Screen(provider: provider),
-          drawer: AppDrawer(provider: provider, scaffoldKey: scaffoldKey),
+          drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
         ),
       ),
     );
