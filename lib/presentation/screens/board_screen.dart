@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,17 +5,14 @@ import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/data/hidden_threads_database.dart';
 import 'package:treechan/exceptions.dart';
-import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 
 import '../../domain/models/json/json.dart';
-import '../../utils/constants/enums.dart';
 import '../bloc/board_bloc.dart';
 
 import '../provider/tab_provider.dart';
 import '../../domain/models/tab.dart';
 import '../widgets/board/board_appbar.dart';
 import '../widgets/board/thread_card.dart';
-import '../widgets/shared/go_back_widget.dart';
 import '../widgets/shared/no_connection_placeholder.dart';
 
 class BoardScreen extends StatefulWidget {
@@ -56,93 +51,116 @@ class _BoardScreenState extends State<BoardScreen>
         needsRebuild = false;
         return shouldRebuild;
       },
-      child: Scaffold(
-        appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(56),
-            child: BoardAppBar(
-              currentTab: widget.currentTab,
-            )),
-        body: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-            child: BlocBuilder<BoardBloc, BoardState>(
-              builder: (context, state) {
-                if (state is BoardLoadedState) {
-                  if (widget.currentTab.name == null) {
-                    Provider.of<TabProvider>(context, listen: false)
-                        .setName(widget.currentTab, state.boardName);
-                    widget.currentTab.name = state.boardName;
-                  }
-                  if (state.completeRefresh) {
-                    controller.finishLoad();
-                  } else {}
-                  return EasyRefresh(
-                    header: _getClassicRefreshHeader(),
-                    footer: _getClassicRefreshFooter(),
-                    controller: controller,
-                    onRefresh: () {
-                      BlocProvider.of<BoardBloc>(context)
-                          .add(ReloadBoardEvent());
-                    },
-                    onLoad: () {
-                      BlocProvider.of<BoardBloc>(context)
-                          .add(RefreshBoardEvent());
-                    },
-                    child: ListView.builder(
-                      controller:
-                          BlocProvider.of<BoardBloc>(context).scrollController,
-                      itemCount: state.threads!.length,
-                      itemBuilder: (context, index) {
-                        final Thread thread = state.threads![index];
-                        thread.hidden = BlocProvider.of<BoardBloc>(context)
-                            .hiddenThreads
-                            .contains(thread.posts.first.id);
-                        return Dismissible(
-                          key: ValueKey(thread.posts.first.id),
-                          confirmDismiss: (direction) async {
-                            needsRebuild = true;
-                            setState(() {
-                              HiddenThreadsDatabase().addThread(
-                                  widget.currentTab.tag,
-                                  thread.posts.first.id,
-                                  thread.posts.first.subject);
-                              BlocProvider.of<BoardBloc>(context)
-                                  .hiddenThreads
-                                  .add(thread.posts.first.id);
-                              state.threads![index].hidden = true;
-                            });
-                            return false;
-                          },
-                          child: ThreadCard(
-                            // key: ValueKey(thread.posts.first.id),
-                            thread: thread,
-                            currentTab: widget.currentTab,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                } else if (state is BoardSearchState) {
-                  return ListView.builder(
-                    itemCount: state.searchResult.length,
+      child: BlocBuilder<BoardBloc, BoardState>(
+        builder: (context, state) {
+          if (state is BoardLoadedState) {
+            if (widget.currentTab.name == null) {
+              Provider.of<TabProvider>(context, listen: false)
+                  .setName(widget.currentTab, state.boardName);
+              widget.currentTab.name = state.boardName;
+            }
+            if (state.completeRefresh) {
+              controller.finishLoad();
+            } else {}
+            return Scaffold(
+              appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(56),
+                  child: NormalAppBar(
+                    currentTab: widget.currentTab,
+                  )),
+              body: EasyRefresh(
+                header: _getClassicRefreshHeader(),
+                footer: _getClassicRefreshFooter(),
+                controller: controller,
+                onRefresh: () {
+                  BlocProvider.of<BoardBloc>(context).add(ReloadBoardEvent());
+                },
+                onLoad: () {
+                  BlocProvider.of<BoardBloc>(context).add(RefreshBoardEvent());
+                },
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                  child: ListView.builder(
+                    controller:
+                        BlocProvider.of<BoardBloc>(context).scrollController,
+                    itemCount: state.threads!.length,
                     itemBuilder: (context, index) {
-                      final Thread thread = state.searchResult[index];
-                      return ThreadCard(
+                      final Thread thread = state.threads![index];
+                      thread.hidden = BlocProvider.of<BoardBloc>(context)
+                          .hiddenThreads
+                          .contains(thread.posts.first.id);
+                      return Dismissible(
                         key: ValueKey(thread.posts.first.id),
-                        thread: thread,
-                        currentTab: widget.currentTab,
+                        confirmDismiss: (direction) async {
+                          needsRebuild = true;
+                          setState(() {
+                            HiddenThreadsDatabase().addThread(
+                                widget.currentTab.tag,
+                                thread.posts.first.id,
+                                thread.posts.first.subject);
+                            BlocProvider.of<BoardBloc>(context)
+                                .hiddenThreads
+                                .add(thread.posts.first.id);
+                            state.threads![index].hidden = true;
+                          });
+                          return false;
+                        },
+                        child: ThreadCard(
+                          // key: ValueKey(thread.posts.first.id),
+                          thread: thread,
+                          currentTab: widget.currentTab,
+                        ),
                       );
                     },
-                  );
-                } else if (state is BoardErrorState) {
-                  if (state.exception is NoConnectionException) {
-                    return const NoConnectionPlaceholder();
-                  }
-                  return Center(child: Text(state.message));
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              },
-            )),
+                  ),
+                ),
+              ),
+            );
+          } else if (state is BoardSearchState) {
+            return Scaffold(
+              appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(56),
+                  child: SearchAppBar(
+                    state: state,
+                  )),
+              body: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                child: ListView.builder(
+                  controller:
+                      BlocProvider.of<BoardBloc>(context).scrollController,
+                  itemCount: state.searchResult.length,
+                  itemBuilder: (context, index) {
+                    final Thread thread = state.searchResult[index];
+                    return ThreadCard(
+                      key: ValueKey(thread.posts.first.id),
+                      thread: thread,
+                      currentTab: widget.currentTab,
+                    );
+                  },
+                ),
+              ),
+            );
+          } else if (state is BoardErrorState) {
+            if (state.exception is NoConnectionException) {
+              return Scaffold(
+                  appBar: PreferredSize(
+                      preferredSize: const Size.fromHeight(56),
+                      child: NormalAppBar(
+                        currentTab: widget.currentTab,
+                      )),
+                  body: const NoConnectionPlaceholder());
+            }
+            return Center(child: Text(state.message.toString()));
+          } else {
+            return Scaffold(
+                appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(56),
+                    child: NormalAppBar(
+                      currentTab: widget.currentTab,
+                    )),
+                body: const Center(child: CircularProgressIndicator()));
+          }
+        },
       ),
     );
   }
