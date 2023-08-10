@@ -30,6 +30,7 @@ class NormalAppBar extends StatelessWidget {
       bottom: TabBar(
         tabs: const [Tab(text: 'Основные'), Tab(text: 'Пользовательские')],
         indicatorColor: Theme.of(context).scaffoldBackgroundColor,
+        // TODO: fix theme color for night mode
       ),
     );
   }
@@ -77,7 +78,7 @@ class DrawerLeadingButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.menu),
       onPressed: () {
-        scaffoldKey.currentState!.openDrawer();
+        openDrawer();
       },
     );
   }

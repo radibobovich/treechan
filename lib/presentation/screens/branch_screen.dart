@@ -11,7 +11,6 @@ import '../../domain/models/tab.dart';
 import '../../exceptions.dart';
 import '../../main.dart';
 import '../bloc/branch_bloc.dart';
-import '../bloc/thread_bloc.dart';
 import '../widgets/shared/go_back_widget.dart';
 import '../widgets/shared/no_connection_placeholder.dart';
 import '../widgets/thread/post_widget.dart';

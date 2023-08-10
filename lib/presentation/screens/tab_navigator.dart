@@ -9,15 +9,6 @@ import '../../domain/models/tab.dart';
 
 import '../provider/tab_provider.dart';
 
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-void openDrawer() {
-  _scaffoldKey.currentState!.openDrawer();
-}
-
-void closeDrawer() {
-  _scaffoldKey.currentState!.closeDrawer();
-}
-
 /// Root widget of the app.
 /// Controls tabs and creates a drawer with tabs.
 class TabNavigator extends StatefulWidget {
@@ -105,4 +96,13 @@ class Screen extends StatelessWidget {
       }).toList(),
     );
   }
+}
+
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+void openDrawer() {
+  _scaffoldKey.currentState!.openDrawer();
+}
+
+void closeDrawer() {
+  _scaffoldKey.currentState!.closeDrawer();
 }
