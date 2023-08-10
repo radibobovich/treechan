@@ -42,6 +42,9 @@ class ThreadService {
   List<Post> _posts = [];
   List<Post> get getPosts => _posts;
 
+  List<Post> _lastPosts = [];
+  List<Post> get getLastPosts => _lastPosts;
+
   /// Contains thread information like maxNum, postsCount, etc.
   Root _threadInfo = Root();
   Root get getThreadInfo => _threadInfo;
@@ -99,6 +102,7 @@ class ThreadService {
     }
 
     _posts.addAll(newPosts);
+    _lastPosts = newPosts.toList();
     // create tree for new posts
     Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
     List<TreeNode<Post>>? newRoots = await treeService.getTree();
@@ -125,7 +129,6 @@ class ThreadService {
 
           /// update children in [_posts]
           _posts[nodeIndex].children.add(childIndex);
-          debugPrint(node.data.children.toString());
         } else {
           _roots.add(newRoot);
         }
