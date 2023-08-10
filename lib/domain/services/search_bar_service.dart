@@ -55,7 +55,7 @@ class SearchBarService {
           );
         } else if (cleanSegments.last == "catalog.html") {
           (newTab as BoardTab).isCatalog = true;
-          (newTab as BoardTab).searchTag = searchTag;
+          (newTab as BoardTab).query = searchTag;
         } else {
           // newTab.type = TabTypes.thread;
           newTab = ThreadTab(

@@ -29,13 +29,13 @@ class BoardListTab extends DrawerTab {
 
 class BoardTab extends DrawerTab {
   bool isCatalog;
-  String? searchTag;
+  String? query;
   BoardTab({
     required super.tag,
     super.name,
     required super.prevTab,
     this.isCatalog = false,
-    this.searchTag,
+    this.query,
   });
 
   @override

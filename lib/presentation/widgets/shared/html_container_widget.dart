@@ -1,16 +1,12 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/services/search_bar_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:html/parser.dart' as html;
 
 import '../../../main.dart';
-import '../../../utils/constants/enums.dart';
 import '../../bloc/board_bloc.dart';
 import '../../../domain/models/json/json.dart';
 import '../../provider/tab_provider.dart';
@@ -167,10 +163,11 @@ class HtmlContainer extends StatelessWidget {
           if (currentTab is BoardTab) {
             ccontext
                 .read<BoardBloc>()
-                .add(ChangeViewBoardEvent(null, searchTag: newTab.searchTag));
+                .add(ChangeViewBoardEvent(null, query: newTab.query));
           } else if (currentTab is ThreadTab) {
-            ccontext.read<TabProvider>().openCatalog(
-                boardTag: newTab.tag, searchTag: newTab.searchTag!);
+            ccontext
+                .read<TabProvider>()
+                .openCatalog(boardTag: newTab.tag, query: newTab.query!);
           }
         } else {
           ccontext.read<TabProvider>().addTab(newTab);
