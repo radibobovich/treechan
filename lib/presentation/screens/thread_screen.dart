@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
+import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 
 import '../../exceptions.dart';
@@ -45,6 +47,15 @@ class _ThreadScreenState extends State<ThreadScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+        endDrawer: AppEndDrawer(currentTab: widget.currentTab),
+        onEndDrawerChanged: (isOpened) {
+          if (isOpened) {
+            BlocProvider.of<ThreadBloc>(context)
+                .restoreEndDrawerScrollPosition();
+          } else {
+            BlocProvider.of<ThreadBloc>(context).storeEndDrawerScrollPosition();
+          }
+        },
         appBar: AppBar(
           title: Text(
             widget.currentTab.name ?? "Загрузка...",
