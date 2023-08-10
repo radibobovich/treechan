@@ -139,7 +139,7 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
     return showDialog(
         context: context,
         builder: (BuildContext bcontext) {
-          if (widget.currentTab is ThreadBloc) {
+          if (widget.currentTab is ThreadTab) {
             return BlocProvider.value(
               value: context.read<ThreadBloc>(),
               child: AlertDialog(
@@ -150,7 +150,7 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
                     setStateCallBack: setStateCallback,
                   )),
             );
-          } else if (widget.currentTab is BranchBloc) {
+          } else if (widget.currentTab is BranchTab) {
             return BlocProvider.value(
               value: context.read<BranchBloc>(),
               child: AlertDialog(
