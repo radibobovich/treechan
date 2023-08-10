@@ -63,6 +63,9 @@ class ScrollService {
   /// Scrolls down until the post that was at the top of the screen
   /// returns to its place.
   Future<void> updateScrollPosition() async {
+    if (_firstVisiblePost == null) {
+      return;
+    }
     // RenderObject? obj;
     // RenderBox? box;
     // Offset? position;
