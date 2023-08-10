@@ -92,10 +92,6 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
   List<Post> posts = data.elementAt(1);
   SharedPreferences prefs = data.elementAt(2);
   int depth = data.elementAt(3);
-  if (post.id == 282647874) {
-    debugPrint('gotcha');
-    debugPrint(posts.indexOf(post).toString());
-  }
   var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
   List<int> children = post.children;
