@@ -34,12 +34,14 @@ class MyApp extends StatelessWidget {
       initialData: prefs.getString('theme'),
       stream: theme.stream,
       builder: (context, snapshot) {
-        return MaterialApp(
-          title: 'Flutter Demo',
-          theme: getTheme(snapshot.data!),
-          home: ChangeNotifierProvider(
-              create: (context) => TabProvider(), child: const TabNavigator()),
-          initialRoute: '/',
+        return ChangeNotifierProvider(
+          create: (context) => TabProvider(),
+          child: MaterialApp(
+            title: 'Flutter Demo',
+            theme: getTheme(snapshot.data!),
+            home: const TabNavigator(),
+            initialRoute: '/',
+          ),
         );
       },
     );
