@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart';
 import 'package:share/share.dart';
 import 'package:treechan/data/hidden_posts.database.dart';
 import 'package:treechan/main.dart';
@@ -24,12 +25,14 @@ class PostWidget extends StatefulWidget {
   final List<TreeNode<Post>> roots;
   final DrawerTab currentTab;
   final ScrollService? scrollService;
-  const PostWidget(
-      {super.key,
-      required this.node,
-      required this.roots,
-      required this.currentTab,
-      this.scrollService});
+
+  const PostWidget({
+    super.key,
+    required this.node,
+    required this.roots,
+    required this.currentTab,
+    this.scrollService,
+  });
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -113,11 +116,12 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
                                   ),
                             MediaPreview(files: post.files),
                             HtmlContainer(
-                                post: post,
-                                treeNode: widget.node,
-                                roots: widget.roots,
-                                currentTab: widget.currentTab,
-                                scrollService: widget.scrollService),
+                              post: post,
+                              treeNode: widget.node,
+                              roots: widget.roots,
+                              currentTab: widget.currentTab,
+                              scrollService: widget.scrollService,
+                            ),
                           ],
                         )
                       : const SizedBox.shrink(),
@@ -135,14 +139,32 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
     return showDialog(
         context: context,
         builder: (BuildContext bcontext) {
-          return AlertDialog(
-              contentPadding: const EdgeInsets.all(10),
-              content: ActionMenu(
-                currentTab: widget.currentTab,
-                node: widget.node,
-                providerContext: context,
-                setStateCallBack: setStateCallback,
-              ));
+          if (widget.currentTab is ThreadBloc) {
+            return BlocProvider.value(
+              value: context.read<ThreadBloc>(),
+              child: AlertDialog(
+                  contentPadding: const EdgeInsets.all(10),
+                  content: ActionMenu(
+                    currentTab: widget.currentTab,
+                    node: widget.node,
+                    setStateCallBack: setStateCallback,
+                  )),
+            );
+          } else if (widget.currentTab is BranchBloc) {
+            return BlocProvider.value(
+              value: context.read<BranchBloc>(),
+              child: AlertDialog(
+                  contentPadding: const EdgeInsets.all(10),
+                  content: ActionMenu(
+                    currentTab: widget.currentTab,
+                    node: widget.node,
+                    setStateCallBack: setStateCallback,
+                  )),
+            );
+          } else {
+            throw Exception(
+                'Tried to open post preview with unsupported bloc type: ${widget.currentTab.runtimeType.toString()}');
+          }
         });
   }
 
@@ -184,7 +206,7 @@ class _PostHeader extends StatelessWidget {
               style: post.email == "mailto:sage"
                   ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
                   : null),
-          post.op == 1
+          post.op == true
               ? const Padding(
                   padding: EdgeInsets.fromLTRB(3, 0, 0, 0),
                   child: Text(
@@ -234,17 +256,18 @@ class _PostHeader extends StatelessWidget {
 class ActionMenu extends StatelessWidget {
   final DrawerTab currentTab;
   final TreeNode<Post> node;
-  final BuildContext providerContext;
   final Function setStateCallBack;
-  const ActionMenu(
-      {super.key,
-      required this.currentTab,
-      required this.node,
-      required this.providerContext,
-      required this.setStateCallBack});
+
+  const ActionMenu({
+    super.key,
+    required this.currentTab,
+    required this.node,
+    required this.setStateCallBack,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bloc = getBloc(context, currentTab);
     return SizedBox(
         width: double.minPositive,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -261,7 +284,9 @@ class ActionMenu extends StatelessWidget {
                   title: const Text('Открыть в новой вкладке'),
                   visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
-                    providerContext.read<TabProvider>().addTab(
+                    /// context may not have [TabProvider] in [EndDrawer]
+
+                    context.read<TabProvider>().addTab(
                           BranchTab(
                             tag: currentTab.tag,
                             id: node.data.id,
@@ -280,8 +305,7 @@ class ActionMenu extends StatelessWidget {
                   visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     Navigator.pop(context);
-                    BlocProvider.of<ThreadBloc>(providerContext)
-                        .shrinkBranch(node);
+                    bloc.shrinkBranch(node);
                   },
                 )
               : const SizedBox.shrink(),
@@ -291,8 +315,7 @@ class ActionMenu extends StatelessWidget {
                   visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     Navigator.pop(context);
-                    BlocProvider.of<ThreadBloc>(providerContext)
-                        .shrinkRootBranch(node);
+                    bloc.shrinkRootBranch(node);
                   },
                 )
               : const SizedBox.shrink(),
@@ -332,7 +355,6 @@ class ActionMenu extends StatelessWidget {
                 }
                 threadId = tab.id;
               }
-              final bloc = getBloc(providerContext);
 
               if (node.data.hidden) {
                 HiddenPostsDatabase().removePost(
@@ -402,13 +424,13 @@ class ActionMenu extends StatelessWidget {
       },
     );
   }
+}
 
-  dynamic getBloc(BuildContext context) {
-    if (currentTab is ThreadTab) {
-      return BlocProvider.of<ThreadBloc>(context);
-    } else if (currentTab is BranchTab) {
-      return BlocProvider.of<BranchBloc>(context);
-    }
+dynamic getBloc(BuildContext context, DrawerTab currentTab) {
+  if (currentTab is ThreadTab) {
+    return BlocProvider.of<ThreadBloc>(context);
+  } else if (currentTab is BranchTab) {
+    return BlocProvider.of<BranchBloc>(context);
   }
 }
 
