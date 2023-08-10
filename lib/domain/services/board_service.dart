@@ -25,12 +25,14 @@ class BoardService {
     return _threads;
   }
 
-  Future<void> changeSortType(SortBy newSortType, String? searchTag) async {
+  Future<bool> changeSortType(SortBy newSortType, String? searchTag) async {
     if (sortType != newSortType) {
       sortType = newSortType;
       currentPage = 0;
       await load();
+      return true;
     }
+    return false;
   }
 
   Future<void> load() async {

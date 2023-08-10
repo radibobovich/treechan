@@ -17,7 +17,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late final StreamSubscription tabSub;
   late final BoardService boardService;
   List<int> hiddenThreads = [];
-  late final BoardSearchService searchService;
+  late BoardSearchService searchService;
+  late TextEditingController textController = TextEditingController();
   final ScrollController scrollController = ScrollController();
   Key key;
   bool isDisposed = false;
@@ -28,7 +29,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       : super(BoardInitialState()) {
     tabSub = tabProvider.catalogStream.listen((catalog) {
       if (catalog.boardTag == boardService.boardTag && !isDisposed) {
-        add(ChangeViewBoardEvent(null, searchTag: catalog.searchTag));
+        add(ChangeViewBoardEvent(null, query: catalog.searchTag));
       }
     });
 
@@ -82,18 +83,20 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     );
     on<ChangeViewBoardEvent>((event, emit) async {
       try {
-        await boardService.changeSortType(event.sortType!, event.searchTag);
-        add(LoadBoardEvent());
+        bool changed =
+            await boardService.changeSortType(event.sortType!, event.query);
+        if (changed) add(LoadBoardEvent());
         scrollToTop();
-        if (event.searchTag != null) {
+        if (event.query != null) {
           Future.delayed(const Duration(milliseconds: 50),
-              () => add(SearchQueryChangedEvent(event.searchTag!)));
+              () => add(SearchQueryChangedEvent(event.query!)));
         }
       } on Exception catch (e) {
         emit(BoardErrorState(message: e.toString(), exception: e));
       }
     });
     on<SearchQueryChangedEvent>((event, emit) async {
+      textController.text = event.query;
       try {
         emit(BoardSearchState(
             searchResult: await searchService.search(event.query),
@@ -105,6 +108,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   }
 
   void scrollToTop() {
+    if (!scrollController.hasClients) return;
     scrollController.animateTo(0,
         duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
   }
@@ -129,7 +133,7 @@ class ReloadBoardEvent extends BoardEvent {}
 class RefreshBoardEvent extends BoardEvent {}
 
 class ChangeViewBoardEvent extends BoardEvent {
-  ChangeViewBoardEvent(this.sortType, {this.searchTag}) {
+  ChangeViewBoardEvent(this.sortType, {this.query}) {
     if (sortType != null && sortType != SortBy.page) {
       prefs.setString('boardSortType', sortType.toString().split('.').last);
     }
@@ -139,7 +143,7 @@ class ChangeViewBoardEvent extends BoardEvent {
     sortType ??= savedSortType;
   }
   SortBy? sortType;
-  String? searchTag;
+  String? query;
 }
 
 class SearchQueryChangedEvent extends BoardEvent {
