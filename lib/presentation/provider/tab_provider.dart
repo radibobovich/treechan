@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart';
 import 'package:treechan/domain/models/catalog.dart';
+import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/presentation/screens/tab_navigator.dart';
 
 import '../../data/history_database.dart';
@@ -105,6 +107,13 @@ class TabProvider with ChangeNotifier {
 
   void goBack() {
     DrawerTab currentTab = tabs.keys.elementAt(currentIndex);
+
+    /// Prevent pop if pressed back button while in search mode
+    final currentBloc = tabs[currentTab];
+    if (currentBloc is BoardBloc && currentBloc.state is BoardSearchState) {
+      currentBloc.add(LoadBoardEvent());
+      return;
+    }
     int prevTabId = tabs.keys.toList().indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
       if (_currentIndex > 0) {
@@ -123,8 +132,8 @@ class TabProvider with ChangeNotifier {
     });
   }
 
-  void openCatalog({required String boardTag, required String searchTag}) {
-    _catalog.add(Catalog(boardTag: boardTag, searchTag: searchTag));
+  void openCatalog({required String boardTag, required String query}) {
+    _catalog.add(Catalog(boardTag: boardTag, searchTag: query));
     final int index = _tabs.keys
         .toList()
         .indexWhere((tab) => tab is BoardTab && tab.tag == boardTag);
@@ -133,9 +142,9 @@ class TabProvider with ChangeNotifier {
     } else {
       addTab(BoardTab(
         tag: boardTag,
-        prevTab: _tabs[_currentIndex],
+        prevTab: _tabs.keys.toList()[_currentIndex],
         isCatalog: true,
-        searchTag: searchTag,
+        query: query,
       ));
     }
   }
@@ -160,7 +169,7 @@ class TabProvider with ChangeNotifier {
               key: ValueKey(tab),
               tabProvider: this,
               boardService: BoardService(boardTag: tab.tag))
-            ..add(ChangeViewBoardEvent(null, searchTag: tab.searchTag));
+            ..add(ChangeViewBoardEvent(null, query: tab.query));
         }
       case ThreadTab:
         return ThreadBloc(
