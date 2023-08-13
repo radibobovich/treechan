@@ -10,10 +10,10 @@ import 'package:treechan/domain/services/board_service.dart';
 import '../../utils/constants/enums.dart';
 import '../../domain/services/board_search_service.dart';
 import '../../domain/models/json/json.dart';
-import '../provider/tab_provider.dart';
+import '../provider/page_provider.dart';
 
 class BoardBloc extends Bloc<BoardEvent, BoardState> {
-  late final TabProvider tabProvider;
+  late final PageProvider tabProvider;
   late final StreamSubscription tabSub;
   late final BoardService boardService;
   List<int> hiddenThreads = [];
@@ -96,7 +96,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       }
     });
     on<SearchQueryChangedEvent>((event, emit) async {
-      textController.text = event.query;
+      // textController.text = event.query;
       try {
         emit(BoardSearchState(
             searchResult: await searchService.search(event.query),
