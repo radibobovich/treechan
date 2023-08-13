@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
+import 'package:treechan/presentation/widgets/thread/post_widget.dart';
 
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
@@ -38,20 +39,7 @@ class AppEndDrawer extends StatelessWidget {
                   itemBuilder: (_, index) {
                     BlocProvider.of<ThreadBloc>(context).threadService.getPosts;
                     final post = lastPosts[index];
-                    return Card(
-                      child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Column(
-                            children: [
-                              _PostHeader(post: post),
-                              HtmlContainer(
-                                post: post,
-                                currentTab: currentTab,
-                                // bloc: BlocProvider.of<ThreadBloc>(context)
-                              )
-                            ],
-                          )),
-                    );
+                    return PostPreview(post: post, currentTab: currentTab);
                   },
                 ),
               );
@@ -63,6 +51,39 @@ class AppEndDrawer extends StatelessWidget {
           },
         )
       ]),
+    );
+  }
+}
+
+class PostPreview extends StatelessWidget {
+  const PostPreview({
+    super.key,
+    required this.post,
+    required this.currentTab,
+  });
+
+  final Post post;
+  final DrawerTab currentTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onLongPress: () => openActionMenu(context, currentTab,
+            getMockNode(post.id, context, currentTab), (function) {}),
+        child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Column(
+              children: [
+                _PostHeader(post: post),
+                HtmlContainer(
+                  post: post,
+                  currentTab: currentTab,
+                  // bloc: BlocProvider.of<ThreadBloc>(context)
+                )
+              ],
+            )),
+      ),
     );
   }
 }
