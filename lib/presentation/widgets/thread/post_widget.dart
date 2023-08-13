@@ -16,7 +16,7 @@ import '../../../domain/models/tab.dart';
 import '../../../domain/services/scroll_service.dart';
 import '../../bloc/branch_bloc.dart';
 import '../../bloc/thread_bloc.dart';
-import '../../provider/tab_provider.dart';
+import '../../provider/page_provider.dart';
 import '../shared/media_preview_widget.dart';
 import '../shared/html_container_widget.dart';
 
@@ -88,7 +88,7 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
               await Future.delayed(const Duration(milliseconds: 500));
             },
             onLongPress: () {
-              openActionMenu(context, setState);
+              openActionMenu(context, widget.currentTab, widget.node, setState);
             },
             child: Padding(
               padding: const EdgeInsets.all(4.0),
@@ -134,40 +134,6 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
     );
   }
 
-  Future<dynamic> openActionMenu(
-      BuildContext context, Function setStateCallback) {
-    return showDialog(
-        context: context,
-        builder: (BuildContext bcontext) {
-          if (widget.currentTab is ThreadTab) {
-            return BlocProvider.value(
-              value: context.read<ThreadBloc>(),
-              child: AlertDialog(
-                  contentPadding: const EdgeInsets.all(10),
-                  content: ActionMenu(
-                    currentTab: widget.currentTab,
-                    node: widget.node,
-                    setStateCallBack: setStateCallback,
-                  )),
-            );
-          } else if (widget.currentTab is BranchTab) {
-            return BlocProvider.value(
-              value: context.read<BranchBloc>(),
-              child: AlertDialog(
-                  contentPadding: const EdgeInsets.all(10),
-                  content: ActionMenu(
-                    currentTab: widget.currentTab,
-                    node: widget.node,
-                    setStateCallBack: setStateCallback,
-                  )),
-            );
-          } else {
-            throw Exception(
-                'Tried to open post preview with unsupported bloc type: ${widget.currentTab.runtimeType.toString()}');
-          }
-        });
-  }
-
   /// Removes highlight after 15 seconds of a new post being seen
   void handleHighlight(
       VisibilityInfo visibilityInfo, Post post, bool firstTimeSeen) {
@@ -184,6 +150,40 @@ class _PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       timer?.pause();
     }
   }
+}
+
+Future<dynamic> openActionMenu(BuildContext context, DrawerTab currentTab,
+    TreeNode<Post> node, Function setStateCallback) {
+  return showDialog(
+      context: context,
+      builder: (BuildContext bcontext) {
+        if (currentTab is ThreadTab) {
+          return BlocProvider.value(
+            value: context.read<ThreadBloc>(),
+            child: AlertDialog(
+                contentPadding: const EdgeInsets.all(10),
+                content: ActionMenu(
+                  currentTab: currentTab,
+                  node: node,
+                  setStateCallBack: setStateCallback,
+                )),
+          );
+        } else if (currentTab is BranchTab) {
+          return BlocProvider.value(
+            value: context.read<BranchBloc>(),
+            child: AlertDialog(
+                contentPadding: const EdgeInsets.all(10),
+                content: ActionMenu(
+                  currentTab: currentTab,
+                  node: node,
+                  setStateCallBack: setStateCallback,
+                )),
+          );
+        } else {
+          throw Exception(
+              'Tried to open post preview with unsupported bloc type: ${currentTab.runtimeType.toString()}');
+        }
+      });
 }
 
 class _PostHeader extends StatelessWidget {
@@ -286,7 +286,7 @@ class ActionMenu extends StatelessWidget {
                   onTap: () {
                     /// context may not have [TabProvider] in [EndDrawer]
 
-                    context.read<TabProvider>().addTab(
+                    context.read<PageProvider>().addTab(
                           BranchTab(
                             tag: currentTab.tag,
                             id: node.data.id,
