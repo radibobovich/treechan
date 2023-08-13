@@ -9,7 +9,7 @@ import 'package:treechan/exceptions.dart';
 import '../../domain/models/json/json.dart';
 import '../bloc/board_bloc.dart';
 
-import '../provider/tab_provider.dart';
+import '../provider/page_provider.dart';
 import '../../domain/models/tab.dart';
 import '../widgets/board/board_appbar.dart';
 import '../widgets/board/thread_card.dart';
@@ -31,6 +31,9 @@ class _BoardScreenState extends State<BoardScreen>
   bool get wantKeepAlive => true;
 
   bool needsRebuild = false;
+
+  EasyRefreshController controller =
+      EasyRefreshController(controlFinishLoad: true);
   @override
   void dispose() {
     super.dispose();
@@ -40,14 +43,12 @@ class _BoardScreenState extends State<BoardScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    EasyRefreshController controller =
-        EasyRefreshController(controlFinishLoad: true);
 
     /// Avoid unnecessary rebuilds caused by [notifyListeners()]
     /// Using [needsRebuild] flag if needs to rebuild
     return rebuild.ShouldRebuild(
       shouldRebuild: (oldWidget, newWidget) {
-        bool shouldRebuild = needsRebuild;
+        final bool shouldRebuild = needsRebuild;
         needsRebuild = false;
         return shouldRebuild;
       },
@@ -55,7 +56,7 @@ class _BoardScreenState extends State<BoardScreen>
         builder: (context, state) {
           if (state is BoardLoadedState) {
             if (widget.currentTab.name == null) {
-              Provider.of<TabProvider>(context, listen: false)
+              Provider.of<PageProvider>(context, listen: false)
                   .setName(widget.currentTab, state.boardName);
               widget.currentTab.name = state.boardName;
             }
@@ -93,16 +94,7 @@ class _BoardScreenState extends State<BoardScreen>
                         key: ValueKey(thread.posts.first.id),
                         confirmDismiss: (direction) async {
                           needsRebuild = true;
-                          setState(() {
-                            HiddenThreadsDatabase().addThread(
-                                widget.currentTab.tag,
-                                thread.posts.first.id,
-                                thread.posts.first.subject);
-                            BlocProvider.of<BoardBloc>(context)
-                                .hiddenThreads
-                                .add(thread.posts.first.id);
-                            state.threads![index].hidden = true;
-                          });
+                          hideOrRevealThread(thread, context);
                           return false;
                         },
                         child: ThreadCard(
@@ -163,6 +155,22 @@ class _BoardScreenState extends State<BoardScreen>
         },
       ),
     );
+  }
+
+  void hideOrRevealThread(Thread thread, BuildContext context) {
+    return setState(() {
+      if (thread.hidden) {
+        HiddenThreadsDatabase()
+            .removeThread(widget.currentTab.tag, thread.posts.first.id);
+        context.read<BoardBloc>().hiddenThreads.remove(thread.posts.first.id);
+      } else {
+        HiddenThreadsDatabase().addThread(widget.currentTab.tag,
+            thread.posts.first.id, thread.posts.first.subject);
+        context.read<BoardBloc>().hiddenThreads.add(thread.posts.first.id);
+      }
+
+      thread.hidden = !thread.hidden;
+    });
   }
 
   ClassicFooter _getClassicRefreshFooter() {
