@@ -11,7 +11,7 @@ import '../../bloc/board_bloc.dart';
 import '../../../domain/models/json/json.dart';
 import '../../bloc/branch_bloc.dart';
 import '../../bloc/thread_bloc.dart';
-import '../../provider/tab_provider.dart';
+import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
 import '../../../domain/models/tree.dart';
 import '../../../domain/services/scroll_service.dart';
@@ -169,11 +169,11 @@ class HtmlContainer extends StatelessWidget {
                 .add(ChangeViewBoardEvent(null, query: newTab.query));
           } else if (currentTab is ThreadTab) {
             context
-                .read<TabProvider>()
+                .read<PageProvider>()
                 .openCatalog(boardTag: newTab.tag, query: newTab.query!);
           }
         } else {
-          context.read<TabProvider>().addTab(newTab);
+          context.read<PageProvider>().addTab(newTab);
         }
       } catch (e) {
         tryLaunchUrl(url);
@@ -235,7 +235,7 @@ class PostPreviewDialog extends StatelessWidget {
         PostWidget(
           node: roots != null && roots!.isNotEmpty
               ? Tree.findNode(roots!, id)!
-              : getMockParentNode(id, context, currentTab),
+              : getMockNode(id, context, currentTab),
           roots: roots != null ? roots! : [],
           currentTab: currentTab,
           scrollService: scrollService,
@@ -252,8 +252,7 @@ Future<void> tryLaunchUrl(String url) async {
 }
 
 /// Used in [EndDrawer]
-TreeNode<Post> getMockParentNode(
-    int id, BuildContext context, DrawerTab currentTab) {
+TreeNode<Post> getMockNode(int id, BuildContext context, DrawerTab currentTab) {
   final List<Post> posts;
   if (currentTab is ThreadTab) {
     // posts = (bloc as ThreadBloc).threadService.getPosts;

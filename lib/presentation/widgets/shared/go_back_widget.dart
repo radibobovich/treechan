@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../provider/tab_provider.dart';
+import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
 
 /// A cratch.
@@ -12,7 +12,7 @@ class GoBackButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () {
-        context.read<TabProvider>().goBack();
+        context.read<PageProvider>().goBack();
       },
     );
   }

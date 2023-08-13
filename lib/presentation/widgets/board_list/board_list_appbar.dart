@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../utils/constants/enums.dart';
 import '../../bloc/board_list_bloc.dart';
-import '../../screens/tab_navigator.dart';
+import '../../screens/page_navigator.dart';
 
 class NormalAppBar extends StatelessWidget {
   final bool allowReorder;

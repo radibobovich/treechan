@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path/path.dart';
 import 'package:treechan/domain/models/catalog.dart';
-import 'package:treechan/domain/models/json/json.dart';
-import 'package:treechan/presentation/screens/tab_navigator.dart';
+import 'package:treechan/presentation/screens/page_navigator.dart';
 
 import '../../data/history_database.dart';
 import '../../domain/models/tab.dart';
@@ -14,7 +12,7 @@ import '../../domain/services/board_service.dart';
 import '../../domain/services/thread_service.dart';
 import '../../utils/constants/enums.dart';
 import '../bloc/board_bloc.dart';
-import '../bloc/board_list_bloc.dart';
+import '../bloc/board_list_bloc.dart' as board_list;
 import '../bloc/branch_bloc.dart';
 import '../bloc/thread_bloc.dart';
 import '../screens/board_list_screen.dart';
@@ -22,23 +20,43 @@ import '../screens/board_screen.dart';
 import '../screens/branch_screen.dart';
 import '../screens/thread_screen.dart';
 
-class TabProvider with ChangeNotifier {
+/// Manages everything related to tabs and pages.
+class PageProvider with ChangeNotifier {
+  /// The stream is listened by new [BoardBloc] to check if you need to switch
+  /// the board screen to a catalog mode.
   final StreamController<Catalog> _catalog =
       StreamController<Catalog>.broadcast();
   Stream<Catalog> get catalogStream => _catalog.stream;
+
+  late final List<Widget> _pages = [
+    const Placeholder(),
+    const Placeholder(),
+    BrowserScreen(provider: this),
+  ];
+  Widget get currentPage => getCurrentPage();
+
+  int _currentPageIndex = 2;
+  int get currentPageIndex => _currentPageIndex;
+
+  DrawerTab get currentTab => _tabs.entries.toList()[_currentTabIndex].key;
 
   /// Contains all opened drawer tabs.
   final Map<DrawerTab, dynamic> _tabs = {};
   Map<DrawerTab, dynamic> get tabs => _tabs;
 
-  int _currentIndex = 0;
-  int get currentIndex => _currentIndex;
+  int _currentTabIndex = 0;
+  int get currentIndex => _currentTabIndex;
   int dummy = 0;
   late TabController tabController;
-  late TabNavigatorState state;
-  void initController(TabNavigatorState gotState) {
+  late final PageNavigatorState state;
+  void init(PageNavigatorState gotState) {
     state = gotState;
     tabController = TabController(length: 0, vsync: state);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        currentPageIndex = 2;
+      },
+    );
   }
 
   void _refreshController() {
@@ -46,7 +64,7 @@ class TabProvider with ChangeNotifier {
   }
 
   void animateTo(int index) {
-    _currentIndex = index;
+    _currentTabIndex = index;
     tabController.animateTo(index);
     notifyListeners();
   }
@@ -72,7 +90,7 @@ class TabProvider with ChangeNotifier {
   }
 
   void removeTab(DrawerTab tab) async {
-    int currentIndex = _currentIndex;
+    int currentIndex = _currentTabIndex;
     int removingTabIndex = _tabs.keys.toList().indexOf(tab);
     tabs.remove(tab);
     _refreshController();
@@ -116,7 +134,7 @@ class TabProvider with ChangeNotifier {
     }
     int prevTabId = tabs.keys.toList().indexOf(currentTab.prevTab!);
     if (prevTabId == -1) {
-      if (_currentIndex > 0) {
+      if (_currentTabIndex > 0) {
         animateTo(currentIndex - 1);
       }
     } else {
@@ -142,21 +160,23 @@ class TabProvider with ChangeNotifier {
     } else {
       addTab(BoardTab(
         tag: boardTag,
-        prevTab: _tabs.keys.toList()[_currentIndex],
+        prevTab: _tabs.keys.toList()[_currentTabIndex],
         isCatalog: true,
         query: query,
       ));
     }
   }
 
+  void openSearch() {}
+
   /// Adds a new screen to the _blocs list.
   /// Called when a new tab is opened.
   dynamic _createBloc(DrawerTab tab) {
     switch (tab.runtimeType) {
       case BoardListTab:
-        return BoardListBloc(
+        return board_list.BoardListBloc(
             key: ValueKey(tab), boardListService: BoardListService())
-          ..add(LoadBoardListEvent());
+          ..add(board_list.LoadBoardListEvent());
       case BoardTab:
         if ((tab as BoardTab).isCatalog == false) {
           return BoardBloc(
@@ -204,7 +224,7 @@ class TabProvider with ChangeNotifier {
   }
 
   /// Returns BoardListScreen for TabBarView children.
-  BlocProvider<BoardListBloc> getBoardListScreen(BoardListTab tab) {
+  BlocProvider<board_list.BoardListBloc> getBoardListScreen(BoardListTab tab) {
     return BlocProvider.value(
       key: GlobalObjectKey(tab),
       value: _tabs[tab],
@@ -244,6 +264,68 @@ class TabProvider with ChangeNotifier {
         currentTab: tab,
       ),
     );
+  }
+
+  set currentPageIndex(int index) {
+    if (index == 3) {
+      refreshTab();
+      return;
+    } else if (index == 4) {
+      openActions();
+      return;
+    }
+
+    /// close search when leaving search page
+    if (_currentPageIndex == 0) {
+      final bloc = _tabs[currentTab];
+      if (bloc is board_list.BoardListBloc) {
+        bloc.add(board_list.LoadBoardListEvent());
+      } else if (bloc is BoardBloc) {
+        bloc.add(LoadBoardEvent());
+      } else {
+        // coming soon
+      }
+    }
+
+    /// Refresh and action buttons have no indication
+    if (index == 3 || index == 4) return;
+    _currentPageIndex = index;
+    notifyListeners();
+  }
+
+  Widget getCurrentPage() {
+    if (_currentPageIndex == 0) {
+      final currentBloc = _tabs[currentTab];
+
+      if (currentBloc is board_list.BoardListBloc) {
+        currentBloc.add(board_list.SearchQueryChangedEvent(''));
+      } else if (currentBloc is BoardBloc) {
+        currentBloc.add(SearchQueryChangedEvent(''));
+      } else {
+        // search for thread and branch
+      }
+      return _pages[2];
+    } else {
+      return _pages[_currentPageIndex];
+    }
+  }
+
+  void refreshTab() {
+    final currentBloc = _tabs[currentTab];
+
+    if (currentBloc is board_list.BoardListBloc) {
+      currentBloc.add(board_list.RefreshBoardListEvent());
+    } else if (currentBloc is BoardBloc) {
+      currentBloc.add(ChangeViewBoardEvent(null, query: ''));
+    } else if (currentBloc is ThreadBloc) {
+      currentBloc.add(RefreshThreadEvent());
+    } else if (currentBloc is BranchBloc) {
+      currentBloc.add(RefreshBranchEvent(RefreshSource.branch));
+    }
+  }
+
+  void openActions() {
+    // coming soon
   }
 
   @override

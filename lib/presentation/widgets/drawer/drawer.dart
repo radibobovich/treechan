@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/history_bloc.dart';
-import '../../provider/tab_provider.dart';
+import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
 import '../../screens/history_screen.dart';
 import '../../screens/settings_screen.dart';
@@ -15,7 +15,7 @@ class AppDrawer extends StatelessWidget {
     required GlobalKey<ScaffoldState> scaffoldKey,
   }) : _scaffoldKey = scaffoldKey;
 
-  final TabProvider provider;
+  final PageProvider provider;
   final GlobalKey<ScaffoldState> _scaffoldKey;
 
   @override
@@ -69,7 +69,7 @@ class HistoryButton extends StatelessWidget {
     required GlobalKey<ScaffoldState> scaffoldKey,
   }) : _scaffoldKey = scaffoldKey;
 
-  final TabProvider provider;
+  final PageProvider provider;
   final GlobalKey<ScaffoldState> _scaffoldKey;
 
   @override
@@ -103,7 +103,7 @@ class TabsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<DrawerTab> tabs = context.watch<TabProvider>().tabs.keys.toList();
+    List<DrawerTab> tabs = context.watch<PageProvider>().tabs.keys.toList();
     return Expanded(
       child: MediaQuery.removePadding(
         context: context,
@@ -138,7 +138,7 @@ class TabTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      selected: context.watch<TabProvider>().currentIndex == index,
+      selected: context.watch<PageProvider>().currentIndex == index,
       textColor: Theme.of(context).textTheme.titleMedium!.color,
       selectedColor: Theme.of(context).secondaryHeaderColor,
       title: Row(
@@ -155,7 +155,7 @@ class TabTile extends StatelessWidget {
               ? IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () {
-                    context.read<TabProvider>().removeTab(item);
+                    context.read<PageProvider>().removeTab(item);
                   },
                   color: Theme.of(context).textTheme.titleMedium!.color,
                 )
@@ -163,7 +163,7 @@ class TabTile extends StatelessWidget {
         ],
       ),
       onTap: () {
-        context.read<TabProvider>().animateTo(index);
+        context.read<PageProvider>().animateTo(index);
         scaffoldKey.currentState!.closeDrawer();
       },
     );

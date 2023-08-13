@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/services/search_bar_service.dart';
-import '../provider/tab_provider.dart';
+import '../provider/page_provider.dart';
 
 class SearchBar extends StatefulWidget {
   const SearchBar({
@@ -46,7 +46,7 @@ class _SearchBarState extends State<SearchBar> {
   void submit() {
     try {
       context
-          .read<TabProvider>()
+          .read<PageProvider>()
           .addTab(searchBarService.parseInput(_controller.text));
       // widget.onOpen(searchBarService.parseInput(_controller.text));
       widget.onCloseDrawer();

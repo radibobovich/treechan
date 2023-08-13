@@ -8,7 +8,7 @@ import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 import '../../../domain/models/tab.dart';
 import '../../../utils/constants/enums.dart';
 import '../../bloc/board_bloc.dart';
-import '../../provider/tab_provider.dart';
+import '../../provider/page_provider.dart';
 import '../shared/go_back_widget.dart';
 
 class NormalAppBar extends StatefulWidget {
@@ -54,7 +54,7 @@ class _NormalAppBarState extends State<NormalAppBar> {
         PopupMenuBoard(
             currentTab: widget.currentTab,
             onOpen: (ThreadTab tab) =>
-                Provider.of<TabProvider>(context, listen: false).addTab(tab))
+                Provider.of<PageProvider>(context, listen: false).addTab(tab))
       ],
     );
   }

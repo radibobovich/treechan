@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:treechan/exceptions.dart';
-import 'package:treechan/presentation/provider/tab_provider.dart';
+import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/presentation/widgets/shared/no_connection_placeholder.dart';
 
 import '../../utils/constants/enums.dart';
@@ -167,7 +167,7 @@ class BoardTile extends StatelessWidget {
           FocusManager.instance.primaryFocus?.unfocus();
           BlocProvider.of<BoardListBloc>(context).add(LoadBoardListEvent());
         }
-        context.read<TabProvider>().addTab(
+        context.read<PageProvider>().addTab(
             BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
       },
       onLongPress: () {
@@ -229,7 +229,7 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
   }
 
   openBoard(Board board) async {
-    Provider.of<TabProvider>(context, listen: false).addTab(
+    Provider.of<PageProvider>(context, listen: false).addTab(
         BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
   }
 

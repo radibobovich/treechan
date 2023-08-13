@@ -6,13 +6,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/config/themes.dart';
-import 'presentation/provider/tab_provider.dart';
-import 'presentation/screens/tab_navigator.dart';
+import 'presentation/provider/page_provider.dart';
+import 'presentation/screens/page_navigator.dart';
 
 bool flagDebugThread = false;
 late SharedPreferences prefs;
 StreamController<String> theme = StreamController();
-late DatabaseFactory databaseFactory;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,11 +34,11 @@ class MyApp extends StatelessWidget {
       stream: theme.stream,
       builder: (context, snapshot) {
         return ChangeNotifierProvider(
-          create: (context) => TabProvider(),
+          create: (context) => PageProvider(),
           child: MaterialApp(
             title: 'Flutter Demo',
             theme: getTheme(snapshot.data!),
-            home: const TabNavigator(),
+            home: const PageNavigator(),
             initialRoute: '/',
           ),
         );

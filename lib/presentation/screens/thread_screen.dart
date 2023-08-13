@@ -9,7 +9,7 @@ import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 
 import '../../exceptions.dart';
-import '../provider/tab_provider.dart';
+import '../provider/page_provider.dart';
 import '../../domain/models/tab.dart';
 
 import '../../main.dart';
@@ -85,7 +85,7 @@ class _ThreadScreenState extends State<ThreadScreen>
             builder: (context, state) {
               if (state is ThreadLoadedState) {
                 if (widget.currentTab.name == null) {
-                  Provider.of<TabProvider>(context, listen: false)
+                  Provider.of<PageProvider>(context, listen: false)
                       .setName(widget.currentTab, state.threadInfo!.title!);
                   widget.currentTab.name = state.threadInfo!.title!;
                   WidgetsBinding.instance.addPostFrameCallback((_) {

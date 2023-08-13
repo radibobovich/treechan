@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/presentation/bloc/board_bloc.dart';
 import 'package:treechan/presentation/screens/hidden_threads_screen.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../utils/constants/enums.dart';
-import '../../provider/tab_provider.dart';
+import '../../provider/page_provider.dart';
 
 class PopupMenuBoard extends StatelessWidget {
   final BoardTab currentTab;
