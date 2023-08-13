@@ -11,7 +11,7 @@ class AppTheme {
         onPrimary: Colors.white,
         // I don't know what colors to use
         secondary: Colors.red,
-        onSecondary: Colors.blue,
+        onSecondary: Colors.white,
         error: Colors.black,
         onError: Colors.white,
         background: Color.fromARGB(255, 25, 250, 52),
@@ -33,7 +33,7 @@ class AppTheme {
           onPrimary: Color.fromARGB(255, 204, 204, 204),
           // I don't know what colors to use
           secondary: Colors.red,
-          onSecondary: Colors.blue,
+          onSecondary: Colors.white,
           error: Colors.black,
           onError: Colors.white,
           background: Color.fromARGB(255, 25, 250, 52),
