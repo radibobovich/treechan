@@ -19,6 +19,11 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   final PageProvider provider;
   final ScrollController scrollController = ScrollController();
   final ScrollController endDrawerScrollController = ScrollController();
+
+  /// Every time new post preview dialog opens the node from which it
+  /// has been opened adds here.
+  /// Used to check if some post is actually in the current visible tree.
+  final List<TreeNode<Post>> dialogStack = [];
   double? endDrawerScrollPosition;
   late final ScrollService scrollService;
   late Root? threadInfo;
@@ -106,19 +111,25 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
 
   void shrinkBranch(TreeNode<Post> node) async {
     node.parent!.expanded = !node.parent!.expanded;
-    // await Future.delayed(
-    //     const Duration(milliseconds: 20),
-    //     () => scrollService
-    //         .scrollUpToPost(node.parent!.getGlobalKey(threadInfo!.opPostId!)));
-    scrollService
-        .scrollUpToPost(node.parent!.getGlobalKey(threadInfo!.opPostId!));
+
+    /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
+    if (dialogStack.isEmpty) {
+      scrollService.scrollToNodeInDirection(
+          node.parent!.getGlobalKey(threadInfo!.opPostId!),
+          direction: AxisDirection.up);
+    }
   }
 
   void shrinkRootBranch(TreeNode<Post> node) {
     final rootNode = Tree.findRootNode(node);
     rootNode.expanded = !rootNode.expanded;
     final rootPostKey = rootNode.getGlobalKey(threadInfo!.opPostId!);
-    scrollService.scrollUpToPost(rootPostKey);
+
+    /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
+    if (dialogStack.isEmpty) {
+      scrollService.scrollToNodeInDirection(rootPostKey,
+          direction: AxisDirection.up);
+    }
   }
 }
 
