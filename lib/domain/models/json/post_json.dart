@@ -79,6 +79,10 @@ class Post {
   /// Sets to true when added by refreshThread.
   bool isHighlighted = false;
 
+  /// Changes to false when user sees the post.
+  /// Used to handle new post highlight.
+  bool firstTimeSeen = true;
+
   /// if user has hidden the post
   bool hidden = false;
   Post(
