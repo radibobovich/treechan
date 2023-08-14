@@ -6,7 +6,7 @@ import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
 import '../../screens/history_screen.dart';
 import '../../screens/settings_screen.dart';
-import '../search_bar_widget.dart';
+import 'search_bar_widget.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({
