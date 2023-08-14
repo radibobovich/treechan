@@ -6,7 +6,6 @@ import 'package:treechan/presentation/screens/hidden_threads_screen.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../utils/constants/enums.dart';
-import '../../provider/page_provider.dart';
 
 class PopupMenuBoard extends StatelessWidget {
   final BoardTab currentTab;
