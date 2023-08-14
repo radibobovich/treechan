@@ -22,6 +22,11 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
   late ThreadService threadService;
   late BranchService branchService;
 
+  /// Every time new post preview dialog opens the node from which it
+  /// has been opened adds here.
+  /// Used to check if some post is actually in the current visible tree.
+  final List<TreeNode<Post>> dialogStack = [];
+
   final ScrollController scrollController = ScrollController();
   late final ScrollService scrollService;
   Key key;
