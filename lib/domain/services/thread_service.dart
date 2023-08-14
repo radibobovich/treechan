@@ -29,6 +29,11 @@ class ThreadService {
   /// independent root.
   late List<TreeNode<Post>> _roots = [];
 
+  /// For use in stateless widgets only. Prefer getRoots() instead.
+  List<TreeNode<Post>> get getRootsSynchronously => _roots;
+
+  /// Loads thread at first run and returns roots.
+  /// Other times returns roots without loading.
   Future<List<TreeNode<Post>>> getRoots() async {
     prefs = await SharedPreferences.getInstance();
 
@@ -113,8 +118,8 @@ class ThreadService {
       for (var parentId in newRoot.data.parents) {
         if (parentId != _threadInfo.opPostId) {
           // Find a node to attach new tree to
-          final node = Tree.findNode(_roots, parentId)!;
-          node.addNode(newRoot);
+          final node = Tree.findNode(_roots, parentId);
+          node!.addNode(newRoot);
 
           /// find index of a child to add it to children list of a post
           int childIndex =
