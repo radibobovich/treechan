@@ -4,6 +4,7 @@ import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/domain/services/search_bar_service.dart';
+import 'package:treechan/presentation/widgets/thread/action_menu_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../main.dart';
@@ -181,12 +182,12 @@ class HtmlContainer extends StatelessWidget {
     }
   }
 
-  Future<dynamic> openPostPreview(BuildContext context, int id) {
-    context.read<ThreadBloc>();
-    return showDialog(
+  Future<void> openPostPreview(BuildContext context, int id) async {
+    showDialog(
         context: context,
         builder: (_) {
           if (currentTab is ThreadTab) {
+            context.read<ThreadBloc>().dialogStack.add(treeNode!);
             return BlocProvider.value(
               value: context.read<ThreadBloc>(),
               child: PostPreviewDialog(
@@ -196,6 +197,7 @@ class HtmlContainer extends StatelessWidget {
                   scrollService: scrollService),
             );
           } else if (currentTab is BranchTab) {
+            context.read<BranchBloc>().dialogStack.add(treeNode!);
             return BlocProvider.value(
                 value: context.read<BranchBloc>(),
                 child: PostPreviewDialog(
@@ -207,7 +209,7 @@ class HtmlContainer extends StatelessWidget {
             throw Exception(
                 'Tried to open post preview with unsupported bloc type: ${currentTab.runtimeType.toString()}');
           }
-        });
+        }).then((value) => getBloc(context, currentTab).dialogStack.remove(id));
   }
 }
 
@@ -230,15 +232,16 @@ class PostPreviewDialog extends StatelessWidget {
     return Dialog(
         child: SingleChildScrollView(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        /// [ThreadBloc] or [BranchBloc] losts in PostWidget context
-        /// for some reason so pass bloc manually
+        // TODO: optimization: dont call findNode twice (first time in Html onTap)
         PostWidget(
-          node: roots != null && roots!.isNotEmpty
-              ? Tree.findNode(roots!, id)!
-              : getMockNode(id, context, currentTab),
+          // node: roots != null && roots!.isNotEmpty
+          //     ? Tree.findNode(roots!, id)!
+          //     : getMockNode(id, context, currentTab),
+          node: Tree.findNode(roots!, id)!,
           roots: roots != null ? roots! : [],
           currentTab: currentTab,
           scrollService: scrollService,
+          trackVisibility: false,
         )
       ]),
     ));
@@ -252,18 +255,18 @@ Future<void> tryLaunchUrl(String url) async {
 }
 
 /// Used in [EndDrawer]
-TreeNode<Post> getMockNode(int id, BuildContext context, DrawerTab currentTab) {
-  final List<Post> posts;
-  if (currentTab is ThreadTab) {
-    // posts = (bloc as ThreadBloc).threadService.getPosts;
-    posts = context.read<ThreadBloc>().threadService.getPosts;
-  } else {
-    // posts = (bloc as BranchBloc).threadService.getPosts;
-    posts = context.read<BranchBloc>().threadService.getPosts;
-  }
-  final Post post = posts.firstWhere((element) => element.id == id);
-  return TreeNode(data: post);
-}
+// TreeNode<Post> getMockNode(int id, BuildContext context, DrawerTab currentTab) {
+//   final List<Post> posts;
+//   if (currentTab is ThreadTab) {
+//     // posts = (bloc as ThreadBloc).threadService.getPosts;
+//     posts = context.read<ThreadBloc>().threadService.getPosts;
+//   } else {
+//     // posts = (bloc as BranchBloc).threadService.getPosts;
+//     posts = context.read<BranchBloc>().threadService.getPosts;
+//   }
+//   final Post post = posts.firstWhere((element) => element.id == id);
+//   return TreeNode(data: post);
+// }
 
 int countATags(String text) {
   int count = 0;
