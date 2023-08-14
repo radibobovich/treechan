@@ -62,11 +62,16 @@ class Tree {
     debugPrint('addPostParents() executed in ${stopwatch.elapsedMilliseconds}');
   }
 
-  /// Finds post by id in the list of trees.
+  /// Finds (first node by post id in the list of trees.
+  /// Worth noting that there might be multiple nodes containing same post
+  ///
   static TreeNode<Post>? findNode(List<TreeNode<Post>> roots, int id) {
+    final stopwatch = Stopwatch()..start();
     // for (var root in roots doesn't work for some reason)
     for (int i = 0; i < roots.length; i++) {
       if (roots[i].data.id == id) {
+        debugPrint(
+            'findNode() executed in ${stopwatch.elapsedMicroseconds} microseconds');
         return roots[i];
       }
 
@@ -74,16 +79,12 @@ class Tree {
       if (result == null) {
         continue;
       }
+      debugPrint(
+          'findNode() executed in ${stopwatch.elapsedMicroseconds} microseconds');
+
       return result;
     }
     return null;
-  }
-
-  static TreeNode<Post> findRootNode(TreeNode<Post> node) {
-    if (node.parent == null) {
-      return node;
-    }
-    return findRootNode(node.parent!);
   }
 
   /// Called recursively.
@@ -100,6 +101,23 @@ class Tree {
       return result;
     }
     return null;
+  }
+
+  static TreeNode<Post> findRootNode(TreeNode<Post> node) {
+    if (node.parent == null) {
+      return node;
+    }
+    return findRootNode(node.parent!);
+  }
+
+  /// Expands all nodes in the branch that contains this node.
+  /// Returns root node.
+  static TreeNode<Post> expandParentNodes(TreeNode<Post> node) {
+    if (node.parent == null) {
+      return node;
+    }
+    node.parent!.expanded = true;
+    return expandParentNodes(node.parent!);
   }
 
   /// Counts all nodes in the tree.
