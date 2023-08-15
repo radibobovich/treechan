@@ -11,6 +11,7 @@ import '../models/tree.dart';
 /// A service generally to scroll to a post after thread refresh.
 class ScrollService {
   List<dynamic> visiblePosts = List.empty(growable: true);
+  // TODO: dont keep partially visible posts, determine is post visible using visibleBounds.center
   List<dynamic> partiallyVisiblePosts = List.empty(growable: true);
 
   final ScrollController _scrollController;
