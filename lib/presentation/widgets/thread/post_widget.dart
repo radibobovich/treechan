@@ -43,19 +43,24 @@ class _PostWidgetState extends State<PostWidget>
 
   @override
   void initState() {
-    debugPrint('init');
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => initializeAnimationController(widget.node.data));
+    initializeAnimationController(widget.node.data);
     super.initState();
   }
 
-  PausableTimer? timer;
+  @override
+  void didChangeDependencies() {
+    initializeColorTween(widget.node.data);
+    viewportHeight = MediaQuery.of(context).size.height;
+    super.didChangeDependencies();
+  }
 
+  PausableTimer? timer;
+  late double viewportHeight;
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final Post post = widget.node.data;
 
+    final Post post = widget.node.data;
     return VisibilityDetector(
       key: Key(post.id.toString()),
       onVisibilityChanged: (visibilityInfo) {
@@ -66,6 +71,7 @@ class _PostWidgetState extends State<PostWidget>
           post: post,
         );
         handleHighlight(visibilityInfo, post);
+        if (post.isHighlighted && visibilityInfo.visibleFraction == 0) {}
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -73,7 +79,7 @@ class _PostWidgetState extends State<PostWidget>
           child: InkWell(
             onTap: () async {
               widget.node.expanded = !widget.node.expanded;
-              await Future.delayed(const Duration(milliseconds: 500));
+              // await Future.delayed(const Duration(milliseconds: 500));
             },
             onLongPress: () {
               openActionMenu(context, widget.currentTab, widget.node, setState);
@@ -124,34 +130,44 @@ class _PostWidgetState extends State<PostWidget>
 
   /// Removes highlight after 15 seconds of a new post being seen
   void handleHighlight(VisibilityInfo visibilityInfo, Post post) {
-    if (visibilityInfo.visibleFraction == 1 &&
-        post.isHighlighted &&
-        post.firstTimeSeen) {
-      wantKeepAlive = true;
-      initializeAnimationController(post);
-      timer = PausableTimer(const Duration(seconds: 15), () {
-        animationController!.forward();
-        post.isHighlighted = false;
-        wantKeepAlive = false;
-      });
+    if (visibilityInfo.visibleFraction > 0.6 &&
+        centerIsVisible(visibilityInfo) &&
+        post.isHighlighted) {
+      if (post.firstTimeSeen) {
+        wantKeepAlive = true;
+        updateKeepAlive();
+        // initializeAnimationController(post);
+        timer = PausableTimer(const Duration(seconds: 5), () {
+          wantKeepAlive = false;
+          updateKeepAlive();
+          animationController!.forward().then((value) {
+            wantKeepAlive = false;
+            updateKeepAlive();
+          });
+          post.isHighlighted = false;
+        });
+        post.firstTimeSeen = false;
+      }
+
+      /// Start the timer if the new post first time seen or if it has been
+      /// returned back to the viewport.
       timer?.start();
-      post.firstTimeSeen = false;
-    } else if (post.isHighlighted && visibilityInfo.visibleFraction < 1) {
+    } else if (post.isHighlighted && visibilityInfo.visibleFraction <= 0.6) {
       timer?.pause();
-    } else if (!post.isHighlighted && timer != null) {
-      // animationController.forward();
     }
   }
 
   void initializeAnimationController(Post post) {
-    debugPrint(animationController.runtimeType.toString());
     animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+        AnimationController(vsync: this, duration: const Duration(seconds: 3));
     animationController!.addListener(() {
       if (mounted) {
         setState(() {});
       }
     });
+  }
+
+  void initializeColorTween(Post post) {
     colorAnimation = ColorTween(
             begin: post.isHighlighted
                 ? const Color.fromARGB(255, 255, 174, 0)
@@ -160,9 +176,14 @@ class _PostWidgetState extends State<PostWidget>
         .animate(animationController!);
   }
 
+  bool centerIsVisible(VisibilityInfo visibilityInfo) {
+    return visibilityInfo.visibleBounds.center.dy >= 0 &&
+        visibilityInfo.visibleBounds.center.dy <= viewportHeight;
+  }
+
   @override
   void dispose() {
-    // animationController.dispose();
+    animationController?.dispose();
     super.dispose();
   }
 }
