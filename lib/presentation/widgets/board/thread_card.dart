@@ -12,7 +12,7 @@ import '../shared/media_preview_widget.dart';
 // Represents thread in list of threads
 class ThreadCard extends StatefulWidget {
   final Thread thread;
-  final DrawerTab currentTab;
+  final BoardTab currentTab;
   const ThreadCard({
     Key? key,
     required this.thread,
