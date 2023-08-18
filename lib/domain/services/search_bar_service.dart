@@ -47,23 +47,21 @@ class SearchBarService {
       cleanSegments.removeWhere((element) => element == "");
       if (cleanSegments.length > 1) {
         if (cleanSegments[1] == "res" && cleanSegments.length == 3) {
-          // newTab.type = TabTypes.thread;
           // split is used to remove the .html extension
           newTab = ThreadTab(
-            tag: parsedUrl.pathSegments[0],
-            prevTab: currentTab ?? boardListTab,
-            id: int.parse(cleanSegments[2].split(".")[0]),
-          );
+              tag: parsedUrl.pathSegments[0],
+              prevTab: currentTab ?? boardListTab,
+              id: int.parse(cleanSegments[2].split(".")[0]),
+              name: null);
         } else if (cleanSegments.last == "catalog.html") {
           (newTab as BoardTab).isCatalog = true;
           (newTab as BoardTab).query = searchTag;
         } else {
-          // newTab.type = TabTypes.thread;
           newTab = ThreadTab(
-            tag: newTab.tag,
-            prevTab: currentTab ?? boardListTab,
-            id: int.parse(cleanSegments[1].split(".")[0]),
-          );
+              tag: (newTab as BoardTab).tag,
+              prevTab: currentTab ?? boardListTab,
+              id: int.parse(cleanSegments[1].split(".")[0]),
+              name: null);
         }
       }
     }
