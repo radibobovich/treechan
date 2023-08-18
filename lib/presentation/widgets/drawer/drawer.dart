@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SearchBar;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/history_bloc.dart';
@@ -145,7 +145,7 @@ class TabTile extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              (item is BoardTab ? "/${item.tag}/ - " : "") +
+              (item is BoardTab ? "/${(item as BoardTab).tag}/ - " : "") +
                   (item.name ?? (item is BoardTab ? "Доска" : "Тред")),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
