@@ -27,7 +27,7 @@ class ThreadService {
   /// or just a reply in the thread, or is an OP-post itself.
   /// Replies to OP-posts are not added as a children of the OP-post, but as a
   /// independent root.
-  late List<TreeNode<Post>> _roots = [];
+  List<TreeNode<Post>> _roots = [];
 
   /// For use in stateless widgets only. Prefer getRoots() instead.
   List<TreeNode<Post>> get getRootsSynchronously => _roots;
@@ -47,8 +47,9 @@ class ThreadService {
   List<Post> _posts = [];
   List<Post> get getPosts => _posts;
 
-  List<Post> _lastPosts = [];
-  List<Post> get getLastPosts => _lastPosts;
+  /// All nodes linearized.
+  final List<TreeNode<Post>> _lastNodes = [];
+  List<TreeNode<Post>> get getLastNodes => _lastNodes;
 
   /// Contains thread information like maxNum, postsCount, etc.
   Root _threadInfo = Root();
@@ -92,32 +93,43 @@ class ThreadService {
     }
     final ThreadFetcher fetcher = ThreadFetcher(
         boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
+    // TODO: move response processing to ThreadFetcher
     final http.Response response =
         await fetcher.getThreadResponse(isRefresh: true);
     List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
     if (newPosts.isEmpty) return;
-    _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
-    _threadInfo.maxNum = newPosts.last.id;
 
-    /// Highlight new posts and force update numbers
-    /// because refresh response does not contain numbers
-    for (int i = 0; i < newPosts.length; i++) {
-      newPosts[i].isHighlighted = true;
-      newPosts[i].number = i + _posts.length + 1;
-    }
+    updateInfo(newPosts);
 
     _posts.addAll(newPosts);
-    _lastPosts = newPosts.toList();
+
     // create tree for new posts
     Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
-    List<TreeNode<Post>>? newRoots = await treeService.getTree();
+    List<TreeNode<Post>> newRoots = await treeService.getTree();
 
+    Tree.performForEveryNodeInRoots(newRoots, (node) {
+      _lastNodes.add(node);
+    });
+    final stopwatch = Stopwatch()..start();
+
+    _lastNodes.sort((a, b) => a.data.id.compareTo(b.data.id));
+    debugPrint(
+        'New posts sort executed in ${stopwatch.elapsedMicroseconds} microseconds');
     // attach new tree to the old tree
     if (newRoots.isEmpty) return;
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
         if (parentId != _threadInfo.opPostId) {
           // Find a node to attach new tree to
+          // TODO: works bad because findNode returns only first occurence
+          // leads to some posts are not there
+          // to an old node which has 2 and more parents
+          // + one node instance attaches to multiple nodes
+          // it breaks reply link highlight in case if new root answers
+          // and it also breaks depth lines
+          if (newRoot.data.id == 282649173) {
+            debugPrint('gotcha');
+          }
           final node = Tree.findNode(_roots, parentId);
           node!.addNode(newRoot);
 
@@ -144,6 +156,18 @@ class ThreadService {
       }
     }
     _setShowLinesProperty(_roots);
+  }
+
+  void updateInfo(List<Post> newPosts) {
+    _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
+    _threadInfo.maxNum = newPosts.last.id;
+
+    /// Highlight new posts and force update numbers
+    /// because refresh response does not contain numbers
+    for (int i = 0; i < newPosts.length; i++) {
+      newPosts[i].isHighlighted = true;
+      newPosts[i].number = i + _posts.length + 1;
+    }
   }
 
   /// Sets showLines property to false when there are nodes with depth >=16.
