@@ -4,14 +4,12 @@ import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/domain/services/search_bar_service.dart';
-import 'package:treechan/presentation/widgets/thread/action_menu_widget.dart';
+import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../main.dart';
-import '../../bloc/board_bloc.dart';
 import '../../../domain/models/json/json.dart';
 import '../../bloc/branch_bloc.dart';
-import '../../bloc/thread_bloc.dart';
 import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
 import '../../../domain/models/tree.dart';
@@ -147,7 +145,7 @@ class HtmlContainer extends StatelessWidget {
     // check if link points to some post in thread
     if (currentTab is ThreadTab &&
         url.contains(
-            "/${currentTab.tag}/res/${(currentTab as ThreadTab).id}.html#")) {
+            "/${(currentTab as ThreadTab).tag}/res/${(currentTab as ThreadTab).id}.html#")) {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
       if (roots != null &&
@@ -164,15 +162,18 @@ class HtmlContainer extends StatelessWidget {
       try {
         final newTab = searchBarService.parseInput(url, searchTag: searchTag);
         if (newTab is BoardTab && newTab.isCatalog == true) {
-          if (currentTab is BoardTab) {
-            context
-                .read<BoardBloc>()
-                .add(ChangeViewBoardEvent(null, query: newTab.query));
-          } else if (currentTab is ThreadTab) {
-            context
-                .read<PageProvider>()
-                .openCatalog(boardTag: newTab.tag, query: newTab.query!);
-          }
+          // if (currentTab is BoardTab) {
+          //   context
+          //       .read<BoardBloc>()
+          //       .add(ChangeViewBoardEvent(null, query: newTab.query));
+          // } else if (currentTab is ThreadTab) {
+          //   context
+          //       .read<PageProvider>()
+          //       .openCatalog(boardTag: newTab.tag, query: newTab.query!);
+          // }
+          context
+              .read<PageProvider>()
+              .openCatalog(boardTag: newTab.tag, query: newTab.query ?? '');
         } else {
           context.read<PageProvider>().addTab(newTab);
         }
@@ -183,13 +184,15 @@ class HtmlContainer extends StatelessWidget {
   }
 
   Future<void> openPostPreview(BuildContext context, int id) async {
+    final bloc = currentTab.getBloc(context);
     showDialog(
         context: context,
         builder: (_) {
           if (currentTab is ThreadTab) {
-            context.read<ThreadBloc>().dialogStack.add(treeNode!);
+            bloc.dialogStack.add(treeNode!);
+
             return BlocProvider.value(
-              value: context.read<ThreadBloc>(),
+              value: bloc as ThreadBloc,
               child: PostPreviewDialog(
                   roots: roots,
                   id: id,
@@ -197,11 +200,12 @@ class HtmlContainer extends StatelessWidget {
                   scrollService: scrollService),
             );
           } else if (currentTab is BranchTab) {
-            context.read<BranchBloc>().dialogStack.add(treeNode!);
+            bloc.dialogStack.add(treeNode!);
+
             return BlocProvider.value(
-                value: context.read<BranchBloc>(),
+                value: bloc as BranchBloc,
                 child: PostPreviewDialog(
-                    roots: roots,
+                    roots: roots ?? bloc.threadService.getRootsSynchronously,
                     id: id,
                     currentTab: currentTab,
                     scrollService: scrollService));
@@ -209,7 +213,7 @@ class HtmlContainer extends StatelessWidget {
             throw Exception(
                 'Tried to open post preview with unsupported bloc type: ${currentTab.runtimeType.toString()}');
           }
-        }).then((value) => getBloc(context, currentTab).dialogStack.remove(id));
+        }).then((value) => currentTab.getBloc(context).dialogStack.remove(id));
   }
 }
 
