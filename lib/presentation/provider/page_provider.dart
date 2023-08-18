@@ -101,7 +101,7 @@ class PageProvider with ChangeNotifier {
         // if it doesn't exist, you will get an assertion error (indexOf returns -1)
         // so you go to the board list.
         // if you don't have previous tab, you go to the board list.
-        animateTo(_tabs.keys.toList().indexOf(tab.prevTab!));
+        animateTo(_tabs.keys.toList().indexOf((tab as TagMixin).prevTab));
 
         return;
       } on AssertionError {
@@ -125,6 +125,9 @@ class PageProvider with ChangeNotifier {
 
   void goBack() {
     DrawerTab currentTab = tabs.keys.elementAt(currentIndex);
+    if (currentTab is BoardListTab) {
+      return;
+    }
 
     /// Prevent pop if pressed back button while in search mode
     final currentBloc = tabs[currentTab];
@@ -132,7 +135,8 @@ class PageProvider with ChangeNotifier {
       currentBloc.add(LoadBoardEvent());
       return;
     }
-    int prevTabId = tabs.keys.toList().indexOf(currentTab.prevTab!);
+    int prevTabId =
+        tabs.keys.toList().indexOf((currentTab as TagMixin).prevTab);
     if (prevTabId == -1) {
       if (_currentTabIndex > 0) {
         animateTo(currentIndex - 1);
@@ -195,7 +199,7 @@ class PageProvider with ChangeNotifier {
         return ThreadBloc(
             key: ValueKey(tab),
             threadService: ThreadService(
-                boardTag: tab.tag, threadId: (tab as ThreadTab).id),
+                boardTag: (tab as ThreadTab).tag, threadId: tab.id),
             tab: tab,
             provider: this)
           ..add(LoadThreadEvent());
@@ -204,10 +208,11 @@ class PageProvider with ChangeNotifier {
             // find a thread related to the branch
             threadBloc: _tabs.entries
                 .firstWhere((entry) =>
-                    entry.value is ThreadBloc && entry.key == tab.prevTab)
+                    entry.value is ThreadBloc &&
+                    entry.key == (tab as BranchTab).prevTab)
                 .value,
             postId: (tab as BranchTab).id,
-            prevTab: tab.prevTab!,
+            prevTab: tab.prevTab as IdMixin,
             key: ValueKey(tab))
           ..add(LoadBranchEvent());
     }
@@ -251,7 +256,7 @@ class PageProvider with ChangeNotifier {
       value: _tabs[tab],
       child: ThreadScreen(
         currentTab: tab,
-        prevTab: tab.prevTab!,
+        prevTab: tab.prevTab,
       ),
     );
   }
