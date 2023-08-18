@@ -16,7 +16,7 @@ import '../../domain/services/thread_service.dart';
 class BranchBloc extends Bloc<BranchEvent, BranchState> {
   final ThreadBloc threadBloc;
   final int postId;
-  final DrawerTab prevTab;
+  final IdMixin prevTab;
 
   late TreeNode<Post> branch;
   late ThreadService threadService;
