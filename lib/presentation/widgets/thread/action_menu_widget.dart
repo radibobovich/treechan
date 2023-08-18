@@ -9,8 +9,6 @@ import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
 import '../../../domain/models/tree.dart';
 import '../../../utils/remove_html.dart';
-import '../../bloc/branch_bloc.dart';
-import '../../bloc/thread_bloc.dart';
 import '../../provider/page_provider.dart';
 
 class ActionMenu extends StatelessWidget {
@@ -28,7 +26,7 @@ class ActionMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = getBloc(context, currentTab);
+    final bloc = currentTab.getBloc(context);
     return SizedBox(
         width: double.minPositive,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -109,14 +107,14 @@ class ActionMenu extends StatelessWidget {
       /// so we need to find thread tab
       DrawerTab tab = currentTab;
       while (tab is! ThreadTab) {
-        tab = tab.prevTab!;
+        tab = (tab as BranchTab).prevTab;
       }
       threadId = tab.id;
     }
 
     if (node.data.hidden) {
       HiddenPostsDatabase().removePost(
-        currentTab.tag,
+        (currentTab as TagMixin).tag,
         threadId,
         node.data.id,
       );
@@ -127,7 +125,7 @@ class ActionMenu extends StatelessWidget {
       return;
     }
     HiddenPostsDatabase().addPost(
-      currentTab.tag,
+      (currentTab as TagMixin).tag,
       threadId,
       node.data.id,
       node.data.comment,
@@ -139,7 +137,7 @@ class ActionMenu extends StatelessWidget {
   }
 
   Future<void> goToPost(TreeNode<Post> node, BuildContext context) async {
-    final bloc = getBloc(context, currentTab);
+    final bloc = currentTab.getBloc(context);
 
     /// Check if this action was called in post preview dialog
     if (bloc.dialogStack.isNotEmpty) {
@@ -217,7 +215,7 @@ class ActionMenu extends StatelessWidget {
 
     context.read<PageProvider>().addTab(
           BranchTab(
-            tag: currentTab.tag,
+            tag: (currentTab as TagMixin).tag,
             id: node.data.id,
             name: 'Ответ: "${removeHtmlTags(node.data.comment, links: false)}"',
             prevTab: currentTab,
@@ -227,13 +225,13 @@ class ActionMenu extends StatelessWidget {
   }
 }
 
-dynamic getBloc(BuildContext context, DrawerTab currentTab) {
-  if (currentTab is ThreadTab) {
-    return BlocProvider.of<ThreadBloc>(context);
-  } else if (currentTab is BranchTab) {
-    return BlocProvider.of<BranchBloc>(context);
-  }
-}
+// dynamic getBloc(BuildContext context, DrawerTab currentTab) {
+//   if (currentTab is ThreadTab) {
+//     return BlocProvider.of<ThreadBloc>(context);
+//   } else if (currentTab is BranchTab) {
+//     return BlocProvider.of<BranchBloc>(context);
+//   }
+// }
 
 String getParents(TreeNode<Post> node) {
   List<int> parents = node.data.parents;
