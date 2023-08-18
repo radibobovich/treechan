@@ -30,7 +30,7 @@ class Tree {
     }
     findChildren(posts);
 
-    _roots = await compute(createTreeModel, {posts, threadInfo, prefs});
+    _roots = await compute(_createTreeModel, {posts, threadInfo, prefs});
     return _roots;
   }
 
@@ -64,7 +64,8 @@ class Tree {
 
   /// Finds (first node by post id in the list of trees.
   /// Worth noting that there might be multiple nodes containing same post
-  ///
+  // TODO: make it search all occurences
+
   static TreeNode<Post>? findNode(List<TreeNode<Post>> roots, int id) {
     final stopwatch = Stopwatch()..start();
     // for (var root in roots doesn't work for some reason)
@@ -75,7 +76,7 @@ class Tree {
         return roots[i];
       }
 
-      TreeNode<Post>? result = _findPostInChildren(roots[i], id);
+      TreeNode<Post>? result = _findNodeInChildren(roots[i], id);
       if (result == null) {
         continue;
       }
@@ -88,13 +89,15 @@ class Tree {
   }
 
   /// Called recursively.
-  static TreeNode<Post>? _findPostInChildren(TreeNode<Post> node, int id) {
+  /// TODO: make it search all occurences
+  
+  static TreeNode<Post>? _findNodeInChildren(TreeNode<Post> node, int id) {
     // for (var child in node.children) doesn't work for some reason
     for (int i = 0; i < node.children.length; i++) {
       if (node.children[i].data.id == id) {
         return node.children[i];
       }
-      TreeNode<Post>? result = _findPostInChildren(node.children[i], id);
+      TreeNode<Post>? result = _findNodeInChildren(node.children[i], id);
       if (result == null) {
         continue;
       }
@@ -139,11 +142,35 @@ class Tree {
     }
     return count;
   }
+
+  /// Performs operation with every node in every tree.
+  static void performForEveryNodeInRoots(
+      List<TreeNode<Post>> roots, Function(TreeNode<Post> node) fn) {
+    final stopwatch = Stopwatch()..start();
+
+    for (var root in roots) {
+      performForEveryNode(root, fn);
+    }
+    debugPrint(
+        'performForEveryNodeInRoots() executed in ${stopwatch.elapsedMicroseconds} microseconds');
+  }
+
+  /// Performs operation with every node in this tree.
+  static void performForEveryNode(
+      TreeNode<Post>? node, Function(TreeNode<Post> node) fn) {
+    if (node == null) {
+      return;
+    }
+    fn(node);
+    for (var child in node.children) {
+      performForEveryNode(child, fn);
+    }
+  }
 }
 
 /// Creates list of comment roots.
-/// This is a heavy function and it defined outside the class to use isolate.
-Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
+/// This is a heavy function and defined outside the class to use in an isolate.
+Future<List<TreeNode<Post>>> _createTreeModel(Set data) async {
   List<Post> posts = data.elementAt(0);
   Root threadInfo = data.elementAt(1);
   SharedPreferences prefs = data.elementAt(2);
@@ -153,6 +180,11 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
   final stopwatch = Stopwatch()..start();
 
   List<TreeNode<Post>>? roots = [];
+
+  /// In case of thread refresh function [_isExternalReference()] works
+  /// to determine if the post replies to the old posts in the thread
+  /// since at refresh we dont have previous posts list, so if it can't
+  /// find it in the postIds it returns true.
   for (var post in posts) {
     if (post.parents.isEmpty ||
         post.parents.contains(threadInfo.opPostId) ||
@@ -175,7 +207,6 @@ Future<List<TreeNode<Post>>> createTreeModel(Set data) async {
 /// Called recursively to connect post children.
 List<TreeNode<Post>> _attachChildren(
     Post post, List<Post> posts, SharedPreferences prefs, int depth) {
-  // debugPrint('Depth: $depth, id: ${post.id}');
   var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
   List<int> children = post.children;
@@ -204,10 +235,12 @@ List<Post> findChildren(List<Post> posts) {
   return posts;
 }
 
-/// Check if post has references to posts in other threads.
+/// Check if post has references to posts in other threads or
+/// in case of thread refresh, if post replies to the old posts.
 bool _isExternalReference(Set<int> postIds, List<int> referenceIds) {
   for (var referenceId in referenceIds) {
-    // if there are no posts with that id in current thread, then it is an external reference
+    // if there are no posts with that id in current thread, then it is an
+    // external reference (or a reference to an old post)
     if (!postIds.contains(referenceId)) {
       return true;
     }
