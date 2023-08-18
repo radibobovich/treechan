@@ -15,8 +15,8 @@ import 'dart:convert';
 
 import '../../utils/fix_blank_space.dart';
 
-class ThreadService {
-  ThreadService({required this.boardTag, required this.threadId});
+class ThreadRepository {
+  ThreadRepository({required this.boardTag, required this.threadId});
 
   final String boardTag;
   final int threadId;

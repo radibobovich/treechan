@@ -9,9 +9,9 @@ import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
 import '../../domain/models/tree.dart';
-import '../../domain/services/branch_service.dart';
+import '../../domain/repositories/branch_repository.dart';
 import '../../domain/services/scroll_service.dart';
-import '../../domain/services/thread_service.dart';
+import '../../domain/repositories/thread_repository.dart';
 
 class BranchBloc extends Bloc<BranchEvent, BranchState> {
   final ThreadBloc threadBloc;
@@ -19,8 +19,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
   final IdMixin prevTab;
 
   late TreeNode<Post> branch;
-  late ThreadService threadService;
-  late BranchService branchService;
+  late ThreadRepository threadRepository;
+  late BranchRepository branchRepository;
 
   /// Every time new post preview dialog opens the node from which it
   /// has been opened adds here.
@@ -36,17 +36,18 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
       required this.prevTab,
       required this.key})
       : super(BranchInitialState()) {
-    threadService = threadBloc.threadService;
-    branchService = BranchService(threadService: threadService, postId: postId);
+    threadRepository = threadBloc.threadRepository;
+    branchRepository =
+        BranchRepository(threadRepository: threadRepository, postId: postId);
     scrollService = ScrollService(scrollController,
         (window.physicalSize / window.devicePixelRatio).width);
     on<LoadBranchEvent>(
       (event, emit) async {
         try {
-          branch = await branchService.getBranch();
+          branch = await branchRepository.getBranch();
           emit(BranchLoadedState(
               branch: branch,
-              threadInfo: threadBloc.threadService.getThreadInfo));
+              threadInfo: threadBloc.threadRepository.getThreadInfo));
         } on Exception catch (e) {
           emit(BranchErrorState(message: e.toString(), exception: e));
         }
@@ -62,7 +63,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
             scrollService.saveCurrentScrollInfo();
           }
         }
-        await branchService.refresh(event.source, lastIndex: event.lastIndex);
+        await branchRepository.refresh(event.source,
+            lastIndex: event.lastIndex);
         add(LoadBranchEvent());
         if (event.source == RefreshSource.branch) {
           if (!threadBloc.isClosed) threadBloc.add(LoadThreadEvent());

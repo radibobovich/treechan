@@ -102,7 +102,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                   nodeWidth: MediaQuery.of(context).size.width / 1.5,
                   nodeItemBuilder: (context, node) {
                     node.data.hidden = BlocProvider.of<ThreadBloc>(context)
-                        .threadService
+                        .threadRepository
                         .hiddenPosts
                         .contains(node.data.id);
                     return PostWidget(

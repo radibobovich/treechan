@@ -28,7 +28,7 @@ class AppEndDrawer extends StatelessWidget {
           builder: (_, state) {
             if (state is ThreadLoadedState) {
               final lastPosts = BlocProvider.of<ThreadBloc>(context)
-                  .threadService
+                  .threadRepository
                   .getLastNodes;
               return Expanded(
                 child: ListView.builder(
@@ -100,7 +100,7 @@ class _PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<ThreadBloc>(context).threadService.getPosts;
+    BlocProvider.of<ThreadBloc>(context).threadRepository.getPosts;
     final DateTimeService dateTimeSerivce =
         DateTimeService(timestamp: post.timestamp);
     return Row(

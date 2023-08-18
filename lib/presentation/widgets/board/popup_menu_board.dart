@@ -22,7 +22,7 @@ class PopupMenuBoard extends StatelessWidget {
       icon: const Icon(Icons.more_vert),
       padding: EdgeInsets.zero,
       itemBuilder: (popupContext) {
-        if (BlocProvider.of<BoardBloc>(popupContext).boardService.sortType !=
+        if (BlocProvider.of<BoardBloc>(popupContext).boardRepository.sortType !=
             SortBy.page) {
           // catalog mode: can return to page mode, sort by time or bump and search
           return <PopupMenuEntry<dynamic>>[
@@ -42,7 +42,7 @@ class PopupMenuBoard extends StatelessWidget {
   }
 
   PopupMenuItem<dynamic> getViewButton(BuildContext context) {
-    if (BlocProvider.of<BoardBloc>(context).boardService.sortType ==
+    if (BlocProvider.of<BoardBloc>(context).boardRepository.sortType ==
         SortBy.page) {
       return PopupMenuItem(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -65,7 +65,7 @@ class PopupMenuBoard extends StatelessWidget {
   }
 
   PopupMenuItem<dynamic> getSortButton(BuildContext context) {
-    if (BlocProvider.of<BoardBloc>(context).boardService.sortType ==
+    if (BlocProvider.of<BoardBloc>(context).boardRepository.sortType ==
         SortBy.time) {
       return PopupMenuItem(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

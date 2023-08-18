@@ -1,10 +1,10 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test/test.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/tree.dart';
-import 'package:treechan/domain/services/thread_service.dart';
+import 'package:treechan/domain/services/thread_repository.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
 import 'package:treechan/utils/remove_html.dart';
 
@@ -24,7 +24,7 @@ void main() async {
     });
   });
   test('ThreadService', () async {
-    final threadService = ThreadService(boardTag: 'abu', threadId: 50074);
+    final threadService = ThreadRepository(boardTag: 'abu', threadId: 50074);
 
     List<TreeNode<Post>>? roots = await threadService.getRoots();
     final posts = threadService.getPosts;
@@ -66,7 +66,7 @@ void main() async {
     // using pre-downloaded thread from /assets folder
     // thread fetcher uses it instead of fetching from the internet because of
     // shared preferences 'test' flag
-    final threadService = ThreadService(boardTag: 'b', threadId: 282647314);
+    final threadService = ThreadRepository(boardTag: 'b', threadId: 282647314);
 
     List<TreeNode<Post>> roots = List.from(await threadService.getRoots());
     List<Post> posts = List.from(threadService.getPosts);

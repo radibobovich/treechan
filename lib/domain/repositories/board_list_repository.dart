@@ -5,8 +5,8 @@ import '../../data/board_list_fetcher.dart';
 import '../models/category.dart';
 import '../models/json/json.dart';
 
-class BoardListService {
-  BoardListService({this.openAsCatalog});
+class BoardListRepository {
+  BoardListRepository({this.openAsCatalog});
 
   bool? openAsCatalog = false;
   List<Category> _categories = List.empty(growable: true);

@@ -34,7 +34,7 @@ class _NormalAppBarState extends State<NormalAppBar> {
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: () {
-            if (BlocProvider.of<BoardBloc>(context).boardService.sortType ==
+            if (BlocProvider.of<BoardBloc>(context).boardRepository.sortType ==
                 SortBy.page) {
               BlocProvider.of<BoardBloc>(context)
                   .add(ChangeViewBoardEvent(null, query: ""));

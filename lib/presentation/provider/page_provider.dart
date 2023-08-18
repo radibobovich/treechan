@@ -7,9 +7,9 @@ import 'package:treechan/presentation/screens/page_navigator.dart';
 
 import '../../data/history_database.dart';
 import '../../domain/models/tab.dart';
-import '../../domain/services/board_list_service.dart';
-import '../../domain/services/board_service.dart';
-import '../../domain/services/thread_service.dart';
+import '../../domain/repositories/board_list_repository.dart';
+import '../../domain/repositories/board_repository.dart';
+import '../../domain/repositories/thread_repository.dart';
 import '../../utils/constants/enums.dart';
 import '../bloc/board_bloc.dart';
 import '../bloc/board_list_bloc.dart' as board_list;
@@ -179,26 +179,26 @@ class PageProvider with ChangeNotifier {
     switch (tab.runtimeType) {
       case BoardListTab:
         return board_list.BoardListBloc(
-            key: ValueKey(tab), boardListService: BoardListService())
+            key: ValueKey(tab), boardListService: BoardListRepository())
           ..add(board_list.LoadBoardListEvent());
       case BoardTab:
         if ((tab as BoardTab).isCatalog == false) {
           return BoardBloc(
               key: ValueKey(tab),
               tabProvider: this,
-              boardService: BoardService(boardTag: tab.tag))
+              boardRepository: BoardRepository(boardTag: tab.tag))
             ..add(LoadBoardEvent());
         } else {
           return BoardBloc(
               key: ValueKey(tab),
               tabProvider: this,
-              boardService: BoardService(boardTag: tab.tag))
+              boardRepository: BoardRepository(boardTag: tab.tag))
             ..add(ChangeViewBoardEvent(null, query: tab.query));
         }
       case ThreadTab:
         return ThreadBloc(
             key: ValueKey(tab),
-            threadService: ThreadService(
+            threadRepository: ThreadRepository(
                 boardTag: (tab as ThreadTab).tag, threadId: tab.id),
             tab: tab,
             provider: this)

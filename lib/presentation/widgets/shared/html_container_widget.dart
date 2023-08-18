@@ -205,7 +205,7 @@ class HtmlContainer extends StatelessWidget {
             return BlocProvider.value(
                 value: bloc as BranchBloc,
                 child: PostPreviewDialog(
-                    roots: roots ?? bloc.threadService.getRootsSynchronously,
+                    roots: roots ?? bloc.threadRepository.getRootsSynchronously,
                     id: id,
                     currentTab: currentTab,
                     scrollService: scrollService));

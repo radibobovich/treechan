@@ -8,12 +8,12 @@ import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
 
 import '../../domain/models/tree.dart';
-import '../../domain/services/thread_service.dart';
+import '../../domain/repositories/thread_repository.dart';
 import '../../domain/models/json/json.dart';
 import '../provider/page_provider.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
-  late final ThreadService threadService;
+  late final ThreadRepository threadRepository;
   Key key;
   final ThreadTab tab;
   final PageProvider provider;
@@ -28,7 +28,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   late final ScrollService scrollService;
   late Root? threadInfo;
   ThreadBloc(
-      {required this.threadService,
+      {required this.threadRepository,
       required this.key,
       required this.tab,
       required this.provider})
@@ -38,8 +38,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
     on<LoadThreadEvent>(
       (event, emit) async {
         try {
-          final roots = await threadService.getRoots();
-          threadInfo = threadService.getThreadInfo;
+          final roots = await threadRepository.getRoots();
+          threadInfo = threadRepository.getThreadInfo;
           emit(ThreadLoadedState(
             roots: roots,
             threadInfo: threadInfo,
@@ -60,16 +60,16 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           //No need to preserve scroll position if the thread hasn't been loaded
           // correctly. This check is created in case user presses refresh after
           // failed thread loading.
-          int oldPostCount = threadService.getPosts.length;
+          int oldPostCount = threadRepository.getPosts.length;
 
           if (oldPostCount > 0 && scrollController.offset != 0) {
             scrollService.saveCurrentScrollInfo();
           }
-          int lastIndex = threadService.getPosts.length - 1;
-          await threadService.refresh();
+          int lastIndex = threadRepository.getPosts.length - 1;
+          await threadRepository.refresh();
           add(LoadThreadEvent());
           provider.refreshRelatedBranches(tab, lastIndex);
-          int newPostCount = threadService.getPosts.length;
+          int newPostCount = threadRepository.getPosts.length;
 
           await Future.delayed(const Duration(milliseconds: 10));
           if (oldPostCount > 0 &&

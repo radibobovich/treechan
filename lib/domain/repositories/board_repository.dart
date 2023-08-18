@@ -9,8 +9,8 @@ import 'dart:convert';
 
 import '../../utils/fix_html_video.dart';
 
-class BoardService {
-  BoardService({required this.boardTag, this.currentPage = 0});
+class BoardRepository {
+  BoardRepository({required this.boardTag, this.currentPage = 0});
 
   final String boardTag;
   late String boardName;

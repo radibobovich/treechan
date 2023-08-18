@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/data/hidden_threads_database.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
-import 'package:treechan/domain/services/board_service.dart';
+import 'package:treechan/domain/repositories/board_repository.dart';
 
 import '../../utils/constants/enums.dart';
 import '../../domain/services/board_search_service.dart';
@@ -15,7 +15,7 @@ import '../provider/page_provider.dart';
 class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late final PageProvider tabProvider;
   late final StreamSubscription tabSub;
-  late final BoardService boardService;
+  late final BoardRepository boardRepository;
   List<int> hiddenThreads = [];
   late BoardSearchService searchService;
   late TextEditingController textController = TextEditingController();
@@ -24,11 +24,11 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   bool isDisposed = false;
   BoardBloc(
       {required this.tabProvider,
-      required this.boardService,
+      required this.boardRepository,
       required this.key})
       : super(BoardInitialState()) {
     tabSub = tabProvider.catalogStream.listen((catalog) {
-      if (catalog.boardTag == boardService.boardTag && !isDisposed) {
+      if (catalog.boardTag == boardRepository.boardTag && !isDisposed) {
         add(ChangeViewBoardEvent(null, query: catalog.searchTag));
       }
     });
@@ -36,11 +36,11 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     on<LoadBoardEvent>((event, emit) async {
       try {
         hiddenThreads = await HiddenThreadsDatabase()
-            .getHiddenThreadIds(boardService.boardTag);
-        final List<Thread>? threads = await boardService.getThreads();
+            .getHiddenThreadIds(boardRepository.boardTag);
+        final List<Thread>? threads = await boardRepository.getThreads();
         searchService = BoardSearchService(threads: threads!);
         emit(BoardLoadedState(
-            boardName: boardService.boardName,
+            boardName: boardRepository.boardName,
             threads: threads,
             completeRefresh: event.refreshCompleted));
       } on BoardNotFoundException {
@@ -59,9 +59,9 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     on<ReloadBoardEvent>(
       (event, emit) async {
         try {
-          await boardService.load();
+          await boardRepository.load();
           hiddenThreads = await HiddenThreadsDatabase()
-              .getHiddenThreadIds(boardService.boardTag);
+              .getHiddenThreadIds(boardRepository.boardTag);
           scrollToTop();
           add(LoadBoardEvent());
         } on Exception catch (e) {
@@ -72,7 +72,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     on<RefreshBoardEvent>(
       (event, emit) async {
         try {
-          await boardService.refresh();
+          await boardRepository.refresh();
 
           add(LoadBoardEvent());
         } catch (e) {
@@ -84,7 +84,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     on<ChangeViewBoardEvent>((event, emit) async {
       try {
         bool changed =
-            await boardService.changeSortType(event.sortType!, event.query);
+            await boardRepository.changeSortType(event.sortType!, event.query);
         if (changed) add(LoadBoardEvent());
         scrollToTop();
         if (event.query != null) {

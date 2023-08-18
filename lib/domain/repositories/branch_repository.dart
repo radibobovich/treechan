@@ -1,16 +1,16 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/domain/services/thread_service.dart';
+import 'package:treechan/domain/repositories/thread_repository.dart';
 
 import '../../main.dart';
 import '../../utils/constants/enums.dart';
 import '../models/json/json.dart';
 import '../models/tree.dart';
 
-class BranchService {
-  BranchService({required this.threadService, required this.postId});
-  final ThreadService threadService;
+class BranchRepository {
+  BranchRepository({required this.threadRepository, required this.postId});
+  final ThreadRepository threadRepository;
   final int postId;
 
   /// Root node of the branch.
@@ -26,15 +26,15 @@ class BranchService {
     return _root!;
   }
 
-  /// Gets posts from [threadService] and builds tree for a specific post.
+  /// Gets posts from [threadRepository] and builds tree for a specific post.
   Future<void> load() async {
-    List<Post> posts = threadService.getPosts;
+    List<Post> posts = threadRepository.getPosts;
     Post post = posts.firstWhere((element) => element.id == postId);
     _root = TreeNode(data: post);
     _root!.addNodes(await compute(_attachChildren, {post, posts, prefs, 1}));
   }
 
-  /// Gets new added posts from [threadService], build its trees and attaches
+  /// Gets new added posts from [threadRepository], build its trees and attaches
   /// these trees to a current tree.
   Future<void> refresh(RefreshSource source, {int? lastIndex}) async {
     List<Post> posts;
@@ -48,21 +48,21 @@ class BranchService {
     /// [ThreadBloc.add(RefreshThreadEvent)] -> [TabProvider.refreshRelatedBranches] ->
     /// -> [BranchBloc.add(RefreshBranchEvent())] -> [BranchService.refresh()]
     if (source == RefreshSource.branch) {
-      posts = threadService.getPosts;
+      posts = threadRepository.getPosts;
       lastIndex = posts.length - 1;
 
-      await threadService.refresh();
+      await threadRepository.refresh();
     }
 
     /// Get a list with new posts
-    posts = threadService.getPosts;
+    posts = threadRepository.getPosts;
 
     /// Trim posts to a new ones.
     List<Post> newPosts = posts.getRange(lastIndex! + 1, posts.length).toList();
 
     /// Buila a tree from new posts.
     Tree treeService =
-        Tree(posts: newPosts, threadInfo: threadService.getThreadInfo);
+        Tree(posts: newPosts, threadInfo: threadRepository.getThreadInfo);
     List<TreeNode<Post>> newRoots =
         await treeService.getTree(skipPostsModify: true);
 
@@ -70,7 +70,7 @@ class BranchService {
     if (newRoots.isEmpty) return;
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
-        if (parentId == threadService.getThreadInfo.opPostId) continue;
+        if (parentId == threadRepository.getThreadInfo.opPostId) continue;
         // find a parent
         TreeNode<Post>? node = Tree.findNode([_root!], parentId);
         if (node != null) {

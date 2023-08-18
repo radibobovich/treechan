@@ -73,7 +73,7 @@ class _BranchScreenState extends State<BranchScreen>
                   nodeWidth: MediaQuery.of(context).size.width / 1.5,
                   nodeItemBuilder: (context, node) {
                     node.data.hidden = BlocProvider.of<BranchBloc>(context)
-                        .threadService
+                        .threadRepository
                         .hiddenPosts
                         .contains(node.data.id);
                     return PostWidget(

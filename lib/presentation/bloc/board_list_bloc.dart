@@ -3,25 +3,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/services/board_list_search_service.dart';
 import 'package:treechan/exceptions.dart';
 import '../../utils/constants/enums.dart';
-import '../../domain/services/board_list_service.dart';
+import '../../domain/repositories/board_list_repository.dart';
 import '../../domain/models/category.dart';
 import '../../domain/models/json/board_json.dart';
 
 class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
-  late final BoardListService _boardListService;
+  late final BoardListRepository _boardListRepository;
   late List<Category> categories;
   late List<Board> favorites;
   late BoardListSearchService searchService;
   foundation.Key key;
   bool allowReorder = false;
-  BoardListBloc({required BoardListService boardListService, required this.key})
-      : _boardListService = boardListService,
+  BoardListBloc(
+      {required BoardListRepository boardListService, required this.key})
+      : _boardListRepository = boardListService,
         super(BoardListInitialState()) {
     on<LoadBoardListEvent>(
       (event, emit) async {
         try {
-          categories = await _boardListService.getCategories();
-          favorites = _boardListService.getFavoriteBoards();
+          categories = await _boardListRepository.getCategories();
+          favorites = _boardListRepository.getFavoriteBoards();
 
           emit(BoardListLoadedState(
               categories: categories,
@@ -39,7 +40,7 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
     on<RefreshBoardListEvent>(
       (event, emit) async {
         try {
-          await _boardListService.refreshBoardList();
+          await _boardListRepository.refreshBoardList();
           add(LoadBoardListEvent());
         } on Exception catch (e) {
           emit(BoardListErrorState(message: e.toString(), exception: e));
@@ -50,13 +51,13 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
       (event, emit) async {
         try {
           if (event.action == FavoriteListAction.add) {
-            _boardListService.addToFavorites(event.board!);
+            _boardListRepository.addToFavorites(event.board!);
           } else if (event.action == FavoriteListAction.remove) {
-            _boardListService.removeFromFavorites(event.board!);
+            _boardListRepository.removeFromFavorites(event.board!);
           } else if (event.action == FavoriteListAction.toggleReorder) {
             allowReorder = !allowReorder;
           } else if (event.action == FavoriteListAction.saveAll) {
-            _boardListService.saveFavoriteBoards(event.favorites!);
+            _boardListRepository.saveFavoriteBoards(event.favorites!);
           }
 
           add(LoadBoardListEvent());
@@ -68,7 +69,7 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
     on<SearchQueryChangedEvent>((event, emit) async {
       try {
         searchService =
-            BoardListSearchService(boards: _boardListService.boards);
+            BoardListSearchService(boards: _boardListRepository.boards);
         emit(BoardListSearchState(
             searchResult: searchService.search(event.query),
             query: event.query));
