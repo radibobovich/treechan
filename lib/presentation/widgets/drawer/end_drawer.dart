@@ -84,7 +84,10 @@ class PostPreview extends StatelessWidget {
                   post: node.data,
                   currentTab: currentTab,
                   treeNode: node,
-                  // roots: bloc.threadService.getRootsSynchronously,
+                  roots: currentTab
+                      .getBloc(context)
+                      .threadRepository
+                      .getRootsSynchronously,
                   // bloc: BlocProvider.of<ThreadBloc>(context)
                 )
               ],
@@ -100,7 +103,7 @@ class _PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<ThreadBloc>(context).threadRepository.getPosts;
+    BlocProvider.of<ThreadBloc>(context).threadRepository.posts;
     final DateTimeService dateTimeSerivce =
         DateTimeService(timestamp: post.timestamp);
     return Row(
