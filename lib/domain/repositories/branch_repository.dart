@@ -26,12 +26,16 @@ class BranchRepository {
     return _root!;
   }
 
+  // Map<int, List<TreeNode<Post>>> get plainNodes => threadRepository.plainNodes;
+  List<TreeNode<Post>> nodesAt(int id) => threadRepository.nodesAt(id);
+
   /// Gets posts from [threadRepository] and builds tree for a specific post.
   Future<void> load() async {
-    List<Post> posts = threadRepository.getPosts;
+    List<Post> posts = threadRepository.posts;
     Post post = posts.firstWhere((element) => element.id == postId);
     _root = TreeNode(data: post);
-    _root!.addNodes(await compute(_attachChildren, {post, posts, prefs, 1}));
+    _root!.addNodes(await compute(
+        _attachChildren, {post, posts.sublist(posts.indexOf(post)), prefs, 1}));
   }
 
   /// Gets new added posts from [threadRepository], build its trees and attaches
@@ -40,7 +44,7 @@ class BranchRepository {
     List<Post> posts;
 
     /// If refresh has been called from thread page you don't need to call
-    /// [threadService.refresh] since it has already been called in
+    /// [threadRepository.refresh] since it has already been called in
     /// [ThreadBloc]. You also can't get [lastIndex] directly in this case
     /// so it has been passed as an argument.
     ///
@@ -48,35 +52,42 @@ class BranchRepository {
     /// [ThreadBloc.add(RefreshThreadEvent)] -> [TabProvider.refreshRelatedBranches] ->
     /// -> [BranchBloc.add(RefreshBranchEvent())] -> [BranchService.refresh()]
     if (source == RefreshSource.branch) {
-      posts = threadRepository.getPosts;
+      posts = threadRepository.posts;
       lastIndex = posts.length - 1;
 
       await threadRepository.refresh();
     }
 
     /// Get a list with new posts
-    posts = threadRepository.getPosts;
+    posts = threadRepository.posts;
 
     /// Trim posts to a new ones.
     List<Post> newPosts = posts.getRange(lastIndex! + 1, posts.length).toList();
 
     /// Buila a tree from new posts.
     Tree treeService =
-        Tree(posts: newPosts, threadInfo: threadRepository.getThreadInfo);
-    List<TreeNode<Post>> newRoots =
-        await treeService.getTree(skipPostsModify: true);
+        Tree(posts: newPosts, threadInfo: threadRepository.threadInfo);
+    final record = await treeService.getTree(skipPostsModify: true);
+    final List<TreeNode<Post>> newRoots = record.$1;
 
     /// Attach obtained trees to the branch nodes.
     if (newRoots.isEmpty) return;
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
-        if (parentId == threadRepository.getThreadInfo.opPostId) continue;
+        if (parentId == threadRepository.threadInfo.opPostId) continue;
         // find a parent
-        TreeNode<Post>? node = Tree.findNode([_root!], parentId);
-        if (node != null) {
-          node.addNode(newRoot);
+        // TreeNode<Post>? node = Tree.findFirstNode([_root!], parentId);
+        final List<TreeNode<Post>> parentNodes = nodesAt(parentId);
+        for (var parentNode in parentNodes) {
+          /// fix depth because here we add the same root in multiple places of the tree
+          /// Depth will be also increased by one in [addNode] method
+          parentNode.addNode(newRoot.copyWith(
+              key: parentNode.data.id.toString() + newRoot.data.id.toString(),
+              newKey: true)
+            ..depth = parentNode.depth);
+
           // update children indexes list just in case
-          node.data.children.add(posts.indexOf(newRoot.data));
+          parentNode.data.children.add(posts.indexOf(newRoot.data));
         }
       }
     }
@@ -87,11 +98,11 @@ class BranchRepository {
 /// This is an alternative to the function in Tree.dart, but with arguments
 /// provided using Set, allowing compute() to be called directly.
 Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
-  // TODO: optimization: trim posts before current by id
   Post post = data.elementAt(0);
   List<Post> posts = data.elementAt(1);
   SharedPreferences prefs = data.elementAt(2);
   int depth = data.elementAt(3);
+
   var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
   List<int> children = post.children;
@@ -99,6 +110,11 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
     final child = posts[index];
     // add replies to them too
     childrenToAdd.add(TreeNode(
+
+        /// Make key unique to avoid
+        /// GlobalObjectKey collisions due to roots the same root created at refresh
+        /// attached in multiple places in the tree.
+        key: UniqueKey().toString(),
         data: child,
         children: await _attachChildren({child, posts, prefs, depth + 1}),
         expanded: !prefs.getBool("postsCollapsed")!));
