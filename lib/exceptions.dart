@@ -48,3 +48,13 @@ class NoConnectionException implements Exception {
     return message;
   }
 }
+
+class TreeBuilderTimeoutException implements Exception {
+  final String message;
+  TreeBuilderTimeoutException(this.message);
+
+  @override
+  String toString() {
+    return message;
+  }
+}
