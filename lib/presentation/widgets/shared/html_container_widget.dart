@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:treechan/domain/services/search_bar_service.dart';
+import 'package:treechan/domain/services/search_service.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -43,21 +43,31 @@ class _SpoilerTextState extends State<_SpoilerText> {
 
   @override
   Widget build(BuildContext context) {
+    final newContainerSpan = ContainerSpan(
+        style: Style(
+          lineHeight: const LineHeight(1),
+          backgroundColor: Colors.grey[600],
+        ),
+        newContext: widget.node,
+        children: [
+          TextSpan(
+              text: widget.node.tree.element!.text,
+              style: TextStyle(color: Colors.grey[600]))
+        ]);
     return StatefulBuilder(
       builder: (context, setState) {
         return GestureDetector(
-          onTap: () => toggleVisibility(),
-          child: spoilerVisibility
-              ? widget.children
-              : Text(
-                  widget.node.tree.element!.text,
-                  style: TextStyle(
-                    backgroundColor: Colors.grey[600],
-                    color: Colors.grey[600],
-                    fontSize: 14.5,
-                  ),
-                ),
-        );
+            onTap: () => toggleVisibility(),
+            child: spoilerVisibility ? widget.children : newContainerSpan
+            // : Text(
+            //     widget.node.tree.element!.text,
+            //     style: TextStyle(
+            //       backgroundColor: Colors.grey[600],
+            //       color: Colors.grey[600],
+            //       fontSize: 14.5,
+            //     ),
+            //   ),
+            );
       },
     );
   }
@@ -148,29 +158,22 @@ class HtmlContainer extends StatelessWidget {
             "/${(currentTab as ThreadTab).tag}/res/${(currentTab as ThreadTab).id}.html#")) {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
-      if (roots != null &&
-          roots!.isNotEmpty &&
-          Tree.findNode(roots!, id) == null) {
-        return;
+      // if (roots != null &&
+      //     roots!.isNotEmpty &&
+      //     Tree.findFirstNode(roots!, id) == null) {
+      //   return;
+      // }
+      if (roots != null && roots!.isNotEmpty && treeNode != null) {
+        openPostPreview(context, id);
       }
-      openPostPreview(context, id);
+      // openPostPreview(context, id);
 
       // check if link is external relative to this thread
     } else {
-      SearchBarService searchBarService =
-          SearchBarService(currentTab: currentTab);
+      SearchService searchBarService = SearchService(currentTab: currentTab);
       try {
         final newTab = searchBarService.parseInput(url, searchTag: searchTag);
         if (newTab is BoardTab && newTab.isCatalog == true) {
-          // if (currentTab is BoardTab) {
-          //   context
-          //       .read<BoardBloc>()
-          //       .add(ChangeViewBoardEvent(null, query: newTab.query));
-          // } else if (currentTab is ThreadTab) {
-          //   context
-          //       .read<PageProvider>()
-          //       .openCatalog(boardTag: newTab.tag, query: newTab.query!);
-          // }
           context
               .read<PageProvider>()
               .openCatalog(boardTag: newTab.tag, query: newTab.query ?? '');
@@ -194,7 +197,16 @@ class HtmlContainer extends StatelessWidget {
             return BlocProvider.value(
               value: bloc as ThreadBloc,
               child: PostPreviewDialog(
-                  roots: roots,
+
+                  /// if link points to the parent post, then pass parent post
+                  /// in other cases pass null and it will perform search
+                  /// based on the post id
+                  node: (treeNode!.parent != null &&
+                          id == treeNode!.parent!.data.id)
+                      ? treeNode!.parent
+                      : null,
+                  roots: roots ?? [],
+                  nodeFinder: bloc.threadRepository.nodesAt,
                   id: id,
                   currentTab: currentTab,
                   scrollService: scrollService),
@@ -205,7 +217,12 @@ class HtmlContainer extends StatelessWidget {
             return BlocProvider.value(
                 value: bloc as BranchBloc,
                 child: PostPreviewDialog(
+                    node: (treeNode!.parent != null &&
+                            id == treeNode!.parent!.data.id)
+                        ? treeNode!.parent
+                        : null,
                     roots: roots ?? bloc.threadRepository.getRootsSynchronously,
+                    nodeFinder: bloc.threadRepository.nodesAt,
                     id: id,
                     currentTab: currentTab,
                     scrollService: scrollService));
@@ -213,36 +230,39 @@ class HtmlContainer extends StatelessWidget {
             throw Exception(
                 'Tried to open post preview with unsupported bloc type: ${currentTab.runtimeType.toString()}');
           }
-        }).then((value) => currentTab.getBloc(context).dialogStack.remove(id));
+        }).then((value) => (currentTab.getBloc(context).dialogStack
+            as List<TreeNode<Post>>)
+        .remove(treeNode));
   }
 }
 
 class PostPreviewDialog extends StatelessWidget {
-  const PostPreviewDialog({
-    super.key,
-    required this.roots,
-    required this.id,
-    required this.currentTab,
-    required this.scrollService,
-  });
-
-  final List<TreeNode<Post>>? roots;
-  final int id;
+  const PostPreviewDialog(
+      {required this.roots,
+      required this.currentTab,
+      required this.scrollService,
+      super.key,
+      this.node,
+      this.id,
+      this.nodeFinder})
+      : assert(node != null || id != null);
+  final TreeNode<Post>? node;
+  final List<TreeNode<Post>> roots;
+  final int? id;
   final DrawerTab currentTab;
   final ScrollService? scrollService;
-
+  final Function? nodeFinder;
   @override
   Widget build(BuildContext context) {
     return Dialog(
         child: SingleChildScrollView(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        // TODO: optimization: dont call findNode twice (first time in Html onTap)
         PostWidget(
-          // node: roots != null && roots!.isNotEmpty
-          //     ? Tree.findNode(roots!, id)!
-          //     : getMockNode(id, context, currentTab),
-          node: Tree.findNode(roots!, id)!,
-          roots: roots != null ? roots! : [],
+          node: node ??
+              ((nodeFinder != null)
+                  ? nodeFinder!(id).first
+                  : Tree.findNode(roots, id!)!),
+          roots: roots,
           currentTab: currentTab,
           scrollService: scrollService,
           trackVisibility: false,
