@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../domain/services/search_bar_service.dart';
+import '../../../domain/services/search_service.dart';
 import '../../provider/page_provider.dart';
 
 class SearchBar extends StatefulWidget {
@@ -18,7 +18,7 @@ class SearchBar extends StatefulWidget {
 
 class _SearchBarState extends State<SearchBar> {
   final TextEditingController _controller = TextEditingController();
-  final SearchBarService searchBarService = SearchBarService();
+  final SearchService searchBarService = SearchService();
 
   @override
   Widget build(BuildContext context) {
