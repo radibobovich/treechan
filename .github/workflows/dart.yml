@@ -24,7 +24,7 @@ jobs:
       # - uses: dart-lang/setup-dart@v1
       - uses: dart-lang/setup-dart@v1
         with:
-          sdk: 2.19.6
+          sdk: 3.1.0
           
       - uses: MobileDevOps/flutter-sdk-action@v1.0.0
         with:
