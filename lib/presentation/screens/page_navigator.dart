@@ -59,6 +59,7 @@ class PageNavigatorState extends State<PageNavigator>
           key: _scaffoldKey,
           body: provider.currentPage,
           drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
+          drawerEdgeDragWidth: 50,
           bottomNavigationBar: BottomBar(provider: provider),
         ),
       ),
