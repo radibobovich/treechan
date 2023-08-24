@@ -24,6 +24,7 @@ import '../screens/thread_screen.dart';
 class PageProvider with ChangeNotifier {
   /// The stream is listened by new [BoardBloc] to check if you need to switch
   /// the board screen to a catalog mode.
+  // TODO: replace with threadBloc listener (maybe)
   final StreamController<Catalog> _catalog =
       StreamController<Catalog>.broadcast();
   Stream<Catalog> get catalogStream => _catalog.stream;
@@ -46,7 +47,7 @@ class PageProvider with ChangeNotifier {
 
   int _currentTabIndex = 0;
   int get currentIndex => _currentTabIndex;
-  int dummy = 0;
+
   late TabController tabController;
   late final PageNavigatorState state;
   void init(PageNavigatorState gotState) {
