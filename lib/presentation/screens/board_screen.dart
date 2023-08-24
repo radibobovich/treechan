@@ -142,7 +142,11 @@ class _BoardScreenState extends State<BoardScreen>
                       )),
                   body: const NoConnectionPlaceholder());
             }
-            return Center(child: Text(state.message.toString()));
+            return Center(
+                child: Text(
+              state.message.toString(),
+              textAlign: TextAlign.center,
+            ));
           } else {
             return Scaffold(
                 appBar: PreferredSize(
