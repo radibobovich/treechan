@@ -9,10 +9,10 @@ class BoardListRepository {
   BoardListRepository({this.openAsCatalog});
 
   bool? openAsCatalog = false;
-  List<Category> _categories = List.empty(growable: true);
-  List<Board> _boards = [];
+  final List<Category> _categories = [];
+  final List<Board> _boards = [];
   List<Board> get boards => _boards;
-  List<Board> _favoriteBoards = List.empty(growable: true);
+  final List<Board> _favoriteBoards = [];
 
   Future<List<Category>> getCategories() async {
     if (_categories.isEmpty) {
@@ -29,7 +29,9 @@ class BoardListRepository {
   }
 
   Future<void> refreshBoardList() async {
-    _categories = [];
+    _categories.clear();
+    _boards.clear();
+    _favoriteBoards.clear();
   }
 
   Future<void> _load() async {
@@ -37,7 +39,7 @@ class BoardListRepository {
     if (downloadedBoards == null) {
       return;
     }
-    _boards = boardListFromJson(jsonDecode(downloadedBoards));
+    _boards.addAll(boardListFromJson(jsonDecode(downloadedBoards)));
 
     for (Board board in _boards) {
       if (board.category == "") {
@@ -61,7 +63,7 @@ class BoardListRepository {
     if (jsonBoards == "") {
       return;
     }
-    _favoriteBoards = boardListFromJson(jsonDecode(jsonBoards));
+    _favoriteBoards.addAll(boardListFromJson(jsonDecode(jsonBoards)));
   }
 
   void saveFavoriteBoards(List<Board> boards) {
