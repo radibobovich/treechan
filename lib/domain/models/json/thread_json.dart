@@ -23,7 +23,7 @@ class Thread {
   // int? timestamp;
   // String? trip;
   // int? views;
-  List<Post> posts = [];
+  final List<Post> posts = [];
 
   bool hidden = false;
   Thread({
@@ -53,7 +53,7 @@ class Thread {
 
   Thread.fromJson(Map<String, dynamic> json) {
     if (json['posts'] != null) {
-      posts = <Post>[];
+      // posts = <Post>[];
       json['posts'].forEach((v) {
         posts.add(Post.fromJson(v));
       });

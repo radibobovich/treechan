@@ -68,7 +68,7 @@ class Post {
   GlobalKey? gKey = GlobalKey();
 
   /// Parents id's in the thread
-  List<int> parents = List.empty(growable: true);
+  List<int> parents = [];
 
   /// Children indexes in posts list
   List<int> children = [];
