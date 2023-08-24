@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       builder: (context, snapshot) {
         return ChangeNotifierProvider(
           create: (context) => PageProvider(),
-          // TODO: use use Route Generator
+          // TODO: use Route Generator
           child: MaterialApp(
             title: 'Flutter Demo',
             theme: getTheme(snapshot.data!),
