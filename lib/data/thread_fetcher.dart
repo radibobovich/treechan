@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/domain/services/search_bar_service.dart';
+import 'package:treechan/domain/services/search_service.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:http/http.dart' as http;
 
