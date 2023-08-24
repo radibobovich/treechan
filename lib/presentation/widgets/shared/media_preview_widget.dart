@@ -150,7 +150,7 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
                 IconButton(
                   icon: const Icon(Icons.save),
                   onPressed: () {
-                    imageDownloadService.downloadImage();
+                    // imageDownloadService.downloadImage();
                     // fix infinite duration
 
                     // ScaffoldMessenger.of(context).showSnackBar(
