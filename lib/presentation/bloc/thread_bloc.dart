@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,13 +31,12 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
       required this.tab,
       required this.provider})
       : super(ThreadInitialState()) {
-    scrollService = ScrollService(scrollController,
-        (window.physicalSize / window.devicePixelRatio).height);
+    scrollService = ScrollService(scrollController);
     on<LoadThreadEvent>(
       (event, emit) async {
         try {
           final roots = await threadRepository.getRoots();
-          threadInfo = threadRepository.getThreadInfo;
+          threadInfo = threadRepository.threadInfo;
           emit(ThreadLoadedState(
             roots: roots,
             threadInfo: threadInfo,
@@ -49,6 +46,11 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
         } on NoConnectionException catch (e) {
           emit(ThreadErrorState(
               message: "Проверьте подключение к Интернету.", exception: e));
+        } on TreeBuilderTimeoutException catch (e) {
+          emit(ThreadErrorState(
+              message: "Построение дерева заняло слишком много времени. "
+                  "Попробуйте открыть тред в классическом режиме.",
+              exception: e));
         } on Exception catch (e) {
           emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
         }
@@ -60,16 +62,16 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           //No need to preserve scroll position if the thread hasn't been loaded
           // correctly. This check is created in case user presses refresh after
           // failed thread loading.
-          int oldPostCount = threadRepository.getPosts.length;
+          int oldPostCount = threadRepository.posts.length;
 
           if (oldPostCount > 0 && scrollController.offset != 0) {
             scrollService.saveCurrentScrollInfo();
           }
-          int lastIndex = threadRepository.getPosts.length - 1;
+          int lastIndex = threadRepository.posts.length - 1;
           await threadRepository.refresh();
           add(LoadThreadEvent());
           provider.refreshRelatedBranches(tab, lastIndex);
-          int newPostCount = threadRepository.getPosts.length;
+          int newPostCount = threadRepository.posts.length;
 
           await Future.delayed(const Duration(milliseconds: 10));
           if (oldPostCount > 0 &&
