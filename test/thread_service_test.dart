@@ -4,11 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test/test.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/tree.dart';
-import 'package:treechan/domain/services/thread_repository.dart';
+import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
 import 'package:treechan/utils/remove_html.dart';
 
-late SharedPreferences prefs;
+// late SharedPreferences prefs;
 void main() async {
   setUp(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -23,14 +23,14 @@ void main() async {
       'test': true
     });
   });
-  test('ThreadService', () async {
-    final threadService = ThreadRepository(boardTag: 'abu', threadId: 50074);
+  test('ThreadRepository', () async {
+    final threadRepository = ThreadRepository(boardTag: 'abu', threadId: 50074);
 
-    List<TreeNode<Post>>? roots = await threadService.getRoots();
-    final posts = threadService.getPosts;
+    List<TreeNode<Post>>? roots = await threadRepository.getRoots();
+    final posts = threadRepository.posts;
     expect(posts, isNotEmpty, reason: 'Got empty posts list.');
 
-    final threadInfo = threadService.getThreadInfo;
+    final threadInfo = threadRepository.threadInfo;
     expect(threadInfo.opPostId, posts.first.id,
         reason: "First post id doesn't match threadInfo OP id.");
     expect(threadInfo.maxNum, posts.last.id,
@@ -66,17 +66,18 @@ void main() async {
     // using pre-downloaded thread from /assets folder
     // thread fetcher uses it instead of fetching from the internet because of
     // shared preferences 'test' flag
-    final threadService = ThreadRepository(boardTag: 'b', threadId: 282647314);
+    final threadRepository =
+        ThreadRepository(boardTag: 'b', threadId: 282647314);
 
-    List<TreeNode<Post>> roots = List.from(await threadService.getRoots());
-    List<Post> posts = List.from(threadService.getPosts);
+    List<TreeNode<Post>> roots = List.from(await threadRepository.getRoots());
+    List<Post> posts = List.from(threadRepository.posts);
 
-    await threadService.refresh();
+    await threadRepository.refresh();
 
-    List<TreeNode<Post>> updatedRoots = await threadService.getRoots();
-    List<Post> updatedPosts = threadService.getPosts;
+    List<TreeNode<Post>> updatedRoots = await threadRepository.getRoots();
+    List<Post> updatedPosts = threadRepository.posts;
 
-    final threadInfo = threadService.getThreadInfo;
+    final threadInfo = threadRepository.threadInfo;
     expect(updatedPosts.last.id, threadInfo.maxNum,
         reason:
             "Last post id doesn't match threadInfo maxNum property after thread refresh.");
@@ -96,16 +97,53 @@ void main() async {
   });
   test('<a> tag count', () {
     String comment =
-        '<a href="/bo/res/843736.html#886558" class="post-reply-link" data-thread="843736" data-num="886558">>>886558</a><br><a href="/bo/res/843736.html#886599" class="post-reply-link" data-thread="843736" data-num="886599">>>886599</a><br>Cпасибо, что еще можете посоветовать? Собираю список на все лето, т.к. уезжаю к бабке сраке в деревню и буду без интернета 2 месяца';
+        '''<a href="/bo/res/843736.html#886558" class="post-reply-link" 
+        data-thread="843736" data-num="886558">>>886558</a><br><a href="/bo/res/843736.html#886599" 
+        class="post-reply-link" data-thread="843736" data-num="886599">>>886599</a><br>Cпасибо, 
+        что еще можете посоветовать? Собираю список на все лето, т.к. уезжаю к бабке сраке в деревню 
+        и буду без интернета 2 месяца''';
     int count = countATags(comment);
     expect(count, 2, reason: "Wrong count of reply post links.");
   });
 
   test('Remove html tags', () {
-    String htmlString =
-        '<a href="/b/res/282647314.html#282647314" class="post-reply-link" data-thread="282647314" data-num="282647314">>>282647314 (OP)</a><br>А в чем он неправ? На работе надо максимально ловить проеб, считаешь по другому - гречневая пидораха.';
-    String cleanedString = removeHtmlTags(htmlString, links: false);
+    const String htmlString =
+        '<a href="/b/res/282647314.html#282647314" class="post-reply-link"'
+        'data-thread="282647314" data-num="282647314">>>282647314 (OP)</a><br>'
+        'А в чем он неправ? На работе надо максимально ловить проеб, считаешь по '
+        'другому - гречневая пидораха.';
+    final String cleanedString = removeHtmlTags(htmlString, links: false);
     expect(cleanedString,
         'А в чем он неправ? На работе надо максимально ловить проеб, считаешь по другому - гречневая пидораха.');
+  });
+  group('Search in tree', () {
+    test('Search for one occurency', () async {
+      final ThreadRepository repo =
+          ThreadRepository(boardTag: 'b', threadId: 282647314);
+      final List<TreeNode<Post>> roots = await repo.getRoots();
+      TreeNode<Post>? result = Tree.findNode(roots, 282648865);
+      expect(result, isNotNull, reason: 'No search results found.');
+      expect(result!.parent!.data.id, 282648402,
+          reason: '''Wrong parent id. Should be null because first
+               occurence is a reply to OP.''');
+    });
+    test('Search for multiple occurencies', () async {
+      final ThreadRepository repo =
+          ThreadRepository(boardTag: 'b', threadId: 282647314);
+      final List<TreeNode<Post>> roots = await repo.getRoots();
+      List<TreeNode<Post>> results = Tree.findAllNodes(roots, 282649012);
+      expect(results.length, 2, reason: "Wrong search results count.");
+      expect(results.first.parent!.data.id, 282647359,
+          reason: "Wrong search result post id.");
+      expect(results.last.parent!.data.id, 282648627,
+          reason: "Wrong search result post id.");
+
+      results = Tree.findAllNodes(roots, 282647874);
+      expect(results.length, 2, reason: "Wrong search results count.");
+      expect(results.first.parent!.data.id, 282647682,
+          reason: "Wrong search result post id.");
+      expect(results.last.parent?.data.id, null,
+          reason: "Node was added as a child of OP-post what is wrong.");
+    });
   });
 }
