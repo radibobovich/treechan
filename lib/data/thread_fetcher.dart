@@ -1,23 +1,28 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:treechan/domain/services/search_bar_service.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:http/http.dart' as http;
 
-import '../domain/models/json/root_json.dart';
+import '../domain/models/json/json.dart';
+import '../domain/models/tab.dart';
 
 class ThreadFetcher {
-  ThreadFetcher(
-      {required this.boardTag,
-      required this.threadId,
-      required this.threadInfo});
+  ThreadFetcher({required this.boardTag, required this.threadId, threadInfo})
+      : threadInfo = threadInfo ?? Root();
+
+  ThreadFetcher.fromThreadLink({required String link})
+      : boardTag = (SearchService().parseInput(link) as ThreadTab).tag,
+        threadId = (SearchService().parseInput(link) as ThreadTab).id,
+        threadInfo = Root();
 
   final String boardTag;
   final int threadId;
-  final Root threadInfo;
-
+  Root threadInfo;
   Future<http.Response> getThreadResponse({bool isRefresh = false}) async {
     String url;
     http.Response response;
@@ -51,6 +56,21 @@ class ThreadFetcher {
     } else {
       throw Exception(
           "Failed to load thread $boardTag/$threadId. Status code: ${response.statusCode}");
+    }
+  }
+
+  /// Makes a request to 2ch.hk and decodes response. Returns list of posts.
+  ///
+  /// Modifies [threadInfo] if [isRefresh] is false.
+  Future<List<Post>> getPosts({bool isRefresh = false}) async {
+    final http.Response response =
+        await getThreadResponse(isRefresh: isRefresh);
+    if (isRefresh == false) {
+      Root decodedResponse = Root.fromJson(jsonDecode(response.body));
+      threadInfo = decodedResponse;
+      return decodedResponse.threads!.first.posts;
+    } else {
+      return postListFromJson(jsonDecode(response.body)["posts"]);
     }
   }
 }
