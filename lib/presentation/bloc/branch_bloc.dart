@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,15 +37,16 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
     threadRepository = threadBloc.threadRepository;
     branchRepository =
         BranchRepository(threadRepository: threadRepository, postId: postId);
-    scrollService = ScrollService(scrollController,
-        (window.physicalSize / window.devicePixelRatio).width);
+    scrollService = ScrollService(
+      scrollController,
+    );
     on<LoadBranchEvent>(
       (event, emit) async {
         try {
           branch = await branchRepository.getBranch();
           emit(BranchLoadedState(
               branch: branch,
-              threadInfo: threadBloc.threadRepository.getThreadInfo));
+              threadInfo: threadBloc.threadRepository.threadInfo));
         } on Exception catch (e) {
           emit(BranchErrorState(message: e.toString(), exception: e));
         }
