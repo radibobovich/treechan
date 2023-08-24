@@ -51,7 +51,9 @@ class ActionMenu extends StatelessWidget {
                   visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     Navigator.pop(context);
-                    bloc.shrinkBranch(node);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      bloc.shrinkBranch(node);
+                    });
                   },
                 )
               : const SizedBox.shrink(),
@@ -61,7 +63,9 @@ class ActionMenu extends StatelessWidget {
                   visualDensity: const VisualDensity(vertical: -3),
                   onTap: () {
                     Navigator.pop(context);
-                    bloc.shrinkRootBranch(node);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      bloc.shrinkRootBranch(node);
+                    });
                   },
                 )
               : const SizedBox.shrink(),
@@ -118,7 +122,7 @@ class ActionMenu extends StatelessWidget {
         threadId,
         node.data.id,
       );
-      bloc.threadService.hiddenPosts.remove(node.data.id);
+      bloc.threadRepository.hiddenPosts.remove(node.data.id);
       setStateCallBack(() {
         node.data.hidden = false;
       });
@@ -130,7 +134,7 @@ class ActionMenu extends StatelessWidget {
       node.data.id,
       node.data.comment,
     );
-    bloc.threadService.hiddenPosts.add(node.data.id);
+    bloc.threadRepository.hiddenPosts.add(node.data.id);
     setStateCallBack(() {
       node.data.hidden = true;
     });
@@ -154,17 +158,26 @@ class ActionMenu extends StatelessWidget {
       } else {
         bloc.scrollService.scrollToNodeByPost(
           node.data,
-          await bloc.threadService.getRoots(),
           (currentTab as dynamic).id,
+          roots: await bloc.threadRepository.getRoots(),
         );
       }
     } else {
       Navigator.of(context).popUntil(ModalRoute.withName('/'));
-      bloc.scrollService.scrollToNodeByPost(
-        node.data,
-        await bloc.threadService.getRoots(),
-        (currentTab as dynamic).id,
-      );
+      if (node.parent == null) {
+        bloc.scrollService.scrollToNodeByPost(
+          node.data,
+          (currentTab as dynamic).id,
+          roots: await bloc.threadRepository.getRoots(),
+        );
+        return;
+      } else {
+        bloc.scrollService.scrollToNode(
+          node,
+          (currentTab as IdMixin).id,
+          // await bloc.threadRepository.getRoots(),
+        );
+      }
     }
   }
 
