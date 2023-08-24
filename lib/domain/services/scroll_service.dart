@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
@@ -16,22 +17,26 @@ class ScrollService {
 
   final ScrollController _scrollController;
   final double _screenHeight;
-  ScrollService(this._scrollController, this._screenHeight);
+  ScrollService(this._scrollController)
+      : _screenHeight =
+            (PlatformDispatcher.instance.implicitView!.physicalSize /
+                    PlatformDispatcher.instance.implicitView!.devicePixelRatio)
+                .height;
 
   PostWidget? _firstVisiblePost;
-  double? _initialOffset;
+  double? _initialPostOffset;
 
   /// Saves current first visible post and its offset before thread refresh.
   void saveCurrentScrollInfo() async {
     _firstVisiblePost = getFirstVisiblePost();
-    _initialOffset = _getOffset(_firstVisiblePost!.key!);
+    _initialPostOffset = _getPostOffset(_firstVisiblePost!.key!);
   }
 
   /// Sorts visible posts by its position and returns the topmost.
   PostWidget getFirstVisiblePost() {
     Map<PostWidget, double> posts = {};
     for (PostWidget post in visiblePosts) {
-      double? y = _getOffset(post.key!);
+      double? y = _getPostOffset(post.key!);
       if (y != null) {
         posts[post] = y;
       }
@@ -49,8 +54,8 @@ class ScrollService {
     return sortedByOffset.keys.first;
   }
 
-  /// Gets vertical absolute offset of the widget.
-  double? _getOffset(Key key) {
+  /// Gets vertical absolute offset of the post.
+  double? _getPostOffset(Key key) {
     RenderObject? obj;
     RenderBox? box;
     obj = (key as GlobalKey).currentContext?.findRenderObject(); // null
@@ -65,14 +70,17 @@ class ScrollService {
     if (_firstVisiblePost == null) {
       return;
     }
-    double? currentOffset;
-    Completer<void> completer = Completer<void>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      currentOffset = _getOffset(_firstVisiblePost!.key!);
-      completer.complete();
-    });
-    await completer.future;
-    if (currentOffset == _initialOffset) {
+    double? currentPostOffset;
+    // Completer<void> completer = Completer<void>();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   currentPostOffset = _getPostOffset(_firstVisiblePost!.key!);
+    //   completer.complete();
+    // });
+    // await completer.future;
+    currentPostOffset = _getPostOffset(_firstVisiblePost!.key!);
+
+    /// Don't update scroll position if visible post hasn't been moved during refresh.
+    if (currentPostOffset == _initialPostOffset) {
       return;
     }
     Timer.periodic(const Duration(milliseconds: 60), (timer) {
@@ -81,7 +89,7 @@ class ScrollService {
       //         currentOffset! > _initialOffset! - 20)) {
       //   timer.cancel();
       // }
-      if (currentOffset == null) {
+      if (currentPostOffset == null) {
         // https://stackoverflow.com/questions/49553402/how-to-determine-screen-height-and-width
         _scrollController.animateTo(_scrollController.offset + _screenHeight,
             duration: const Duration(milliseconds: 20), curve: Curves.easeOut);
@@ -97,7 +105,7 @@ class ScrollService {
             curve: Curves.easeOut);
         timer.cancel();
       }
-      currentOffset = _getOffset(_firstVisiblePost!.key!);
+      currentPostOffset = _getPostOffset(_firstVisiblePost!.key!);
     });
 
     return;
@@ -140,18 +148,25 @@ class ScrollService {
         ? -_screenHeight / 2
         : _screenHeight / 2;
 
-    Completer<void> offsetCompleter = Completer();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      currentOffset = _getOffset(key);
-      offsetCompleter.complete();
-    });
-    await offsetCompleter.future;
-
+    /// TODO: find out if post frame callback is needed at all
+    if (_scrollController.offset !=
+        _scrollController.position.maxScrollExtent) {
+      debugPrint('not max scroll extent');
+      Completer<void> offsetCompleter = Completer();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        currentOffset = _getPostOffset(key);
+        offsetCompleter.complete();
+      });
+      await offsetCompleter.future;
+    } else {
+      currentOffset = _getPostOffset(key);
+    }
     Timer.periodic(const Duration(milliseconds: 60), (timer) async {
       if (currentOffset == null) {
         if (_scrollController.offset == 0 ||
-            _scrollController.offset ==
-                _scrollController.position.maxScrollExtent) {
+            (direction == AxisDirection.down &&
+                _scrollController.offset ==
+                    _scrollController.position.maxScrollExtent)) {
           timer.cancel();
           scrollCompleter.complete(false);
           return;
@@ -167,11 +182,12 @@ class ScrollService {
       }
       Completer<void> offsetCompleter = Completer();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        currentOffset = _getOffset(key);
+        currentOffset = _getPostOffset(key);
         offsetCompleter.complete();
       });
       await offsetCompleter.future;
     });
+    await scrollCompleter.future;
     return scrollCompleter.future;
   }
 
@@ -188,10 +204,17 @@ class ScrollService {
   /// It needs to obtain corrent global key of the [PostWidget] we want to
   /// scroll to because the same [PostWidget] on [ThreadScreen] and on
   /// [BranchScreen] has different global key.
-  // TODO: add find parent to search in current root
-  void scrollToNodeByPost(
-      Post post, List<TreeNode<Post>> roots, int tabId) async {
-    final TreeNode<Post> node = Tree.findNode(roots, post.id)!;
+  void scrollToNodeByPost(Post post, int tabId,
+      {List<TreeNode<Post>>? roots,
+      Map<int, List<TreeNode<Post>>>? plainNodes}) async {
+    assert(roots != null || plainNodes != null);
+    final TreeNode<Post> node;
+    if (roots == null) {
+      node = plainNodes![post.id]!.first;
+    } else {
+      node = Tree.findNode(roots, post.id)!;
+    }
+    // final TreeNode<Post> node = Tree.findNode(roots, post.id)!;
     late final TreeNode<Post> rootNode;
 
     Completer<void> expandCompleter = Completer();
