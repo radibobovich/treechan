@@ -10,8 +10,6 @@ import '../models/json/json.dart';
 import '../models/tree.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../../utils/fix_blank_space.dart';
 
@@ -27,7 +25,7 @@ class ThreadRepository {
   /// or just a reply in the thread, or is an OP-post itself.
   /// Replies to OP-posts are not added as a children of the OP-post, but as a
   /// independent root.
-  List<TreeNode<Post>> _roots = [];
+  final List<TreeNode<Post>> _roots = [];
 
   /// For use in stateless widgets only. Prefer getRoots() instead.
   List<TreeNode<Post>> get getRootsSynchronously => _roots;
@@ -45,15 +43,21 @@ class ThreadRepository {
 
   /// PLain list of all posts in the thread.
   List<Post> _posts = [];
-  List<Post> get getPosts => _posts;
+  List<Post> get posts => _posts;
 
-  /// All nodes linearized.
+  /// Contains all nodes plain. Used for search. Key is post id.
+  /// Note that multiple nodes can have the same post id,
+  /// thats why value is a list of nodes.
+  final Map<int, List<TreeNode<Post>>> _plainNodes = {};
+  // Map<int, List<TreeNode<Post>>> get plainNodes => _plainNodes;
+  List<TreeNode<Post>> nodesAt(int id) => _plainNodes[id] ?? [];
+
   final List<TreeNode<Post>> _lastNodes = [];
   List<TreeNode<Post>> get getLastNodes => _lastNodes;
 
   /// Contains thread information like maxNum, postsCount, etc.
   Root _threadInfo = Root();
-  Root get getThreadInfo => _threadInfo;
+  Root get threadInfo => _threadInfo;
 
   List<int> hiddenPosts = [];
 
@@ -61,24 +65,32 @@ class ThreadRepository {
 
   /// Loads thread from scratch.
   Future<void> load() async {
-    final ThreadFetcher fetcher = ThreadFetcher(
-        boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
-    final http.Response response = await fetcher.getThreadResponse();
-    Root decodedResponse = Root.fromJson(jsonDecode(response.body));
-
-    _posts = decodedResponse.threads!.first.posts;
+    final ThreadFetcher fetcher =
+        ThreadFetcher(boardTag: boardTag, threadId: threadId);
+    // final http.Response response = await fetcher.getThreadResponse();
+    // Root decodedResponse = Root.fromJson(jsonDecode(response.body));
+    // _posts = decodedResponse.threads!.first.posts;
+    _posts = await fetcher.getPosts();
+    _threadInfo = fetcher.threadInfo;
     if (_posts.isNotEmpty) fixBlankSpace(_posts.first);
-    _threadInfo = decodedResponse;
+
+    // _threadInfo = decodedResponse;
+
     _threadInfo.opPostId = _posts.first.id;
     _threadInfo.postsCount = _threadInfo.postsCount! + _posts.length;
+
     for (var post in _posts) {
       if (post.comment.contains("video")) fixHtmlVideo(post);
     }
-    _roots = await Tree(posts: _posts, threadInfo: _threadInfo).getTree();
+    final record = await Tree(posts: _posts, threadInfo: _threadInfo).getTree();
+    _roots.addAll(record.$1);
+    _plainNodes.addAll(record.$2);
+
     _threadInfo.showLines = true;
 
     final stopwatch = Stopwatch()..start();
     _setShowLinesProperty(_roots);
+    stopwatch.stop();
     debugPrint("Set showLines property in ${stopwatch.elapsedMilliseconds}");
     hiddenPosts =
         await HiddenPostsDatabase().getHiddenPostIds(boardTag, threadId);
@@ -93,68 +105,36 @@ class ThreadRepository {
     }
     final ThreadFetcher fetcher = ThreadFetcher(
         boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
-    // TODO: move response processing to ThreadFetcher
-    final http.Response response =
-        await fetcher.getThreadResponse(isRefresh: true);
-    List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
+    // final http.Response response =
+    //     await fetcher.getThreadResponse(isRefresh: true);
+    // List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
+    List<Post> newPosts = await fetcher.getPosts(isRefresh: true);
     if (newPosts.isEmpty) return;
 
     updateInfo(newPosts);
-
     _posts.addAll(newPosts);
 
     // create tree for new posts
-    Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
-    List<TreeNode<Post>> newRoots = await treeService.getTree();
+    final Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
 
-    Tree.performForEveryNodeInRoots(newRoots, (node) {
-      _lastNodes.add(node);
-    });
+    /// This function actually updates [_roots].
+    /// It returns [newPlainNodes] just to add them to [_lastNodes] more easily.
+    final newPlainNodes = await treeService.attachNewRoots(
+        _roots, _plainNodes, _posts, _threadInfo);
+
+    _plainNodes.addAll(newPlainNodes);
+
+    _lastNodes.clear();
+    for (var nodeList in newPlainNodes.values) {
+      _lastNodes.add(nodeList.first);
+    }
+
     final stopwatch = Stopwatch()..start();
-
     _lastNodes.sort((a, b) => a.data.id.compareTo(b.data.id));
+    stopwatch.stop();
     debugPrint(
         'New posts sort executed in ${stopwatch.elapsedMicroseconds} microseconds');
-    // attach new tree to the old tree
-    if (newRoots.isEmpty) return;
-    for (var newRoot in newRoots) {
-      for (var parentId in newRoot.data.parents) {
-        if (parentId != _threadInfo.opPostId) {
-          // Find a node to attach new tree to
-          // TODO: works bad because findNode returns only first occurence
-          // leads to some posts are not there
-          // to an old node which has 2 and more parents
-          // + one node instance attaches to multiple nodes
-          // it breaks reply link highlight in case if new root answers
-          // and it also breaks depth lines
-          if (newRoot.data.id == 282649173) {
-            debugPrint('gotcha');
-          }
-          final node = Tree.findNode(_roots, parentId);
-          node!.addNode(newRoot);
 
-          /// find index of a child to add it to children list of a post
-          int childIndex =
-              _posts.indexWhere((element) => element.id == newRoot.data.id);
-
-          /// update children in [node.data]
-          node.data.children.add(childIndex);
-
-          /// find index of a parent post to update his children list too
-          int nodeIndex =
-              _posts.indexWhere((element) => element.id == node.data.id);
-
-          /// update children in [_posts]
-          _posts[nodeIndex].children.add(childIndex);
-        } else {
-          _roots.add(newRoot);
-        }
-      }
-
-      if (newRoot.data.parents.isEmpty) {
-        _roots.add(newRoot);
-      }
-    }
     _setShowLinesProperty(_roots);
   }
 
