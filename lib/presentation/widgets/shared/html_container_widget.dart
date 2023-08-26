@@ -153,20 +153,14 @@ class HtmlContainer extends StatelessWidget {
     String url = node.tree.element!.attributes['href']!;
     String? searchTag = node.tree.element!.attributes['title'];
     // check if link points to some post in thread
-    if (currentTab is ThreadTab &&
-        url.contains(
-            "/${(currentTab as ThreadTab).tag}/res/${(currentTab as ThreadTab).id}.html#")) {
+    if (currentTab is! BoardTab &&
+        (isReplyLinkInCurrentTab(url, currentTab) ||
+            isReplyLinkToParentThreadTab(url, currentTab as IdMixin))) {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
-      // if (roots != null &&
-      //     roots!.isNotEmpty &&
-      //     Tree.findFirstNode(roots!, id) == null) {
-      //   return;
-      // }
       if (roots != null && roots!.isNotEmpty && treeNode != null) {
         openPostPreview(context, id);
       }
-      // openPostPreview(context, id);
 
       // check if link is external relative to this thread
     } else {
@@ -184,6 +178,29 @@ class HtmlContainer extends StatelessWidget {
         tryLaunchUrl(url);
       }
     }
+  }
+
+  /// Check if the link points to the post that is presented in a current tab.
+  bool isReplyLinkInCurrentTab(String url, DrawerTab currentTab) {
+    if (currentTab is! ThreadTab) return false;
+    return url.contains("/${currentTab.tag}/res/${currentTab.id}.html#");
+  }
+
+  /// Reply links at [BranchScreen] may point to a post that is not in the
+  /// current branch. So we need to check if it is a reply to a post
+  /// that is in the parent [ThreadScreen].
+  bool isReplyLinkToParentThreadTab(String url, IdMixin currentTab) {
+    if (currentTab is! BranchTab) return false;
+
+    IdMixin tab = currentTab;
+
+    /// go to threadTab parent (branch can be opened from previous branch
+    /// so we can't just use tab.prevTab)
+    while (tab is! ThreadTab) {
+      tab = tab.prevTab as IdMixin;
+    }
+
+    return url.contains("/${tab.tag}/res/${tab.id}.html#");
   }
 
   Future<void> openPostPreview(BuildContext context, int id) async {
