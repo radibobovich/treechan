@@ -5,12 +5,12 @@ import 'package:treechan/domain/models/tab.dart';
 import '../../data/hidden_threads_database.dart';
 
 class HiddenThreadsScreen extends StatefulWidget {
-  final String tag;
+  final String? tag;
   final BoardTab currentTab;
   final Function onOpen;
   const HiddenThreadsScreen({
     super.key,
-    required this.tag,
+    this.tag,
     required this.currentTab,
     required this.onOpen,
   });
@@ -24,18 +24,20 @@ class _HiddenThreadsScreenState extends State<HiddenThreadsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Скрытые треды - /${widget.tag}/'),
+        title: Text('Скрытые треды - /${widget.tag ?? widget.currentTab.tag}/'),
         actions: [
           IconButton(
               onPressed: () {
-                HiddenThreadsDatabase().removeBoardTable(widget.tag);
+                HiddenThreadsDatabase()
+                    .removeBoardTable(widget.tag ?? widget.currentTab.tag);
                 setState(() {});
               },
               icon: const Icon(Icons.delete))
         ],
       ),
       body: FutureBuilder<List<HiddenThread>>(
-        future: HiddenThreadsDatabase().getHiddenThreads(widget.tag),
+        future: HiddenThreadsDatabase()
+            .getHiddenThreads(widget.tag ?? widget.currentTab.tag),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
@@ -45,12 +47,12 @@ class _HiddenThreadsScreenState extends State<HiddenThreadsScreen> {
                 return Dismissible(
                     key: ValueKey(thread),
                     onDismissed: (direction) {
-                      HiddenThreadsDatabase()
-                          .removeThread(widget.tag, thread.id);
+                      HiddenThreadsDatabase().removeThread(
+                          widget.tag ?? widget.currentTab.tag, thread.id);
                     },
                     child: ThreadTile(
                       thread: thread,
-                      tag: widget.tag,
+                      tag: widget.tag ?? widget.currentTab.tag,
                       currentTab: widget.currentTab,
                       onOpen: widget.onOpen,
                     ));
