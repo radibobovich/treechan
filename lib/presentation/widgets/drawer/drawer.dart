@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart' hide SearchBar;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../bloc/history_bloc.dart';
 import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
-import '../../screens/history_screen.dart';
-import '../../screens/settings_screen.dart';
 import 'search_bar_widget.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -34,7 +31,7 @@ class AppDrawer extends StatelessWidget {
           const Divider(
             thickness: 1,
           ),
-          HistoryButton(provider: provider, scaffoldKey: _scaffoldKey),
+          HistoryButton(provider: provider),
           const SettingsButton(),
           // history button
         ],
@@ -57,8 +54,7 @@ class SettingsButton extends StatelessWidget {
         iconColor: Theme.of(context).iconTheme.color,
         visualDensity: const VisualDensity(vertical: -2),
         onTap: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const SettingsScreen()));
+          Navigator.pushNamed(context, '/settings');
         });
   }
 }
@@ -67,11 +63,9 @@ class HistoryButton extends StatelessWidget {
   const HistoryButton({
     super.key,
     required this.provider,
-    required GlobalKey<ScaffoldState> scaffoldKey,
-  }) : _scaffoldKey = scaffoldKey;
+  });
 
   final PageProvider provider;
-  final GlobalKey<ScaffoldState> _scaffoldKey;
 
   @override
   Widget build(BuildContext context) {
@@ -82,17 +76,7 @@ class HistoryButton extends StatelessWidget {
         iconColor: Theme.of(context).iconTheme.color,
         visualDensity: const VisualDensity(vertical: -4),
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                        create: (context) =>
-                            HistoryBloc()..add(LoadHistoryEvent()),
-                        child: HistoryScreen(onOpen: (DrawerTab newTab) {
-                          provider.addTab(newTab);
-                          _scaffoldKey.currentState!.closeDrawer();
-                        }),
-                      )));
+          Navigator.pushNamed(context, '/history', arguments: provider);
         });
   }
 }
