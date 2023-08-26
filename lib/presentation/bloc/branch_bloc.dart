@@ -14,6 +14,7 @@ import '../../domain/repositories/thread_repository.dart';
 class BranchBloc extends Bloc<BranchEvent, BranchState> {
   final ThreadBloc threadBloc;
   final int postId;
+  final BranchTab currentTab;
   final IdMixin prevTab;
 
   late TreeNode<Post> branch;
@@ -22,15 +23,17 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
 
   /// Every time new post preview dialog opens the node from which it
   /// has been opened adds here.
-  /// Used to check if some post is actually in the current visible tree.
-  final List<TreeNode<Post>> dialogStack = [];
-
+  /// Used to check if some post is actually in current visible tree.
+  List<TreeNode<Post>> get dialogStack =>
+      threadBloc.isClosed ? _localDialogStack : threadBloc.dialogStack;
+  final List<TreeNode<Post>> _localDialogStack = [];
   final ScrollController scrollController = ScrollController();
   late final ScrollService scrollService;
   Key key;
   BranchBloc(
       {required this.threadBloc,
       required this.postId,
+      required this.currentTab,
       required this.prevTab,
       required this.key})
       : super(BranchInitialState()) {
@@ -82,6 +85,29 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
         }
       },
     );
+  }
+
+  void shrinkBranch(TreeNode<Post> node) async {
+    node.parent!.expanded = false;
+
+    /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
+    if (dialogStack.isEmpty) {
+      scrollService.scrollToNodeInDirection(
+          node.parent!.getGlobalKey(currentTab.id),
+          direction: AxisDirection.up);
+    }
+  }
+
+  void shrinkRootBranch(TreeNode<Post> node) {
+    final rootNode = Tree.findRootNode(node);
+    rootNode.expanded = false;
+    final rootPostKey = rootNode.getGlobalKey(currentTab.id);
+
+    /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
+    if (dialogStack.isEmpty) {
+      scrollService.scrollToNodeInDirection(rootPostKey,
+          direction: AxisDirection.up);
+    }
   }
 }
 
