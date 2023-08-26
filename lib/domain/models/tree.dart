@@ -73,6 +73,7 @@ class Tree {
     stopwatch.stop();
   }
 
+  /// Called at thread refresh.
   Future<Map<int, List<TreeNode<Post>>>> attachNewRoots(
       List<TreeNode<Post>> roots,
       Map<int, List<TreeNode<Post>>> plainNodes,
