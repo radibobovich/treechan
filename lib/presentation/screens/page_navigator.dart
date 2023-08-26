@@ -93,7 +93,7 @@ class BottomBar extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.more_vert), label: '')
         ],
         onTap: (value) {
-          provider.currentPageIndex = value;
+          provider.setCurrentPageIndex(value, context: context);
         },
         backgroundColor: Theme.of(context).colorScheme.error,
         unselectedItemColor: Theme.of(context).colorScheme.onSecondary,
