@@ -56,9 +56,22 @@ class AppTheme {
           //const DividerThemeData(color: Color.fromARGB(102, 56, 68, 77)),
           const DividerThemeData(color: Color.fromARGB(255, 56, 68, 77)),
       scaffoldBackgroundColor: const Color.fromARGB(255, 21, 32, 43),
+      snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Colors.black,
+          contentTextStyle: TextStyle(color: Colors.white)),
       textTheme: const TextTheme(
           titleMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
           bodyMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
           bodySmall: TextStyle(color: Color.fromARGB(255, 125, 125, 125))),
       hintColor: const Color.fromARGB(255, 125, 125, 125));
+}
+
+ThemeData getTheme(String theme) {
+  switch (theme) {
+    case 'Makaba Night':
+      return AppTheme.makabaNight;
+    case 'Makaba Classic':
+      return AppTheme.makabaClassic;
+  }
+  return AppTheme.makabaClassic;
 }

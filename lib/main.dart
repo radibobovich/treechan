@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/config/themes.dart';
+import 'config/preferences.dart';
 import 'presentation/provider/page_provider.dart';
 import 'presentation/screens/page_navigator.dart';
 
@@ -46,46 +47,4 @@ class MyApp extends StatelessWidget {
       },
     );
   }
-}
-
-Future<void> initializePreferences() async {
-  bool hasInitialized = prefs.getBool('initialized') ?? false;
-
-  if (!hasInitialized) {
-    theme.add("Makaba Classic");
-    await prefs.setBool('initialized', true);
-  }
-
-  if (prefs.getStringList('themes') == null) {
-    await prefs.setStringList('themes', ['Makaba Night', 'Makaba Classic']);
-  }
-  if (prefs.getString('theme') == null) {
-    await prefs.setString('theme', 'Makaba Classic');
-  }
-  if (prefs.getBool('postsCollapsed') == null) {
-    await prefs.setBool('postsCollapsed', false);
-  }
-  if (prefs.getBool('2dscroll') == null) {
-    await prefs.setBool('2dscroll', false);
-  }
-  if (prefs.getString('androidDestinationType') == null) {
-    await prefs.setString('androidDestinationType', 'directoryDownloads');
-  }
-  if (prefs.getString('boardSortType') == null) {
-    await prefs.setString('boardSortType', 'bump');
-  }
-  if (prefs.getBool('spoilers') == null) {
-    await prefs.setBool('spoilers', true);
-  }
-  return;
-}
-
-ThemeData getTheme(String theme) {
-  switch (theme) {
-    case 'Makaba Night':
-      return AppTheme.makabaNight;
-    case 'Makaba Classic':
-      return AppTheme.makabaClassic;
-  }
-  return AppTheme.makabaClassic;
 }
