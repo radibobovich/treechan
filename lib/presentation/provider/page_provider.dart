@@ -210,9 +210,10 @@ class PageProvider with ChangeNotifier {
             threadBloc: _tabs.entries
                 .firstWhere((entry) =>
                     entry.value is ThreadBloc &&
-                    entry.key == (tab as BranchTab).prevTab)
+                    entry.key == getParentThreadTab(tab))
                 .value,
             postId: (tab as BranchTab).id,
+            currentTab: tab,
             prevTab: tab.prevTab as IdMixin,
             key: ValueKey(tab))
           ..add(LoadBranchEvent());
@@ -316,6 +317,14 @@ class PageProvider with ChangeNotifier {
     }
   }
 
+  ThreadTab getParentThreadTab(DrawerTab thisTab) {
+    IdMixin tab = thisTab as IdMixin;
+    while (tab is! ThreadTab) {
+      tab = tab.prevTab as IdMixin;
+    }
+    return tab;
+  }
+
   void refreshTab() {
     final currentBloc = _tabs[currentTab];
 
@@ -332,6 +341,15 @@ class PageProvider with ChangeNotifier {
 
   void openActions() {
     // coming soon
+  }
+
+  GlobalKey<ScaffoldMessengerState> messengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+  void showSnackBar(String message) {
+    messengerKey.currentState?.showSnackBar(SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 2),
+    ));
   }
 
   @override
