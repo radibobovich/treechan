@@ -7,11 +7,11 @@ class NoConnectionPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: const [
+      children: [
         Padding(
           padding: EdgeInsets.all(16.0),
           child: Icon(
