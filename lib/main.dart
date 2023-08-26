@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/config/themes.dart';
+import 'package:treechan/router.dart';
 import 'config/preferences.dart';
 import 'presentation/provider/page_provider.dart';
 import 'presentation/screens/page_navigator.dart';
@@ -36,12 +37,12 @@ class MyApp extends StatelessWidget {
       builder: (context, snapshot) {
         return ChangeNotifierProvider(
           create: (context) => PageProvider(),
-          // TODO: use Route Generator
           child: MaterialApp(
             title: 'Flutter Demo',
             theme: getTheme(snapshot.data!),
             home: const PageNavigator(),
             initialRoute: '/',
+            onGenerateRoute: (settings) => getRoute(settings),
           ),
         );
       },
