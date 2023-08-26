@@ -55,6 +55,7 @@ class SettingsButton extends StatelessWidget {
         title: const Text("Настройки"),
         textColor: Theme.of(context).textTheme.titleMedium!.color,
         iconColor: Theme.of(context).iconTheme.color,
+        visualDensity: const VisualDensity(vertical: -2),
         onTap: () {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const SettingsScreen()));
@@ -79,6 +80,7 @@ class HistoryButton extends StatelessWidget {
         title: const Text("История"),
         textColor: Theme.of(context).textTheme.titleMedium!.color,
         iconColor: Theme.of(context).iconTheme.color,
+        visualDensity: const VisualDensity(vertical: -4),
         onTap: () {
           Navigator.push(
               context,
@@ -141,27 +143,28 @@ class TabTile extends StatelessWidget {
       selected: context.watch<PageProvider>().currentIndex == index,
       textColor: Theme.of(context).textTheme.titleMedium!.color,
       selectedColor: Theme.of(context).secondaryHeaderColor,
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              (item is BoardTab ? "/${(item as BoardTab).tag}/ - " : "") +
-                  (item.name ?? (item is BoardTab ? "Доска" : "Тред")),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          item is! BoardListTab
-              ? IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    context.read<PageProvider>().removeTab(item);
-                  },
-                  color: Theme.of(context).textTheme.titleMedium!.color,
-                )
-              : const SizedBox.shrink()
-        ],
+      visualDensity: const VisualDensity(vertical: -2),
+      contentPadding: const EdgeInsets.fromLTRB(16, 0, 4, 0),
+      title: Text(
+        (item is BoardTab
+                ? "/${(item as BoardTab).tag}/ - "
+                : (item is TagMixin ? "/${(item as TagMixin).tag}/ - " : "")) +
+            (item.name ?? (item is BoardTab ? "Доска" : "Тред")),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: item is IdMixin
+            ? null
+            : const TextStyle(fontWeight: FontWeight.w900),
       ),
+      trailing: item is! BoardListTab
+          ? IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                context.read<PageProvider>().removeTab(item);
+              },
+              color: Theme.of(context).textTheme.titleMedium!.color,
+            )
+          : const SizedBox.shrink(),
       onTap: () {
         context.read<PageProvider>().animateTo(index);
         scaffoldKey.currentState!.closeDrawer();
