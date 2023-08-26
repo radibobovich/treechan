@@ -24,7 +24,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   final List<TreeNode<Post>> dialogStack = [];
   double? endDrawerScrollPosition;
   late final ScrollService scrollService;
-  late Root? threadInfo;
+  late Root threadInfo;
   ThreadBloc(
       {required this.threadRepository,
       required this.key,
@@ -62,30 +62,34 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           //No need to preserve scroll position if the thread hasn't been loaded
           // correctly. This check is created in case user presses refresh after
           // failed thread loading.
-          int oldPostCount = threadRepository.posts.length;
+          final int oldPostCount = threadRepository.posts.length;
 
           if (oldPostCount > 0 && scrollController.offset != 0) {
             scrollService.saveCurrentScrollInfo();
           }
-          int lastIndex = threadRepository.posts.length - 1;
+          final int lastIndex = threadRepository.posts.length - 1;
           await threadRepository.refresh();
           add(LoadThreadEvent());
           provider.refreshRelatedBranches(tab, lastIndex);
-          int newPostCount = threadRepository.posts.length;
-
+          final int newPostCount = threadRepository.posts.length;
+          final int postsAdded = newPostCount - oldPostCount;
           await Future.delayed(const Duration(milliseconds: 10));
           if (oldPostCount > 0 &&
-              newPostCount > oldPostCount &&
+              postsAdded > 0 &&
               scrollController.offset != 0) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               scrollService.updateScrollPosition();
             });
           }
-        } on ThreadNotFoundException catch (e) {
-          emit(ThreadErrorState(message: "404 - Тред умер", exception: e));
+
+          provider.showSnackBar(postsAdded > 0
+              ? 'Новых постов: $postsAdded'
+              : 'Нет новых постов');
+        } on ThreadNotFoundException {
+          // emit(ThreadErrorState(message: "404 - Тред умер", exception: e));
+          provider.showSnackBar('Тред умер');
         } on NoConnectionException {
           // do nothing
-          // TODO: show error snackbar
         } on Exception catch (e) {
           emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
         }
@@ -112,20 +116,20 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
   }
 
   void shrinkBranch(TreeNode<Post> node) async {
-    node.parent!.expanded = !node.parent!.expanded;
+    node.parent!.expanded = false;
 
     /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
     if (dialogStack.isEmpty) {
       scrollService.scrollToNodeInDirection(
-          node.parent!.getGlobalKey(threadInfo!.opPostId!),
+          node.parent!.getGlobalKey(threadInfo.opPostId!),
           direction: AxisDirection.up);
     }
   }
 
   void shrinkRootBranch(TreeNode<Post> node) {
     final rootNode = Tree.findRootNode(node);
-    rootNode.expanded = !rootNode.expanded;
-    final rootPostKey = rootNode.getGlobalKey(threadInfo!.opPostId!);
+    rootNode.expanded = false;
+    final rootPostKey = rootNode.getGlobalKey(threadInfo.opPostId!);
 
     /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
     if (dialogStack.isEmpty) {
