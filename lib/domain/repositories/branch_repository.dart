@@ -34,8 +34,9 @@ class BranchRepository {
     List<Post> posts = threadRepository.posts;
     Post post = posts.firstWhere((element) => element.id == postId);
     _root = TreeNode(data: post);
-    _root!.addNodes(await compute(
-        _attachChildren, {post, posts.sublist(posts.indexOf(post)), prefs, 1}));
+    final int postIndex = posts.indexOf(post);
+    _root!.addNodes(await compute(_attachChildren,
+        {post, postIndex, posts.sublist(postIndex), prefs, 1}));
   }
 
   /// Gets new added posts from [threadRepository], build its trees and attaches
@@ -99,15 +100,16 @@ class BranchRepository {
 /// provided using Set, allowing compute() to be called directly.
 Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
   Post post = data.elementAt(0);
-  List<Post> posts = data.elementAt(1);
-  SharedPreferences prefs = data.elementAt(2);
-  int depth = data.elementAt(3);
+  int postIndex = data.elementAt(1);
+  List<Post> posts = data.elementAt(2);
+  SharedPreferences prefs = data.elementAt(3);
+  int depth = data.elementAt(4);
 
   var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
   List<int> children = post.children;
   for (var index in children) {
-    final child = posts[index];
+    final child = posts[index - postIndex];
     // add replies to them too
     childrenToAdd.add(TreeNode(
 
@@ -116,7 +118,8 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
         /// attached in multiple places in the tree.
         key: UniqueKey().toString(),
         data: child,
-        children: await _attachChildren({child, posts, prefs, depth + 1}),
+        children:
+            await _attachChildren({child, postIndex, posts, prefs, depth + 1}),
         expanded: !prefs.getBool("postsCollapsed")!));
   }
   return childrenToAdd;
