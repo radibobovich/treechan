@@ -36,7 +36,6 @@ class SearchService {
       }
     }
 
-    // TODO: add arch support
     if (parsedUrl.pathSegments.isNotEmpty) {
       newTab = BoardTab(
           tag: parsedUrl.pathSegments[0], prevTab: currentTab ?? boardListTab);

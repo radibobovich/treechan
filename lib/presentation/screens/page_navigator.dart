@@ -55,6 +55,7 @@ class PageNavigatorState extends State<PageNavigator>
         }
       },
       child: ScaffoldMessenger(
+        key: provider.messengerKey,
         child: Scaffold(
           key: _scaffoldKey,
           body: provider.currentPage,

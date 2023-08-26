@@ -25,10 +25,8 @@ class _PopupMenuThreadState extends State<PopupMenuThread> {
               onTap: () {
                 final threadInfo =
                     BlocProvider.of<ThreadBloc>(context).threadInfo;
-                if (threadInfo != null) {
-                  Share.share(
-                      'https://2ch.hk/${threadInfo.board!.id}/res/${threadInfo.opPostId}.html');
-                }
+                Share.share(
+                    'https://2ch.hk/${threadInfo.board!.id}/res/${threadInfo.opPostId}.html');
               },
             ),
             PopupMenuItem(
@@ -43,7 +41,7 @@ class _PopupMenuThreadState extends State<PopupMenuThread> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => HiddenPostsScreen(
-                              tag: threadInfo!.board!.id!,
+                              tag: threadInfo.board!.id!,
                               threadId: threadInfo.opPostId!),
                         )));
               },
