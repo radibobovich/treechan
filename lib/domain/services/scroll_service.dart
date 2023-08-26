@@ -207,7 +207,7 @@ class ScrollService {
   void scrollToNodeByPost(Post post, int tabId,
       {List<TreeNode<Post>>? roots,
       Map<int, List<TreeNode<Post>>>? plainNodes}) async {
-    assert(roots != null || plainNodes != null);
+    assert(roots != null || plainNodes != null, 'roots or plainNodes is null');
     final TreeNode<Post> node;
     if (roots == null) {
       node = plainNodes![post.id]!.first;

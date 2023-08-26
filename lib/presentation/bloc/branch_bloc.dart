@@ -27,6 +27,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
   List<TreeNode<Post>> get dialogStack =>
       threadBloc.isClosed ? _localDialogStack : threadBloc.dialogStack;
   final List<TreeNode<Post>> _localDialogStack = [];
+
+  Root get threadInfo => threadRepository.threadInfo;
   final ScrollController scrollController = ScrollController();
   late final ScrollService scrollService;
   Key key;
@@ -119,7 +121,10 @@ class RefreshBranchEvent extends BranchEvent {
   RefreshSource source;
   int? lastIndex;
   RefreshBranchEvent(this.source, {this.lastIndex}) {
-    if (source == RefreshSource.thread) assert(lastIndex != null);
+    if (source == RefreshSource.thread) {
+      assert(lastIndex != null,
+          'lastIndex must be provided for RefreshSource.thread');
+    }
   }
 }
 

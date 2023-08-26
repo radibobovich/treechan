@@ -262,7 +262,7 @@ class PostPreviewDialog extends StatelessWidget {
       this.node,
       this.id,
       this.nodeFinder})
-      : assert(node != null || id != null);
+      : assert(node != null || id != null, 'node or id must be not null');
   final TreeNode<Post>? node;
   final List<TreeNode<Post>> roots;
   final int? id;
