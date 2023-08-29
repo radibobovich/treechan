@@ -46,7 +46,7 @@ class PageNavigatorState extends State<PageNavigator>
     /// Overrides Android back button to go back to the previous tab.
     return WillPopScope(
       onWillPop: () async {
-        int currentIndex = provider.currentIndex;
+        int currentIndex = provider.tabManager.currentIndex;
         if (currentIndex > 0) {
           provider.goBack();
           return Future.value(false);
@@ -124,18 +124,20 @@ class _BrowserScreenState extends State<BrowserScreen>
     super.build(context);
     return TabBarView(
       physics: const NeverScrollableScrollPhysics(),
-      controller:
-          Provider.of<PageProvider>(context, listen: true).tabController,
-      children: widget.provider.tabs.keys.map((tab) {
+      controller: Provider.of<PageProvider>(context, listen: true)
+          .tabManager
+          .tabController,
+      children: widget.provider.tabManager.tabs.keys.map((tab) {
         switch (tab.runtimeType) {
           case BoardListTab:
-            return widget.provider.getBoardListScreen(tab as BoardListTab);
+            return widget.provider.tabManager
+                .getBoardListScreen(tab as BoardListTab);
           case BoardTab:
-            return widget.provider.getBoardScreen(tab as BoardTab);
+            return widget.provider.tabManager.getBoardScreen(tab as BoardTab);
           case ThreadTab:
-            return widget.provider.getThreadScreen(tab as ThreadTab);
+            return widget.provider.tabManager.getThreadScreen(tab as ThreadTab);
           case BranchTab:
-            return widget.provider.getBranchScreen(tab as BranchTab);
+            return widget.provider.tabManager.getBranchScreen(tab as BranchTab);
           default:
             throw Exception('Failed to get BlocProvider: no such tab type');
         }

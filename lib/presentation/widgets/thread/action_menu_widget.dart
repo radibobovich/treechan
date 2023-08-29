@@ -176,7 +176,7 @@ class ActionMenu extends StatelessWidget {
           /// We can't use [getBloc] since we don't have context containing
           /// [ThreadBloc], so use provider instead.
           /// Also override id for scroll function
-          bloc = provider.tabs[tab];
+          bloc = provider.tabManager.tabs[tab];
           tabId = tab.id;
 
           /// wait for tab change
@@ -264,14 +264,6 @@ class ActionMenu extends StatelessWidget {
     Navigator.pop(context);
   }
 }
-
-// dynamic getBloc(BuildContext context, DrawerTab currentTab) {
-//   if (currentTab is ThreadTab) {
-//     return BlocProvider.of<ThreadBloc>(context);
-//   } else if (currentTab is BranchTab) {
-//     return BlocProvider.of<BranchBloc>(context);
-//   }
-// }
 
 String getParents(TreeNode<Post> node) {
   List<int> parents = node.data.parents;

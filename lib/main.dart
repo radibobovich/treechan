@@ -9,6 +9,7 @@ import 'package:treechan/config/themes.dart';
 import 'package:treechan/router.dart';
 import 'config/preferences.dart';
 import 'presentation/provider/page_provider.dart';
+import 'presentation/provider/tab_manager.dart';
 import 'presentation/screens/page_navigator.dart';
 
 bool flagDebugThread = false;
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
       stream: theme.stream,
       builder: (context, snapshot) {
         return ChangeNotifierProvider(
-          create: (context) => PageProvider(),
+          create: (context) => PageProvider(tabManager: TabManager()),
           child: MaterialApp(
             title: 'Flutter Demo',
             theme: getTheme(snapshot.data!),
