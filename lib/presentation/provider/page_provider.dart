@@ -2,8 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/data/tracker_database.dart';
 import 'package:treechan/domain/models/catalog.dart';
+import 'package:treechan/domain/repositories/tracker_repository.dart';
+import 'package:treechan/presentation/bloc/tracker_cubit.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
+import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
+import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 
 import '../../data/history_database.dart';
 import '../../domain/models/tab.dart';
@@ -19,15 +24,18 @@ import '../screens/board_list_screen.dart';
 import '../screens/board_screen.dart';
 import '../screens/branch_screen.dart';
 import '../screens/thread_screen.dart';
+import '../screens/tracker_screen.dart';
 
 /// Manages everything related to tabs and pages.
 class PageProvider with ChangeNotifier {
   /// The stream is listened by new [BoardBloc] to check if you need to switch
   /// the board screen to a catalog mode.
-  // TODO: replace with threadBloc listener (maybe)
   final StreamController<Catalog> _catalog =
       StreamController<Catalog>.broadcast();
   Stream<Catalog> get catalogStream => _catalog.stream;
+
+  late final TrackerRepository trackerRepository =
+      TrackerRepository(initProvider: this);
 
   late final List<Widget> _pages = [
     const Placeholder(),
@@ -55,9 +63,16 @@ class PageProvider with ChangeNotifier {
     tabController = TabController(length: 0, vsync: state);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        currentPageIndex = 2;
+        _currentPageIndex = 2;
       },
     );
+    initCubit();
+  }
+
+  void initCubit() {
+    final TrackerCubit cubit =
+        TrackerCubit(trackerRepository: trackerRepository)..loadTracker();
+    _pages[1] = BlocProvider.value(value: cubit, child: const TrackerScreen());
   }
 
   void _refreshController() {
@@ -210,12 +225,12 @@ class PageProvider with ChangeNotifier {
             threadBloc: _tabs.entries
                 .firstWhere((entry) =>
                     entry.value is ThreadBloc &&
-                    entry.key == getParentThreadTab(tab))
+                    entry.key == (tab as BranchTab).getParentThreadTab())
                 .value,
-            postId: (tab as BranchTab).id,
-            currentTab: tab,
-            prevTab: tab.prevTab as IdMixin,
-            key: ValueKey(tab))
+            currentTab: tab as BranchTab,
+            // prevTab: tab.prevTab as IdMixin,
+            key: ValueKey(tab),
+            provider: this)
           ..add(LoadBranchEvent());
     }
   }
@@ -273,12 +288,14 @@ class PageProvider with ChangeNotifier {
     );
   }
 
-  set currentPageIndex(int index) {
+  void setCurrentPageIndex(int index, {BuildContext? context}) {
     if (index == 3) {
       refreshTab();
       return;
     } else if (index == 4) {
-      openActions();
+      assert(context != null, 'context is null');
+      if (context == null) return;
+      openActions(context);
       return;
     }
 
@@ -317,30 +334,85 @@ class PageProvider with ChangeNotifier {
     }
   }
 
-  ThreadTab getParentThreadTab(DrawerTab thisTab) {
-    IdMixin tab = thisTab as IdMixin;
-    while (tab is! ThreadTab) {
-      tab = tab.prevTab as IdMixin;
+  IdMixin findTab({required String tag, int? threadId, int? branchId}) {
+    assert(threadId != null || branchId != null,
+        'you must specify threadId or branchId');
+    if (threadId != null) {
+      return _tabs.keys.firstWhere(
+          (tab) => tab is ThreadTab && tab.tag == tag && tab.id == threadId,
+          orElse: () => ThreadTab(
+              name: null,
+              tag: 'error',
+              prevTab: boardListTab,
+              id: -1)) as IdMixin;
+    } else {
+      return _tabs.keys.firstWhere(
+          (tab) => tab is BranchTab && tab.tag == tag && tab.id == branchId,
+          orElse: () => BranchTab(
+              name: null,
+              tag: 'error',
+              prevTab: boardListTab,
+              id: -1)) as IdMixin;
     }
-    return tab;
   }
 
-  void refreshTab() {
-    final currentBloc = _tabs[currentTab];
+  void refreshTab({DrawerTab? tab, RefreshSource? source}) {
+    final currentBloc = _tabs[tab ?? currentTab];
 
     if (currentBloc is board_list.BoardListBloc) {
       currentBloc.add(board_list.RefreshBoardListEvent());
     } else if (currentBloc is BoardBloc) {
-      currentBloc.add(ChangeViewBoardEvent(null, query: ''));
+      currentBloc.add(RefreshBoardEvent());
     } else if (currentBloc is ThreadBloc) {
-      currentBloc.add(RefreshThreadEvent());
+      currentBloc
+          .add(RefreshThreadEvent(source: source ?? RefreshSource.thread));
     } else if (currentBloc is BranchBloc) {
-      currentBloc.add(RefreshBranchEvent(RefreshSource.branch));
+      currentBloc.add(RefreshBranchEvent(source ?? RefreshSource.branch));
     }
   }
 
-  void openActions() {
-    // coming soon
+  void openActions(BuildContext context) {
+    if (currentTab is BoardTab) {
+      openBoardActions(tabs[currentTab] as BoardBloc, context);
+    } else if (currentTab is ThreadTab) {
+      openThreadActions(tabs[currentTab] as ThreadBloc, context);
+    }
+  }
+
+  void openBoardActions(BoardBloc bloc, BuildContext context) {
+    showPopupMenuBoard(context, bloc, currentTab as BoardTab);
+  }
+
+  void openThreadActions(ThreadBloc bloc, BuildContext context) {
+    showPopupMenuThread(context, bloc, this);
+  }
+
+  /// Adds thread or branch for tracking updates.
+  void subscribe() {
+    // final TrackerDatbase db = TrackerDatbase();
+    final bloc = tabs[currentTab];
+    if (currentTab is ThreadTab) {
+      final tab = currentTab as ThreadTab;
+      trackerRepository.addThread(
+          tab: tab, posts: (bloc as ThreadBloc).threadInfo.postsCount!);
+    } else if (currentTab is BranchTab) {
+      final tab = currentTab as BranchTab;
+      trackerRepository.addBranch(
+          tab: tab,
+          posts: (bloc as BranchBloc).branchRepository.postsCount,
+          threadId: tab.getParentThreadTab().id);
+    }
+  }
+
+  void unsubscribe() {
+    final TrackerDatabase db = TrackerDatabase();
+    if (currentTab is ThreadTab) {
+      final tab = currentTab as ThreadTab;
+      db.removeThread(tab.tag, tab.id);
+    } else if (currentTab is BranchTab) {
+      final tab = currentTab as BranchTab;
+      db.removeBranch(tab.tag, tab.id, tab.getParentThreadTab().id);
+    }
   }
 
   GlobalKey<ScaffoldMessengerState> messengerKey =
