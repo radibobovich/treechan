@@ -206,7 +206,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "61d50d933943e8e50ccada28d96752eb3bbf1342"
+      resolved-ref: "30426364715e43224d8704453654f6ec9174fe66"
       url: "https://github.com/radibobovich/flexible_tree_view.git"
     source: git
     version: "0.0.6"
