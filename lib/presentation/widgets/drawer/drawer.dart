@@ -89,7 +89,8 @@ class TabsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<DrawerTab> tabs = context.watch<PageProvider>().tabs.keys.toList();
+    List<DrawerTab> tabs =
+        context.watch<PageProvider>().tabManager.tabs.keys.toList();
     return Expanded(
       child: MediaQuery.removePadding(
         context: context,
@@ -124,7 +125,7 @@ class TabTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      selected: context.watch<PageProvider>().currentIndex == index,
+      selected: context.watch<PageProvider>().tabManager.currentIndex == index,
       textColor: Theme.of(context).textTheme.titleMedium!.color,
       selectedColor: Theme.of(context).secondaryHeaderColor,
       visualDensity: const VisualDensity(vertical: -2),
@@ -150,7 +151,7 @@ class TabTile extends StatelessWidget {
             )
           : const SizedBox.shrink(),
       onTap: () {
-        context.read<PageProvider>().animateTo(index);
+        context.read<PageProvider>().tabManager.animateTo(index);
         scaffoldKey.currentState!.closeDrawer();
       },
     );
