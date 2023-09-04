@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 import 'package:treechan/presentation/provider/bloc_handler.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 
@@ -7,6 +8,7 @@ import '../../data/history_database.dart';
 import '../../domain/models/catalog.dart';
 import '../../domain/models/tab.dart';
 
+import '../../domain/repositories/manager/branch_repository_manager.dart';
 import '../../utils/constants/enums.dart';
 import '../bloc/board_bloc.dart';
 import '../bloc/board_list_bloc.dart' as board_list;
@@ -50,6 +52,7 @@ class TabManager {
       blocHandler.getBranchScreen(tab);
 
   void animateTo(int index) {
+    if (provider.currentPageIndex != 2) provider.setCurrentPageIndex(2);
     _currentTabIndex = index;
     tabController.animateTo(index);
     notifyListeners();
@@ -77,7 +80,15 @@ class TabManager {
   void removeTab(DrawerTab tab) async {
     int currentIndex = _currentTabIndex;
     int removingTabIndex = _tabs.keys.toList().indexOf(tab);
+    tabs[tab].close();
     tabs.remove(tab);
+
+    /// If tab is not tracked, remove it from repository manager
+    if (tab is IdMixin &&
+        !await provider.trackerRepository.isTracked(tab as IdMixin)) {
+      if (tab is ThreadTab) ThreadRepositoryManager().remove(tab.tag, tab.id);
+      if (tab is BranchTab) BranchRepositoryManager().remove(tab.tag, tab.id);
+    }
     _refreshController();
     if (currentIndex == removingTabIndex) {
       // if you close the current tab
@@ -118,6 +129,8 @@ class TabManager {
     final currentBloc = tabs[currentTab];
     if (currentBloc is BoardBloc && currentBloc.state is BoardSearchState) {
       currentBloc.add(LoadBoardEvent());
+      provider.currentPageIndex = 2;
+      notifyListeners();
       return;
     }
     int prevTabId =
@@ -156,6 +169,11 @@ class TabManager {
     }
   }
 
+  /// Returns [ThreadTab] or [BranchTab] with specified tag and id.
+  ///
+  /// Returns tab with id = -1 if tab was not found.
+  ///
+  /// Do not use this method to search for board tabs.
   IdMixin findTab({required String tag, int? threadId, int? branchId}) {
     assert(threadId != null || branchId != null,
         'you must specify threadId or branchId');
@@ -174,6 +192,7 @@ class TabManager {
               name: null,
               tag: 'error',
               prevTab: boardListTab,
+              threadId: -1,
               id: -1)) as IdMixin;
     }
   }
@@ -194,10 +213,10 @@ class TabManager {
   }
 
   /// Called when a thread has been refreshed.
-  void refreshRelatedBranches(DrawerTab threadTab, int lastIndex) {
+  void refreshRelatedBranches(ThreadTab threadTab, int lastIndex) {
     for (var bloc in _tabs.values) {
-      if (bloc.runtimeType == BranchBloc && bloc.prevTab == threadTab) {
-        (bloc as BranchBloc).add(
+      if (bloc is BranchBloc && (bloc.tab as BranchTab).id == threadTab.id) {
+        bloc.add(
             RefreshBranchEvent(RefreshSource.thread, lastIndex: lastIndex));
       }
     }
