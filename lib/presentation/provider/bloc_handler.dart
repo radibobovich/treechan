@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
+import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 
 import '../../domain/models/tab.dart';
 import '../../domain/repositories/board_list_repository.dart';
 import '../../domain/repositories/board_repository.dart';
-import '../../domain/repositories/thread_repository.dart';
 
 import '../bloc/board_list_bloc.dart' as board_list;
 import '../bloc/board_bloc.dart';
@@ -25,7 +26,8 @@ class BlocHandler {
   static late final Map<DrawerTab, dynamic> _tabs;
   static late final PageProvider _provider;
 
-  /// Adds a new screen to the _blocs list.
+  /// Adds new bloc and puts it into _tabs list.
+  ///
   /// Called when a new tab is opened.
   dynamic createBloc(DrawerTab tab) {
     switch (tab.runtimeType) {
@@ -50,20 +52,33 @@ class BlocHandler {
       case ThreadTab:
         return ThreadBloc(
             key: ValueKey(tab),
-            threadRepository: ThreadRepository(
-                boardTag: (tab as ThreadTab).tag, threadId: tab.id),
+            // threadRepository: ThreadRepository(
+            //     boardTag: (tab as ThreadTab).tag, threadId: tab.id),
+            threadRepository:
+                ThreadRepositoryManager().get((tab as ThreadTab).tag, tab.id),
             tab: tab,
             provider: _provider)
           ..add(LoadThreadEvent());
       case BranchTab:
+        final threadRepository =
+            ThreadRepositoryManager().get((tab as BranchTab).tag, tab.threadId);
+        final branchRepository =
+            BranchRepositoryManager().get(tab.tag, tab.id) ??
+                BranchRepositoryManager().create(threadRepository, tab.id);
+        final ThreadBloc? threadBloc = _tabs.entries.firstWhere(
+          (entry) =>
+              entry.value is ThreadBloc &&
+              entry.key == tab.getParentThreadTab(),
+          orElse: () {
+            return MapEntry(boardListTab, null);
+          },
+        ).value;
         return BranchBloc(
             // find a thread related to the branch
-            threadBloc: _tabs.entries
-                .firstWhere((entry) =>
-                    entry.value is ThreadBloc &&
-                    entry.key == (tab as BranchTab).getParentThreadTab())
-                .value,
-            currentTab: tab as BranchTab,
+            threadBloc: threadBloc,
+            threadRepository: threadRepository,
+            branchRepository: branchRepository,
+            tab: tab,
             // prevTab: tab.prevTab as IdMixin,
             key: ValueKey(tab),
             provider: _provider)
