@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share/share.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
-import 'package:treechan/presentation/screens/hidden_posts_screen.dart';
+import 'package:treechan/presentation/provider/page_provider.dart';
 
+import '../../../domain/models/tab.dart';
+import '../../bloc/thread_base.dart';
+
+/// Called from AppBar button.
 class PopupMenuThread extends StatefulWidget {
   const PopupMenuThread({super.key});
 
@@ -19,34 +23,83 @@ class _PopupMenuThreadState extends State<PopupMenuThread> {
         padding: EdgeInsets.zero,
         itemBuilder: (BuildContext context) {
           return <PopupMenuEntry>[
-            PopupMenuItem(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: const Text('Поделиться'),
-              onTap: () {
-                final threadInfo =
-                    BlocProvider.of<ThreadBloc>(context).threadInfo;
-                Share.share(
-                    'https://2ch.hk/${threadInfo.board!.id}/res/${threadInfo.opPostId}.html');
-              },
-            ),
-            PopupMenuItem(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: const Text('Скрытые посты'),
-              onTap: () {
-                final threadInfo =
-                    BlocProvider.of<ThreadBloc>(context).threadInfo;
-                Future.delayed(
-                    const Duration(milliseconds: 50),
-                    () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HiddenPostsScreen(
-                              tag: threadInfo.board!.id!,
-                              threadId: threadInfo.opPostId!),
-                        )));
-              },
-            )
+            _getShareMenuButton(BlocProvider.of<ThreadBloc>(context)),
+            _getHiddenPostsMenuItem(
+                context, BlocProvider.of<ThreadBloc>(context))
           ];
         });
   }
+}
+
+/// Called from BottomNavigationBar button.
+void showPopupMenuThread(
+    BuildContext context, ThreadBase bloc, PageProvider provider) async {
+  final RelativeRect rect = RelativeRect.fromLTRB(
+      MediaQuery.of(context).size.width - 136, // width of popup menu
+      MediaQuery.of(context).size.height - 3 * 48 - 60,
+      // 48 is the height of one tile, 60 is approx. height of bottom bars
+      0,
+      0);
+  showMenu(
+    context: context,
+    position: rect,
+    items: [
+      _getShareMenuButton(bloc),
+      // ignore: use_build_context_synchronously
+      _getHiddenPostsMenuItem(context, bloc),
+      await _getTrackMenuButton(provider),
+    ],
+    elevation: 8.0,
+  );
+}
+
+Future<PopupMenuItem<dynamic>> _getTrackMenuButton(
+    PageProvider provider) async {
+  final bool isTracked = await provider.trackerRepository
+      .isTracked(provider.tabManager.currentTab as IdMixin);
+
+  if (isTracked) {
+    return PopupMenuItem(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: const Text('Не отслеживать'),
+        onTap: () {
+          provider.unsubscribe();
+        });
+  } else {
+    return PopupMenuItem(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: const Text('Отслеживать'),
+        onTap: () {
+          provider.subscribe();
+        });
+  }
+}
+
+PopupMenuItem<dynamic> _getShareMenuButton(ThreadBase bloc) {
+  return PopupMenuItem(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: const Text('Поделиться'),
+    onTap: () {
+      final threadInfo = bloc.threadInfo;
+      Share.share(
+          'https://2ch.hk/${threadInfo.board!.id}/res/${threadInfo.opPostId}.html');
+    },
+  );
+}
+
+PopupMenuItem<dynamic> _getHiddenPostsMenuItem(
+    BuildContext context, ThreadBase bloc) {
+  return PopupMenuItem(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: const Text('Скрытые посты'),
+    onTap: () {
+      final threadInfo = bloc.threadInfo;
+      Future.delayed(
+          const Duration(milliseconds: 50),
+          () => Navigator.pushNamed(context, '/hidden_posts', arguments: {
+                'tag': threadInfo.board!.id!,
+                'threadId': threadInfo.opPostId!
+              }));
+    },
+  );
 }
