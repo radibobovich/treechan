@@ -1,37 +1,40 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:treechan/domain/models/tab.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
+import 'package:treechan/presentation/bloc/thread_base.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tree.dart';
-import '../../domain/repositories/thread_repository.dart';
 import '../../domain/models/json/json.dart';
-import '../provider/page_provider.dart';
 
-class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
-  late final ThreadRepository threadRepository;
-  Key key;
-  final ThreadTab tab;
-  final PageProvider provider;
-  final ScrollController scrollController = ScrollController();
+class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
+  // final ThreadRepository threadRepository;
+  // Key key;
+  // final ThreadTab tab;
+  // final PageProvider provider;
   final ScrollController endDrawerScrollController = ScrollController();
 
-  /// Every time new post preview dialog opens the node from which it
-  /// has been opened adds here.
-  /// Used to check if some post is actually in the current visible tree.
-  final List<TreeNode<Post>> dialogStack = [];
+  // final List<TreeNode<Post>> dialogStack = [];
   double? endDrawerScrollPosition;
-  late final ScrollService scrollService;
+  // late final ScrollService scrollService;
+
+  @override
   late Root threadInfo;
-  ThreadBloc(
-      {required this.threadRepository,
-      required this.key,
-      required this.tab,
-      required this.provider})
-      : super(ThreadInitialState()) {
+  ThreadBloc({
+    required threadRepository,
+    required tab,
+    required provider,
+    required key,
+  }) : super(ThreadInitialState()) {
+    this.threadRepository = threadRepository;
+    this.tab = tab;
+    this.provider = provider;
+    this.key = key;
+    scrollController = ScrollController();
     scrollService = ScrollService(scrollController);
+
     on<LoadThreadEvent>(
       (event, emit) async {
         try {
@@ -48,7 +51,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
               message: "Проверьте подключение к Интернету.", exception: e));
         } on TreeBuilderTimeoutException catch (e) {
           emit(ThreadErrorState(
-              message: "Построение дерева заняло слишком много времени. "
+              message: "Построение дерева заняло слишком много времени."
                   "Попробуйте открыть тред в классическом режиме.",
               exception: e));
         } on Exception catch (e) {
@@ -62,32 +65,47 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           //No need to preserve scroll position if the thread hasn't been loaded
           // correctly. This check is created in case user presses refresh after
           // failed thread loading.
-          final int oldPostCount = threadRepository.posts.length;
+          // final int oldPostCount = threadRepository.posts.length;
 
-          if (oldPostCount > 0 && scrollController.offset != 0) {
+          if (event.source == RefreshSource.thread &&
+              scrollController.hasClients &&
+              scrollController.offset != 0) {
             scrollService.saveCurrentScrollInfo();
           }
+
           final int lastIndex = threadRepository.posts.length - 1;
           await threadRepository.refresh();
           add(LoadThreadEvent());
-          provider.refreshRelatedBranches(tab, lastIndex);
-          final int newPostCount = threadRepository.posts.length;
-          final int postsAdded = newPostCount - oldPostCount;
+
+          provider.tabManager.refreshRelatedBranches(tab, lastIndex);
           await Future.delayed(const Duration(milliseconds: 10));
-          if (oldPostCount > 0 &&
-              postsAdded > 0 &&
+          if (event.source == RefreshSource.thread &&
+              scrollController.hasClients &&
+              threadRepository.newPostsCount > 0 &&
               scrollController.offset != 0) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               scrollService.updateScrollPosition();
             });
           }
 
-          provider.showSnackBar(postsAdded > 0
-              ? 'Новых постов: $postsAdded'
-              : 'Нет новых постов');
+          if (event.source == RefreshSource.tracker) {
+            provider.trackerRepository.updateThreadByTab(
+              tab: tab,
+              posts: threadRepository.postsCount,
+              newPosts: threadRepository.newPostsCount,
+              newReplies: threadRepository.newReplies,
+            );
+          }
+          if (event.source != RefreshSource.tracker) {
+            provider.showSnackBar(threadRepository.newPostsCount > 0
+                ? 'Новых постов: ${threadRepository.newPostsCount}'
+                : 'Нет новых постов');
+          }
         } on ThreadNotFoundException {
-          // emit(ThreadErrorState(message: "404 - Тред умер", exception: e));
-          provider.showSnackBar('Тред умер');
+          if (event.source != RefreshSource.tracker) {
+            provider.showSnackBar('Тред умер');
+          }
+          provider.trackerRepository.markAsDead(tab);
         } on NoConnectionException {
           // do nothing
         } on Exception catch (e) {
@@ -137,6 +155,13 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> {
           direction: AxisDirection.up);
     }
   }
+
+  @override
+  Future<void> close() {
+    scrollController.dispose();
+    endDrawerScrollController.dispose();
+    return super.close();
+  }
 }
 
 abstract class ThreadEvent {}
@@ -146,7 +171,10 @@ class LoadThreadEvent extends ThreadEvent {
   LoadThreadEvent();
 }
 
-class RefreshThreadEvent extends ThreadEvent {}
+class RefreshThreadEvent extends ThreadEvent {
+  final RefreshSource source;
+  RefreshThreadEvent({this.source = RefreshSource.thread});
+}
 
 abstract class ThreadState {}
 
