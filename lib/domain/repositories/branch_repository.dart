@@ -7,11 +7,13 @@ import '../../main.dart';
 import '../../utils/constants/enums.dart';
 import '../models/json/json.dart';
 import '../models/tree.dart';
+import 'repository.dart';
 
-class BranchRepository {
+class BranchRepository implements Repository {
   BranchRepository({required this.threadRepository, required this.postId});
   final ThreadRepository threadRepository;
   final int postId;
+  String get boardTag => threadRepository.boardTag;
 
   /// Root node of the branch.
   TreeNode<Post>? _root;
@@ -26,17 +28,31 @@ class BranchRepository {
     return _root!;
   }
 
-  // Map<int, List<TreeNode<Post>>> get plainNodes => threadRepository.plainNodes;
+  final List<Post> _posts = [];
+  List<Post> get posts => _posts;
+
+  int get postsCount => _posts.length;
+
+  int newPostsCount = 0;
+
+  int newReplies = 0;
   List<TreeNode<Post>> nodesAt(int id) => threadRepository.nodesAt(id);
 
   /// Gets posts from [threadRepository] and builds tree for a specific post.
+  @override
   Future<void> load() async {
     List<Post> posts = threadRepository.posts;
+    if (posts.isEmpty) {
+      await threadRepository.load();
+      posts = threadRepository.posts;
+    }
     Post post = posts.firstWhere((element) => element.id == postId);
     _root = TreeNode(data: post);
     final int postIndex = posts.indexOf(post);
-    _root!.addNodes(await compute(_attachChildren,
-        {post, postIndex, posts.sublist(postIndex), prefs, 1}));
+    _root!.addNodes(await compute(
+        _attachChildren, {post, postIndex, posts.sublist(postIndex), prefs}));
+
+    Tree.performForEveryNode(_root, (node) => _posts.add(node.data));
   }
 
   /// Gets new added posts from [threadRepository], build its trees and attaches
@@ -52,7 +68,7 @@ class BranchRepository {
     /// Call chain looks like this:
     /// [ThreadBloc.add(RefreshThreadEvent)] -> [TabProvider.refreshRelatedBranches] ->
     /// -> [BranchBloc.add(RefreshBranchEvent())] -> [BranchService.refresh()]
-    if (source == RefreshSource.branch) {
+    if (source == RefreshSource.branch || source == RefreshSource.tracker) {
       posts = threadRepository.posts;
       lastIndex = posts.length - 1;
 
@@ -64,6 +80,7 @@ class BranchRepository {
 
     /// Trim posts to a new ones.
     List<Post> newPosts = posts.getRange(lastIndex! + 1, posts.length).toList();
+    newPostsCount = newPosts.length;
 
     /// Buila a tree from new posts.
     Tree treeService =
@@ -103,7 +120,7 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
   int postIndex = data.elementAt(1);
   List<Post> posts = data.elementAt(2);
   SharedPreferences prefs = data.elementAt(3);
-  int depth = data.elementAt(4);
+  // int depth = data.elementAt(4);
 
   var childrenToAdd = <TreeNode<Post>>[];
   // find all posts that are replying to this one
@@ -118,8 +135,7 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
         /// attached in multiple places in the tree.
         key: UniqueKey().toString(),
         data: child,
-        children:
-            await _attachChildren({child, postIndex, posts, prefs, depth + 1}),
+        children: await _attachChildren({child, postIndex, posts, prefs}),
         expanded: !prefs.getBool("postsCollapsed")!));
   }
   return childrenToAdd;
