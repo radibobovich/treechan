@@ -58,3 +58,14 @@ class TreeBuilderTimeoutException implements Exception {
     return message;
   }
 }
+
+class DuplicateRepositoryException implements Exception {
+  final String tag;
+  final int id;
+  DuplicateRepositoryException({required this.tag, required this.id});
+
+  @override
+  String toString() {
+    return "Attempt to add duplicate repository with tag $tag and id $id.";
+  }
+}
