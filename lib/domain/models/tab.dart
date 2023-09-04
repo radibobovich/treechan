@@ -117,11 +117,13 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
 }
 
 class BranchTab extends DrawerTab with TagMixin, IdMixin<BranchTab> {
+  final int threadId;
   BranchTab({
     required super.name,
     required tag,
     required prevTab,
     required id,
+    required this.threadId,
   }) {
     this.tag = tag;
     this.prevTab = prevTab;
@@ -133,15 +135,16 @@ class BranchTab extends DrawerTab with TagMixin, IdMixin<BranchTab> {
     return BlocProvider.of<BranchBloc>(context);
   }
 
-  // @override
-  // bool operator ==(Object other) {
-  //   if (identical(this, other)) return true;
-
-  //   return other is BranchTab && tag == other.tag && id == other.id;
-  // }
-
-  // @override
-  // int get hashCode => tag.hashCode ^ id.hashCode;
+  ThreadTab? getParentThreadTab() {
+    IdMixin tab = this;
+    while (tab is! ThreadTab) {
+      if (tab.prevTab is! IdMixin) {
+        return null;
+      }
+      tab = tab.prevTab as IdMixin;
+    }
+    return tab;
+  }
 }
 
 class HistoryTab extends ThreadTab {
