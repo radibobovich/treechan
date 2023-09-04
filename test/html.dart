@@ -25,10 +25,10 @@ class App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Scaffold(
+      home: const Scaffold(
         body: SingleChildScrollView(
           child: Column(
-            children: const [
+            children: [
               HtmlTester(),
               Text('Конец'),
             ],
