@@ -1,7 +1,6 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
@@ -252,11 +251,19 @@ class ActionMenu extends StatelessWidget {
 
   openPostInNewTab(BuildContext context) {
     /// context may not have [TabProvider] in [EndDrawer]
-
+    final int threadId;
+    if (currentTab is ThreadTab) {
+      threadId = (currentTab as ThreadTab).id;
+    } else if (currentTab is BranchTab) {
+      threadId = (currentTab as BranchTab).id;
+    } else {
+      throw Exception('Unknown tab type');
+    }
     context.read<PageProvider>().addTab(
           BranchTab(
             tag: (currentTab as TagMixin).tag,
             id: node.data.id,
+            threadId: threadId,
             name: 'Ответ: "${removeHtmlTags(node.data.comment, links: false)}"',
             prevTab: currentTab,
           ),
