@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../main.dart';
 import '../../../domain/models/json/json.dart';
 import '../../bloc/branch_bloc.dart';
+import '../../bloc/thread_base.dart';
 import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
 import '../../../domain/models/tree.dart';
@@ -204,7 +205,7 @@ class HtmlContainer extends StatelessWidget {
   }
 
   Future<void> openPostPreview(BuildContext context, int id) async {
-    final bloc = currentTab.getBloc(context);
+    final ThreadBase bloc = currentTab.getBloc(context);
     showDialog(
         context: context,
         builder: (_) {
