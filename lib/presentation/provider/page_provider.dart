@@ -13,7 +13,7 @@ import '../../domain/models/tab.dart';
 import '../bloc/board_bloc.dart';
 import '../bloc/board_list_bloc.dart' as board_list;
 import '../bloc/branch_bloc.dart';
-import '../bloc/thread_bloc.dart';
+import '../bloc/thread_base.dart';
 import '../screens/tracker_screen.dart';
 import 'tab_manager.dart';
 
@@ -39,38 +39,71 @@ class PageProvider with ChangeNotifier {
   late final TrackerRepository trackerRepository =
       TrackerRepository(initTabManager: tabManager);
 
-  late final List<Widget> _pages = [
+  late final List<Widget> pages = [
     const Placeholder(),
     const Placeholder(),
     BrowserScreen(provider: this),
   ];
 
-  int _currentPageIndex = 2;
-  int get currentPageIndex => _currentPageIndex;
-  Widget get currentPage => getCurrentPage();
+  int currentPageIndex = 2;
+  // int get currentPageIndex => _currentPageIndex;
+  // Widget get currentPage => getCurrentPage();
 
+  late TabController pageController;
   void init(PageNavigatorState gotState) {
     tabManager.init(gotState, _notifyListeners, this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _currentPageIndex = 2;
-    });
+    pageController =
+        TabController(length: pages.length, vsync: gotState, initialIndex: 2);
     _initTrackerCubit();
   }
 
+  late final TrackerCubit trackerCubit;
   void _initTrackerCubit() {
-    final TrackerCubit cubit =
-        TrackerCubit(trackerRepository: trackerRepository)..loadTracker();
-    _pages[1] = BlocProvider.value(value: cubit, child: const TrackerScreen());
+    trackerCubit = TrackerCubit(trackerRepository: trackerRepository)
+      ..loadTracker();
+    pages[1] =
+        BlocProvider.value(value: trackerCubit, child: const TrackerScreen());
   }
 
   void _notifyListeners() {
     notifyListeners();
   }
 
-  void openSearch() {}
+  void openSearch() {
+    final currentBloc = tabManager.currentBloc;
 
+    if (currentBloc is board_list.BoardListBloc) {
+      currentBloc.add(board_list.SearchQueryChangedEvent(''));
+    } else if (currentBloc is BoardBloc) {
+      currentBloc.add(SearchQueryChangedEvent(''));
+    } else {
+      // search for thread and branch
+    }
+  }
+
+  /// 0 - search, 1 - tracker, 2 - browser, 3 - refresh, 4 - actions
   void setCurrentPageIndex(int index, {BuildContext? context}) {
-    if (index == 3) {
+    /// When open search from [BrowserScreen]
+    if (currentPageIndex == 2 && index == 0) {
+      currentPageIndex = index;
+      notifyListeners();
+      openSearch();
+      return;
+    }
+
+    /// When open search from [TrackerScreen]
+    if (currentPageIndex == 1 && index == 0) {
+      return;
+    }
+
+    /// When press refresh from [TrackerScreen]
+    if (currentPageIndex == 1 && index == 3) {
+      trackerCubit.refreshAll();
+      return;
+    }
+
+    /// When press refresh from [BrowserScreen]
+    if (currentPageIndex == 2 && index == 3) {
       tabManager.refreshTab();
       return;
     } else if (index == 4) {
@@ -81,7 +114,8 @@ class PageProvider with ChangeNotifier {
     }
 
     /// close search when leaving search page
-    if (_currentPageIndex == 0) {
+    if (currentPageIndex == 0) {
+      if (index == 0) return;
       final bloc = tabManager.currentBloc;
       if (bloc is board_list.BoardListBloc) {
         bloc.add(board_list.LoadBoardListEvent());
@@ -94,25 +128,9 @@ class PageProvider with ChangeNotifier {
 
     /// Refresh and action buttons have no indication
     if (index == 3 || index == 4) return;
-    _currentPageIndex = index;
+    currentPageIndex = index;
+    pageController.animateTo(index);
     notifyListeners();
-  }
-
-  Widget getCurrentPage() {
-    if (_currentPageIndex == 0) {
-      final currentBloc = tabManager.currentBloc;
-
-      if (currentBloc is board_list.BoardListBloc) {
-        currentBloc.add(board_list.SearchQueryChangedEvent(''));
-      } else if (currentBloc is BoardBloc) {
-        currentBloc.add(SearchQueryChangedEvent(''));
-      } else {
-        // search for thread and branch
-      }
-      return _pages[2];
-    } else {
-      return _pages[_currentPageIndex];
-    }
   }
 
   void openActions(BuildContext context) {
@@ -120,8 +138,8 @@ class PageProvider with ChangeNotifier {
     final currentBloc = tabManager.currentBloc;
     if (currentTab is BoardTab) {
       openBoardActions(currentBloc as BoardBloc, context);
-    } else if (currentTab is ThreadTab) {
-      openThreadActions(currentBloc as ThreadBloc, context);
+    } else if (currentTab is IdMixin) {
+      openThreadActions(currentBloc as ThreadBase, context);
     }
   }
 
@@ -129,33 +147,34 @@ class PageProvider with ChangeNotifier {
     showPopupMenuBoard(context, bloc, tabManager.currentTab as BoardTab);
   }
 
-  void openThreadActions(ThreadBloc bloc, BuildContext context) {
+  void openThreadActions(ThreadBase bloc, BuildContext context) {
     showPopupMenuThread(context, bloc, this);
   }
 
   /// Adds thread or branch for tracking updates.
-  void subscribe() {
+  void subscribe() async {
     final currentTab = tabManager.currentTab;
-    final bloc = tabManager.currentBloc;
+    final ThreadBase bloc = tabManager.currentBloc;
     if (currentTab is ThreadTab) {
       final tab = currentTab;
-      trackerRepository.addThread(
-          tab: tab, posts: (bloc as ThreadBloc).threadInfo.postsCount!);
+      await trackerRepository.addThreadByTab(
+          tab: tab, posts: bloc.threadRepository.postsCount);
     } else if (currentTab is BranchTab) {
       final tab = currentTab;
-      trackerRepository.addBranch(
+      await trackerRepository.addBranchByTab(
           tab: tab,
           posts: (bloc as BranchBloc).branchRepository.postsCount,
-          threadId: tab.getParentThreadTab().id);
+          threadId: tab.id);
     }
+    trackerCubit.loadTracker();
   }
 
   void unsubscribe() {
     final currentTab = tabManager.currentTab;
     if (currentTab is ThreadTab) {
-      trackerRepository.removeThread(currentTab);
+      trackerRepository.removeThreadByTab(currentTab);
     } else if (currentTab is BranchTab) {
-      trackerRepository.removeBranch(currentTab);
+      trackerRepository.removeBranchByTab(currentTab);
     }
   }
 
