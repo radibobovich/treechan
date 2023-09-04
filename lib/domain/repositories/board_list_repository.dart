@@ -4,8 +4,9 @@ import 'dart:convert';
 import '../../data/board_list_fetcher.dart';
 import '../models/category.dart';
 import '../models/json/json.dart';
+import 'repository.dart';
 
-class BoardListRepository {
+class BoardListRepository implements Repository {
   BoardListRepository({this.openAsCatalog});
 
   bool? openAsCatalog = false;
@@ -16,7 +17,7 @@ class BoardListRepository {
 
   Future<List<Category>> getCategories() async {
     if (_categories.isEmpty) {
-      await _load();
+      await load();
     }
     return _categories;
   }
@@ -34,7 +35,8 @@ class BoardListRepository {
     _favoriteBoards.clear();
   }
 
-  Future<void> _load() async {
+  @override
+  Future<void> load() async {
     String? downloadedBoards = await BoardListFetcher.getBoardListResponse();
     if (downloadedBoards == null) {
       return;

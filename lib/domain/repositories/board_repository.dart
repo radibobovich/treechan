@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/data/board_fetcher.dart';
+import 'package:treechan/domain/repositories/repository.dart';
 import 'package:treechan/utils/fix_blank_space.dart';
 
 import '../../utils/constants/enums.dart';
@@ -9,7 +10,7 @@ import 'dart:convert';
 
 import '../../utils/fix_html_video.dart';
 
-class BoardRepository {
+class BoardRepository implements Repository {
   BoardRepository({required this.boardTag, this.currentPage = 0});
 
   final String boardTag;
@@ -35,6 +36,7 @@ class BoardRepository {
     return false;
   }
 
+  @override
   Future<void> load() async {
     currentPage = 0;
     final BoardFetcher fetcher =
