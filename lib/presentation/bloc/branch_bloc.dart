@@ -2,46 +2,50 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
-import '../../domain/models/tab.dart';
 import '../../domain/models/tree.dart';
 import '../../domain/repositories/branch_repository.dart';
 import '../../domain/services/scroll_service.dart';
-import '../../domain/repositories/thread_repository.dart';
+import 'thread_base.dart';
 
-class BranchBloc extends Bloc<BranchEvent, BranchState> {
-  final ThreadBloc threadBloc;
-  final int postId;
-  final BranchTab currentTab;
-  final IdMixin prevTab;
+class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
+  final ThreadBloc? threadBloc;
+  // final BranchTab tab;
+  // final PageProvider provider;
 
   late TreeNode<Post> branch;
-  late ThreadRepository threadRepository;
-  late BranchRepository branchRepository;
+  // late ThreadRepository threadRepository;
+  BranchRepository branchRepository;
 
-  /// Every time new post preview dialog opens the node from which it
-  /// has been opened adds here.
-  /// Used to check if some post is actually in current visible tree.
+  @override
   List<TreeNode<Post>> get dialogStack =>
-      threadBloc.isClosed ? _localDialogStack : threadBloc.dialogStack;
+      threadBloc == null || threadBloc!.isClosed
+          ? _localDialogStack
+          : threadBloc!.dialogStack;
   final List<TreeNode<Post>> _localDialogStack = [];
 
+  @override
   Root get threadInfo => threadRepository.threadInfo;
-  final ScrollController scrollController = ScrollController();
-  late final ScrollService scrollService;
-  Key key;
-  BranchBloc(
-      {required this.threadBloc,
-      required this.postId,
-      required this.currentTab,
-      required this.prevTab,
-      required this.key})
-      : super(BranchInitialState()) {
-    threadRepository = threadBloc.threadRepository;
-    branchRepository =
-        BranchRepository(threadRepository: threadRepository, postId: postId);
+
+  // final ScrollController scrollController = ScrollController();
+  // late final ScrollService scrollService;
+  // Key key;
+  BranchBloc({
+    this.threadBloc,
+    required this.branchRepository,
+    required threadRepository,
+    required tab,
+    required provider,
+    required key,
+  }) : super(BranchInitialState()) {
+    this.threadRepository = threadRepository;
+    this.tab = tab;
+    this.provider = provider;
+    this.key = key;
+    scrollController = ScrollController();
     scrollService = ScrollService(
       scrollController,
     );
@@ -50,8 +54,7 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
         try {
           branch = await branchRepository.getBranch();
           emit(BranchLoadedState(
-              branch: branch,
-              threadInfo: threadBloc.threadRepository.threadInfo));
+              branch: branch, threadInfo: threadRepository.threadInfo));
         } on Exception catch (e) {
           emit(BranchErrorState(message: e.toString(), exception: e));
         }
@@ -59,31 +62,45 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
     );
     on<RefreshBranchEvent>(
       (event, emit) async {
-        int oldPostCount = 0;
-        if (event.source == RefreshSource.branch) {
-          oldPostCount = Tree.countNodes(branch);
-
-          if (oldPostCount > 0 && scrollController.offset != 0) {
-            scrollService.saveCurrentScrollInfo();
+        try {
+          if (event.source == RefreshSource.branch) {
+            if (scrollController.offset != 0) {
+              scrollService.saveCurrentScrollInfo();
+            }
           }
-        }
-        await branchRepository.refresh(event.source,
-            lastIndex: event.lastIndex);
-        add(LoadBranchEvent());
-        if (event.source == RefreshSource.branch) {
-          if (!threadBloc.isClosed) threadBloc.add(LoadThreadEvent());
+          await branchRepository.refresh(event.source,
+              lastIndex: event.lastIndex);
+          add(LoadBranchEvent());
+          if (event.source == RefreshSource.branch) {
+            if (threadBloc != null && !threadBloc!.isClosed) {
+              threadBloc!.add(LoadThreadEvent());
+            }
 
-          int newPostCount = Tree.countNodes(branch);
+            await Future.delayed(const Duration(milliseconds: 10));
 
-          await Future.delayed(const Duration(milliseconds: 10));
-
-          if (oldPostCount > 0 &&
-              newPostCount > oldPostCount &&
-              scrollController.offset != 0) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              scrollService.updateScrollPosition();
-            });
+            if (branchRepository.newPostsCount > 0 &&
+                scrollController.offset != 0) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                scrollService.updateScrollPosition();
+              });
+            }
           }
+          if (event.source == RefreshSource.tracker) {
+            provider.trackerRepository.updateBranchByTab(
+                tab: tab,
+                posts: branchRepository.postsCount,
+                newPosts: branchRepository.newPostsCount,
+                newReplies: branchRepository.newReplies);
+          }
+        } on ThreadNotFoundException {
+          if (event.source != RefreshSource.tracker) {
+            provider.showSnackBar('Тред умер');
+          }
+          provider.trackerRepository.markAsDead(tab);
+        } on NoConnectionException {
+          // do nothing
+        } on Exception catch (e) {
+          emit(BranchErrorState(message: "Неизвестная ошибка", exception: e));
         }
       },
     );
@@ -94,8 +111,7 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
 
     /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
     if (dialogStack.isEmpty) {
-      scrollService.scrollToNodeInDirection(
-          node.parent!.getGlobalKey(currentTab.id),
+      scrollService.scrollToNodeInDirection(node.parent!.getGlobalKey(tab.id),
           direction: AxisDirection.up);
     }
   }
@@ -103,7 +119,7 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> {
   void shrinkRootBranch(TreeNode<Post> node) {
     final rootNode = Tree.findRootNode(node);
     rootNode.expanded = false;
-    final rootPostKey = rootNode.getGlobalKey(currentTab.id);
+    final rootPostKey = rootNode.getGlobalKey(tab.id);
 
     /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
     if (dialogStack.isEmpty) {
