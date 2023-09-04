@@ -51,6 +51,9 @@ class PageNavigatorState extends State<PageNavigator>
           provider.goBack();
           return Future.value(false);
         } else {
+          if (provider.currentPageIndex == 0) {
+            provider.setCurrentPageIndex(2);
+          }
           return Future.value(true);
         }
       },
@@ -58,7 +61,12 @@ class PageNavigatorState extends State<PageNavigator>
         key: provider.messengerKey,
         child: Scaffold(
           key: _scaffoldKey,
-          body: provider.currentPage,
+
+          /// Holds pages ([TrackerScreen] and [BrowserScreen])
+          body: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: provider.pageController,
+              children: provider.pages),
           drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
           drawerEdgeDragWidth: 50,
           bottomNavigationBar: BottomBar(provider: provider),
@@ -122,6 +130,8 @@ class _BrowserScreenState extends State<BrowserScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    /// Holds tabs ([BoardListTab], [BoardTab], [ThreadTab], [BranchTab]).
     return TabBarView(
       physics: const NeverScrollableScrollPhysics(),
       controller: Provider.of<PageProvider>(context, listen: true)
