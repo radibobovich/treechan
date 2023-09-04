@@ -12,8 +12,9 @@ import '../models/tree.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 
 import '../../utils/fix_blank_space.dart';
+import 'repository.dart';
 
-class ThreadRepository {
+class ThreadRepository implements Repository {
   ThreadRepository({required this.boardTag, required this.threadId});
 
   final String boardTag;
@@ -45,17 +46,23 @@ class ThreadRepository {
   List<Post> _posts = [];
   List<Post> get posts => _posts;
 
+  int get postsCount => _posts.length;
+
+  int newPostsCount = 0;
+
+  int newReplies = 0;
+
   /// Contains all nodes plain. Used for search. Key is post id.
   /// Note that multiple nodes can have the same post id,
   /// thats why value is a list of nodes.
   final Map<int, List<TreeNode<Post>>> _plainNodes = {};
-  // Map<int, List<TreeNode<Post>>> get plainNodes => _plainNodes;
   List<TreeNode<Post>> nodesAt(int id) => _plainNodes[id] ?? [];
 
   final List<TreeNode<Post>> _lastNodes = [];
   List<TreeNode<Post>> get getLastNodes => _lastNodes;
 
   /// Contains thread information like maxNum, postsCount, etc.
+  /// TODO: create a separate class for thread info, dont use Root
   Root _threadInfo = Root();
   Root get threadInfo => _threadInfo;
 
@@ -64,6 +71,7 @@ class ThreadRepository {
   /// Sends GET request and gets thread information and list of posts.
 
   /// Loads thread from scratch.
+  @override
   Future<void> load() async {
     final ThreadFetcher fetcher =
         ThreadFetcher(boardTag: boardTag, threadId: threadId);
@@ -77,7 +85,7 @@ class ThreadRepository {
     // _threadInfo = decodedResponse;
 
     _threadInfo.opPostId = _posts.first.id;
-    _threadInfo.postsCount = _threadInfo.postsCount! + _posts.length;
+    // _threadInfo.postsCount = _threadInfo.postsCount! + _posts.length;
 
     for (var post in _posts) {
       if (post.comment.contains("video")) fixHtmlVideo(post);
@@ -109,6 +117,7 @@ class ThreadRepository {
     //     await fetcher.getThreadResponse(isRefresh: true);
     // List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
     List<Post> newPosts = await fetcher.getPosts(isRefresh: true);
+    newPostsCount = newPosts.length;
     if (newPosts.isEmpty) return;
 
     updateInfo(newPosts);
@@ -136,6 +145,7 @@ class ThreadRepository {
         'New posts sort executed in ${stopwatch.elapsedMicroseconds} microseconds');
 
     _setShowLinesProperty(_roots);
+    return;
   }
 
   void updateInfo(List<Post> newPosts) {
