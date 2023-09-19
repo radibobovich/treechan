@@ -110,11 +110,13 @@ class ActionMenu extends StatelessWidget {
     } else if (currentTab is BranchTab) {
       /// This branch tab can be opened from another branch tab
       /// so we need to find thread tab
-      DrawerTab tab = currentTab;
-      while (tab is! ThreadTab) {
-        tab = (tab as BranchTab).prevTab;
-      }
-      threadId = tab.id;
+      threadId = (currentTab as BranchTab)
+          .getParentThreadTab()!
+          .id; // DrawerTab tab = currentTab;
+      // while (tab is! ThreadTab) {
+      //   tab = (tab as BranchTab).prevTab;
+      // }
+      // threadId = tab.id;
     }
 
     if (node.data.hidden) {
