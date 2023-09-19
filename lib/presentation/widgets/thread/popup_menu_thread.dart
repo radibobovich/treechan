@@ -8,14 +8,9 @@ import '../../../domain/models/tab.dart';
 import '../../bloc/thread_base.dart';
 
 /// Called from AppBar button.
-class PopupMenuThread extends StatefulWidget {
+class PopupMenuThread extends StatelessWidget {
   const PopupMenuThread({super.key});
 
-  @override
-  State<PopupMenuThread> createState() => _PopupMenuThreadState();
-}
-
-class _PopupMenuThreadState extends State<PopupMenuThread> {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
