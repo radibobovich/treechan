@@ -29,5 +29,11 @@ Future<void> initializePreferences() async {
   if (prefs.getBool('spoilers') == null) {
     await prefs.setBool('spoilers', true);
   }
+  if (prefs.getBool('trackerAutoRefresh') == null) {
+    await prefs.setBool('trackerAutoRefresh', true);
+  }
+  if (prefs.getInt('refreshInterval') == null) {
+    await prefs.setInt('refreshInterval', 60);
+  }
   return;
 }
