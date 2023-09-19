@@ -4,10 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
+import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
+import '../../domain/models/tab.dart';
 import '../../domain/models/tree.dart';
 import '../../domain/models/json/json.dart';
+import '../../domain/repositories/thread_repository.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   // final ThreadRepository threadRepository;
@@ -23,10 +26,10 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   @override
   late Root threadInfo;
   ThreadBloc({
-    required threadRepository,
-    required tab,
-    required provider,
-    required key,
+    required ThreadRepository threadRepository,
+    required ThreadTab tab,
+    required PageProvider provider,
+    required Key key,
   }) : super(ThreadInitialState()) {
     this.threadRepository = threadRepository;
     this.tab = tab;

@@ -2,13 +2,16 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
+import '../../domain/models/tab.dart';
 import '../../domain/models/tree.dart';
 import '../../domain/repositories/branch_repository.dart';
 import '../../domain/services/scroll_service.dart';
+import '../provider/page_provider.dart';
 import 'thread_base.dart';
 
 class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
@@ -36,10 +39,10 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
   BranchBloc({
     this.threadBloc,
     required this.branchRepository,
-    required threadRepository,
-    required tab,
-    required provider,
-    required key,
+    required ThreadRepository threadRepository,
+    required BranchTab tab,
+    required PageProvider provider,
+    required Key key,
   }) : super(BranchInitialState()) {
     this.threadRepository = threadRepository;
     this.tab = tab;
