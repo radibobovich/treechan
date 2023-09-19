@@ -8,6 +8,7 @@ import 'package:treechan/presentation/bloc/tracker_cubit.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
+import 'package:treechan/presentation/widgets/tracker/popup_menu_tracker.dart';
 
 import '../../domain/models/tab.dart';
 import '../bloc/board_bloc.dart';
@@ -102,15 +103,24 @@ class PageProvider with ChangeNotifier {
       return;
     }
 
-    /// When press refresh from [BrowserScreen]
-    if (currentPageIndex == 2 && index == 3) {
-      tabManager.refreshTab();
+    if (currentPageIndex == 1 && index == 4) {
+      assert(context != null,
+          'context is null, cannot open actions from tracker screen');
+      showPopupMenuTracker(context!);
       return;
-    } else if (index == 4) {
-      assert(context != null, 'context is null');
-      if (context == null) return;
-      openActions(context);
-      return;
+    }
+
+    /// When press refresh or actions from [BrowserScreen]
+    if (currentPageIndex == 2) {
+      if (index == 3) {
+        tabManager.refreshTab();
+        return;
+      } else if (index == 4) {
+        assert(context != null, 'context is null');
+        if (context == null) return;
+        openActions(context);
+        return;
+      }
     }
 
     /// close search when leaving search page
@@ -128,6 +138,7 @@ class PageProvider with ChangeNotifier {
 
     /// Refresh and action buttons have no indication
     if (index == 3 || index == 4) return;
+
     currentPageIndex = index;
     pageController.animateTo(index);
     notifyListeners();
