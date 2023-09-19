@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/models/refresh_notification.dart';
 import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
@@ -25,6 +25,7 @@ class TrackerRepository {
   static TabManager? tabManager;
 
   /// Stream that notifies when some tab is refreshed.
+  ///
   /// A [RefreshNotification] is passed to the stream on [updateThreadByTab] and
   /// [updateBranchByTab] calls. The stream is listened to in [_refreshThread] and
   /// [_refreshBranch] methods. When the notification is received the method
@@ -32,9 +33,40 @@ class TrackerRepository {
   static final StreamController<RefreshNotification> refreshNotifier =
       StreamController<RefreshNotification>.broadcast();
 
-  TrackerRepository._internal();
+  /// Stream that notifies when some tab is refreshed automatically.
+  ///
+  /// A [TrackedItem] is passed to the stream on [autoRefresh] calls.
+  /// The stream is listened to in [TrackerCubit] and updates the UI accordingly.
+  final StreamController<TrackedItem> autoRefreshNotifier =
+      StreamController<TrackedItem>.broadcast();
+
+  TrackerRepository._internal() {
+    autoRefresh();
+  }
 
   final TrackerDatabase db = TrackerDatabase();
+
+  List<TrackedThread> threads = [];
+  List<TrackedBranch> branches = [];
+
+  Future<void> autoRefresh() async {
+    while (true) {
+      final prefs = await SharedPreferences.getInstance();
+      final autoRefreshEnabled = prefs.getBool('trackerAutoRefresh') ?? true;
+      final refreshInterval = prefs.getInt('refreshInterval') ?? 60;
+
+      if (autoRefreshEnabled) {
+        for (var item in [...threads, ...branches]) {
+          /// Duration between each item refresh to avoid getting 429 error
+          await Future.delayed(const Duration(milliseconds: 2000));
+          autoRefreshNotifier.add(item);
+        }
+      }
+
+      /// Duration between each auto refresh
+      await Future.delayed(Duration(seconds: refreshInterval));
+    }
+  }
 
   /// Adds thread to the tracker database.
   Future<void> addThreadByTab(
@@ -143,6 +175,7 @@ class TrackerRepository {
   }
 
   /// Gets all tracked threads from the database.
+  /// This also updates [threads] field.
   Future<List<TrackedThread>> getTrackedThreads() async {
     final maps = await db.getTrackedThreads();
 
@@ -161,11 +194,12 @@ class TrackerRepository {
         refreshTimestamp: map['refreshTimestamp'],
       );
     });
-
+    this.threads = threads;
     return threads;
   }
 
   /// Gets all tracked branches from the database.
+  /// This also updates [branches] field.
   Future<List<TrackedBranch>> getTrackedBranches() async {
     final maps = await db.getTrackedBranches();
 
@@ -185,7 +219,7 @@ class TrackerRepository {
         refreshTimestamp: map['refreshTimestamp'],
       );
     });
-
+    this.branches = branches;
     return branches;
   }
 
@@ -196,18 +230,6 @@ class TrackerRepository {
 
     return [...threads, ...branches];
   }
-
-  /// Refreshes all tracked items and sends an event to a stream
-  /// which is listened to in [TrackerCubit]. The event is used to update
-  /// the UI every time an item is refreshed.
-  // Stream<int> refreshAllItems() async* {
-  //   final List<TrackedItem> items = await getTrackedItems();
-  //   for (int i = 0; i< items.length; i++) {
-  //     await Future.delayed(const Duration(seconds: 2));
-  //     await refreshItem(items[i]);
-  //     yield i;
-  //   }
-  // }
 
   /// Adds refresh event to the tab bloc using [tabManager].
   ///
@@ -404,4 +426,27 @@ class TrackerRepository {
   Future<void> clear() async {
     await db.clear();
   }
+
+  // @pragma('vm:entry-point')
+  // static Future<void> backgroundService(ServiceInstance service) async {
+  //   // final prefs = await SharedPreferences.getInstance();
+
+  //   DartPluginRegistrant.ensureInitialized();
+
+  //   if (service is AndroidServiceInstance) {
+  //     service.on('setAsForeground').listen((event) {
+  //       service.setAsForegroundService();
+  //     });
+
+  //     service.on('setAsBackground').listen((event) {
+  //       service.setAsBackgroundService();
+  //     });
+  //   }
+
+  //   final timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+  //     if (service is AndroidServiceInstance) {
+  //       debugPrint(timer.tick.toString());
+  //     }
+  //   });
+  // }
 }
