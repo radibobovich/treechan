@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/tracked_item.dart';
 
 import '../bloc/tracker_cubit.dart';
+import '../widgets/tracker/tracker_appbar.dart';
 import '../widgets/tracker/tracker_lists.dart';
 
 class TrackerScreen extends StatelessWidget {
@@ -11,17 +12,7 @@ class TrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Трекер"),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                context.read<TrackerCubit>().refreshAll();
-              },
-            )
-          ],
-        ),
+        appBar: TrackerAppBar(appBar: AppBar()),
         body: BlocBuilder<TrackerCubit, TrackerState>(
           builder: (context, state) {
             if (state is TrackerLoadedState) {
