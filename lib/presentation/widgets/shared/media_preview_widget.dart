@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:treechan/domain/services/image_download_service.dart';
 
 import '../../../domain/models/json/json.dart';
 import 'package:extended_image/extended_image.dart';
@@ -92,7 +91,7 @@ class _MediaItemPreview extends StatefulWidget {
 
 class _MediaItemPreviewState extends State<_MediaItemPreview>
     with SingleTickerProviderStateMixin {
-  ImageDownloadService imageDownloadService = ImageDownloadService();
+  // ImageDownloadService imageDownloadService = ImageDownloadService();
 
   late Widget thumbnail;
   bool isLoaded = true;
@@ -171,7 +170,7 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
                     imageLinks: widget.imageLinks,
                     pageController: pageController,
                     onDownloadImage: (imageUrl, fileName) {
-                      imageDownloadService.setUrl(url: imageUrl);
+                      // imageDownloadService.setUrl(url: imageUrl);
                     },
                   )
                 : VideoPlayer(file: widget.file)),
