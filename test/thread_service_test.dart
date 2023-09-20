@@ -28,6 +28,11 @@ void main() async {
     const env = Env.test;
     configureInjection(getIt, env);
   });
+
+  tearDown(() {
+    getIt.reset();
+  });
+
   test('ThreadRepository', () async {
     final threadRepository = ThreadRepository(
       boardTag: 'abu',
