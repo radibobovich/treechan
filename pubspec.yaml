@@ -51,6 +51,9 @@ dependencies:
   flutter_background_service: ^5.0.1
   flutter_background_service_android: ^6.0.1
   flutter_local_notifications: ^15.1.1
+  mockito: ^5.4.2
+  injectable: ^2.3.0
+  get_it: ^7.6.4
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +61,8 @@ dev_dependencies:
   change_app_package_name: ^1.1.0
     
   flutter_lints: ^2.0.0
+  build_runner: ^2.4.6
+  injectable_generator: ^2.4.0
 
 dependency_overrides:
   flutter_layout_grid: ^2.0.4
@@ -68,5 +73,5 @@ dependency_overrides:
 flutter:
   uses-material-design: true
   assets:
-    - assets/thread.json
-    - assets/new_posts.json
+    - assets/test/thread.json
+    - assets/test/new_posts.json
