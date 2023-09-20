@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/hidden_posts.database.dart';
-import 'package:treechan/data/thread_fetcher.dart';
+import 'package:treechan/data/thread/thread_loader.dart';
+import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/fix_html_video.dart';
 
 import '../models/json/json.dart';
 
+import '../models/thread_info.dart';
 import '../models/tree.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
@@ -15,8 +17,16 @@ import '../../utils/fix_blank_space.dart';
 import 'repository.dart';
 
 class ThreadRepository implements Repository {
-  ThreadRepository({required this.boardTag, required this.threadId});
+  ThreadRepository(
+      {required this.boardTag,
+      required this.threadId,
+      required IThreadLoader threadLoader,
+      required IThreadRefresher threadRefresher})
+      : _threadLoader = threadLoader,
+        _threadRefresher = threadRefresher;
 
+  final IThreadLoader _threadLoader;
+  final IThreadRefresher _threadRefresher;
   final String boardTag;
   final int threadId;
 
@@ -63,8 +73,8 @@ class ThreadRepository implements Repository {
 
   /// Contains thread information like maxNum, postsCount, etc.
   /// TODO: create a separate class for thread info, dont use Root
-  Root _threadInfo = Root();
-  Root get threadInfo => _threadInfo;
+  late ThreadInfo _threadInfo;
+  ThreadInfo get threadInfo => _threadInfo;
 
   List<int> hiddenPosts = [];
 
@@ -73,24 +83,29 @@ class ThreadRepository implements Repository {
   /// Loads thread from scratch.
   @override
   Future<void> load() async {
-    final ThreadFetcher fetcher =
-        ThreadFetcher(boardTag: boardTag, threadId: threadId);
-    // final http.Response response = await fetcher.getThreadResponse();
-    // Root decodedResponse = Root.fromJson(jsonDecode(response.body));
-    // _posts = decodedResponse.threads!.first.posts;
-    _posts = await fetcher.getPosts();
-    _threadInfo = fetcher.threadInfo;
+    // final ThreadFetcherDeprecated fetcher =
+    //     ThreadFetcherDeprecated(boardTag: boardTag, threadId: threadId);
+
+    _posts =
+        await _threadLoader.getPosts(boardTag: boardTag, threadId: threadId);
+
+    _threadInfo = ThreadInfo(
+      boardTag: boardTag,
+      id: threadId,
+      title: _posts.first.subject,
+      lastPostId: _posts.last.id,
+      maxNum: _posts.last.id,
+    );
+    // _threadInfo = fetcher.threadInfo;
     if (_posts.isNotEmpty) fixBlankSpace(_posts.first);
 
-    // _threadInfo = decodedResponse;
-
-    _threadInfo.opPostId = _posts.first.id;
-    // _threadInfo.postsCount = _threadInfo.postsCount! + _posts.length;
+    // _threadInfo.opPostId = _posts.first.id;
 
     for (var post in _posts) {
       if (post.comment.contains("video")) fixHtmlVideo(post);
     }
-    final record = await Tree(posts: _posts, threadInfo: _threadInfo).getTree();
+    final record =
+        await Tree(posts: _posts, opPostId: _threadInfo.id).getTree();
     _roots.addAll(record.$1);
     _plainNodes.addAll(record.$2);
 
@@ -111,12 +126,11 @@ class ThreadRepository implements Repository {
     if (_posts.isEmpty) {
       return;
     }
-    final ThreadFetcher fetcher = ThreadFetcher(
-        boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
-    // final http.Response response =
-    //     await fetcher.getThreadResponse(isRefresh: true);
-    // List<Post> newPosts = postListFromJson(jsonDecode(response.body)["posts"]);
-    List<Post> newPosts = await fetcher.getPosts(isRefresh: true);
+    // final ThreadFetcherDeprecated fetcher = ThreadFetcherDeprecated(
+    //     boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
+
+    List<Post> newPosts = await _threadRefresher.getNewPosts(
+        boardTag: boardTag, threadId: threadId, lastPostId: _threadInfo.maxNum);
     newPostsCount = newPosts.length;
     if (newPosts.isEmpty) return;
 
@@ -124,12 +138,12 @@ class ThreadRepository implements Repository {
     _posts.addAll(newPosts);
 
     // create tree for new posts
-    final Tree treeService = Tree(posts: newPosts, threadInfo: _threadInfo);
+    final Tree treeService = Tree(posts: newPosts, opPostId: _threadInfo.id);
 
     /// This function actually updates [_roots].
     /// It returns [newPlainNodes] just to add them to [_lastNodes] more easily.
     final newPlainNodes = await treeService.attachNewRoots(
-        _roots, _plainNodes, _posts, _threadInfo);
+        _roots, _plainNodes, _posts, _threadInfo.id);
 
     _plainNodes.addAll(newPlainNodes);
 
@@ -149,7 +163,7 @@ class ThreadRepository implements Repository {
   }
 
   void updateInfo(List<Post> newPosts) {
-    _threadInfo.postsCount = _threadInfo.postsCount! + newPosts.length;
+    // _threadInfo.postsCount = _threadInfo.postsCount + newPosts.length;
     _threadInfo.maxNum = newPosts.last.id;
 
     /// Highlight new posts and force update numbers
