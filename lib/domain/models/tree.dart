@@ -11,11 +11,12 @@ import 'package:html/parser.dart' as html;
 
 /// Handles everything related to the tree building, updating and searching.
 class Tree {
-  Tree({required this.posts, required this.threadInfo});
+  Tree({required this.posts, required this.opPostId});
 
   final List<Post> posts;
 
-  final Root threadInfo;
+  // final Root threadInfo;
+  final int opPostId;
 
   /// Contains all comment tree roots.
   ///
@@ -34,7 +35,7 @@ class Tree {
       _findPostParents();
     }
     findChildren(posts);
-    var record = await compute(_createTreeModel, (posts, threadInfo, prefs))
+    var record = await compute(_createTreeModel, (posts, opPostId, prefs))
         .timeout(const Duration(seconds: 90))
         .onError((error, stackTrace) {
       debugPrint('TimeoutException:');
@@ -78,7 +79,7 @@ class Tree {
       List<TreeNode<Post>> roots,
       Map<int, List<TreeNode<Post>>> plainNodes,
       List<Post> posts,
-      Root threadInfo) async {
+      int opPostId) async {
     final record = await getTree();
 
     final List<TreeNode<Post>> newRoots = record.$1;
@@ -87,7 +88,7 @@ class Tree {
     if (newRoots.isEmpty) return {};
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
-        if (parentId != threadInfo.opPostId) {
+        if (parentId != opPostId) {
           // Find nodes to attach new tree to
           final List<TreeNode<Post>> parentNodes = plainNodes[parentId] ?? [];
 
@@ -242,9 +243,10 @@ class Tree {
 /// Creates list of comment roots and map all nodes by post id.
 /// This is a heavy function and defined outside the class to use in an isolate.
 Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
-    (List<Post>, Root, SharedPreferences) record) async {
+    (List<Post>, int, SharedPreferences) record) async {
   List<Post> posts = record.$1;
-  Root threadInfo = record.$2;
+  // Root threadInfo = record.$2;
+  int opPostId = record.$2;
   SharedPreferences prefs = record.$3;
 
   final Map<int, List<TreeNode<Post>>> plainNodes = {};
@@ -261,13 +263,13 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
   /// find it in the postIds it returns true.
   for (var post in posts) {
     if (post.parents.isEmpty ||
-        post.parents.contains(threadInfo.opPostId) ||
+        post.parents.contains(opPostId) ||
         _isExternalReference(postsWithId, post.parents)) {
       // find posts which are replies to the OP-post
       TreeNode<Post> node = TreeNode<Post>(
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
-        children: post.id != threadInfo.opPostId
+        children: post.id != opPostId
             ? _attachChildren(post, posts, prefs, plainNodes, stopwatch, 1).$1
             : [],
       );

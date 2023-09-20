@@ -84,7 +84,7 @@ class BranchRepository implements Repository {
 
     /// Buila a tree from new posts.
     Tree treeService =
-        Tree(posts: newPosts, threadInfo: threadRepository.threadInfo);
+        Tree(posts: newPosts, opPostId: threadRepository.threadInfo.opPostId);
     final record = await treeService.getTree(skipPostsModify: true);
     final List<TreeNode<Post>> newRoots = record.$1;
 
