@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:treechan/data/history_database.dart';
+import 'package:treechan/di/injection.dart';
 
 import '../bloc/history_bloc.dart';
 import '../../domain/models/tab.dart';
@@ -180,7 +181,7 @@ class _HistoryListViewState extends State<HistoryListView> {
               return Dismissible(
                 key: UniqueKey(),
                 onDismissed: (direction) {
-                  HistoryDatabase().remove(item);
+                  getIt<IHistoryDatabase>().remove(item);
                 },
                 child: ListTileIdle(
                     item: item, formatter: formatter, onOpen: widget.onOpen),

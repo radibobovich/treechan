@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 import 'package:treechan/presentation/provider/bloc_handler.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
@@ -74,7 +75,7 @@ class TabManager {
     await Future.delayed(
         const Duration(milliseconds: 20)); // enables transition animation
     animateTo(_tabs.keys.toList().indexOf(tab));
-    HistoryDatabase().add(tab);
+    getIt<IHistoryDatabase>().add(tab);
   }
 
   void removeTab(DrawerTab tab) async {
@@ -148,7 +149,7 @@ class TabManager {
   void setName(DrawerTab tab, String name) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       tab.name = name;
-      HistoryDatabase().add(tab);
+      getIt<HistoryDatabase>().add(tab);
     });
   }
 

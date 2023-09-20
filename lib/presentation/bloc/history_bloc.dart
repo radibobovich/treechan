@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/services/history_search_service.dart';
 
 import '../../data/history_database.dart';
@@ -11,7 +12,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   HistoryBloc() : super(HistoryInitialState()) {
     on<LoadHistoryEvent>((event, emit) async {
       try {
-        history = await HistoryDatabase().getHistory();
+        history = await getIt<IHistoryDatabase>().getHistory();
         searchService = HistorySearchService(history: history);
         emit(HistoryLoadedState(history: history));
       } catch (e) {
@@ -69,11 +70,11 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
 
     on<RemoveSelectedEvent>((event, emit) async {
       if (event.removeAll) {
-        HistoryDatabase().clear();
+        getIt<IHistoryDatabase>().clear();
         add(LoadHistoryEvent());
         return;
       }
-      HistoryDatabase().removeMultiple(selected);
+      getIt<HistoryDatabase>().removeMultiple(selected);
       selected = [];
       add(LoadHistoryEvent());
     });
