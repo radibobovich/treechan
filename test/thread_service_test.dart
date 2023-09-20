@@ -2,6 +2,9 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test/test.dart';
+import 'package:treechan/data/thread/response_handler.dart';
+import 'package:treechan/data/thread/thread_loader.dart';
+import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
@@ -24,7 +27,12 @@ void main() async {
     });
   });
   test('ThreadRepository', () async {
-    final threadRepository = ThreadRepository(boardTag: 'abu', threadId: 50074);
+    final threadRepository = ThreadRepository(
+      boardTag: 'abu',
+      threadId: 50074,
+      threadLoader: ThreadLoader(ResponseHandler()),
+      threadRefresher: ThreadRefresher(ResponseHandler()),
+    );
 
     List<TreeNode<Post>>? roots = await threadRepository.getRoots();
     final posts = threadRepository.posts;
@@ -63,11 +71,15 @@ void main() async {
   });
 
   test('Thread refresh', () async {
-    // using pre-downloaded thread from /assets folder
-    // thread fetcher uses it instead of fetching from the internet because of
-    // shared preferences 'test' flag
-    final threadRepository =
-        ThreadRepository(boardTag: 'b', threadId: 282647314);
+    // mock response handlers use test responses from assets/test folder
+    final threadRepository = ThreadRepository(
+      boardTag: 'b',
+      threadId: 282647314,
+      threadLoader: ThreadLoader(
+          MockLoadResponseHandler(assetPath: 'assets/test/thread.json')),
+      threadRefresher: ThreadRefresher(MockRefreshResponseHandler(
+          assetPaths: ['assets/test/new_posts.json'])),
+    );
 
     List<TreeNode<Post>> roots = List.from(await threadRepository.getRoots());
     List<Post> posts = List.from(threadRepository.posts);
@@ -118,8 +130,14 @@ void main() async {
   });
   group('Search in tree', () {
     test('Search for one occurency', () async {
-      final ThreadRepository repo =
-          ThreadRepository(boardTag: 'b', threadId: 282647314);
+      final ThreadRepository repo = ThreadRepository(
+        boardTag: 'b',
+        threadId: 282647314,
+        threadLoader: ThreadLoader(
+            MockLoadResponseHandler(assetPath: 'assets/test/thread.json')),
+        threadRefresher: ThreadRefresher(MockRefreshResponseHandler(
+            assetPaths: ['assets/test/new_posts.json'])),
+      );
       final List<TreeNode<Post>> roots = await repo.getRoots();
       TreeNode<Post>? result = Tree.findNode(roots, 282648865);
       expect(result, isNotNull, reason: 'No search results found.');
@@ -128,8 +146,13 @@ void main() async {
                occurence is a reply to OP.''');
     });
     test('Search for multiple occurencies', () async {
-      final ThreadRepository repo =
-          ThreadRepository(boardTag: 'b', threadId: 282647314);
+      final ThreadRepository repo = ThreadRepository(
+          boardTag: 'b',
+          threadId: 282647314,
+          threadLoader: ThreadLoader(
+              MockLoadResponseHandler(assetPath: 'assets/test/thread.json')),
+          threadRefresher: ThreadRefresher(MockRefreshResponseHandler(
+              assetPaths: ['assets/test/new_posts.json'])));
       final List<TreeNode<Post>> roots = await repo.getRoots();
       List<TreeNode<Post>> results = Tree.findAllNodes(roots, 282649012);
       expect(results.length, 2, reason: "Wrong search results count.");
