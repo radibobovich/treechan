@@ -1,3 +1,6 @@
+import 'package:treechan/data/thread/response_handler.dart';
+import 'package:treechan/data/thread/thread_loader.dart';
+import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 
 import '../../../exceptions.dart';
@@ -13,7 +16,11 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
 
   /// Creates new repository with [tag] and [id].
   ThreadRepository create(String tag, int id) {
-    final threadRepo = ThreadRepository(boardTag: tag, threadId: id);
+    final threadRepo = ThreadRepository(
+        boardTag: tag,
+        threadId: id,
+        threadLoader: ThreadLoader(ResponseHandler()),
+        threadRefresher: ThreadRefresher(ResponseHandler()));
     _repos.add(threadRepo);
     return threadRepo;
   }
