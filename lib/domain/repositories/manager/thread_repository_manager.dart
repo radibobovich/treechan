@@ -1,6 +1,6 @@
-import 'package:treechan/data/thread/response_handler.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 
 import '../../../exceptions.dart';
@@ -19,8 +19,10 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
     final threadRepo = ThreadRepository(
         boardTag: tag,
         threadId: id,
-        threadLoader: ThreadLoader(ResponseHandler()),
-        threadRefresher: ThreadRefresher(ResponseHandler()));
+        // param1 only used in test and dev environments
+        threadLoader: getIt<IThreadLoader>(param1: 'assets/test/thread.json'),
+        threadRefresher:
+            getIt<IThreadRefresher>(param1: ['assets/test/new_posts.json']));
     _repos.add(threadRepo);
     return threadRepo;
   }

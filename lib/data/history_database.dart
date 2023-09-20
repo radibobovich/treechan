@@ -1,18 +1,33 @@
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:treechan/di/injection.dart';
 
 import '../domain/models/tab.dart';
 
-class HistoryDatabase {
-  static final HistoryDatabase _instance = HistoryDatabase._internal();
-  factory HistoryDatabase() {
-    return _instance;
-  }
+abstract class IHistoryDatabase {
+  Future<void> add(DrawerTab tab);
+  Future<void> remove(HistoryTab tab);
+  Future<void> removeMultiple(List<HistoryTab> tabs);
+  Future<void> clear();
+  Future<List<HistoryTab>> getHistory();
+}
+
+@LazySingleton(as: IHistoryDatabase, env: [Env.test, Env.dev, Env.prod])
+class HistoryDatabase implements IHistoryDatabase {
+  // static final HistoryDatabase _instance = HistoryDatabase._internal();
+  // factory HistoryDatabase() {
+  //   return _instance;
+  // }
 
   late Future<Database> _database;
-  HistoryDatabase._internal() {
+  // HistoryDatabase._internal() {
+  //   _database = _createDatabase();
+  // }
+
+  HistoryDatabase() {
     _database = _createDatabase();
   }
 
@@ -42,6 +57,7 @@ class HistoryDatabase {
     }
   }
 
+  @override
   Future<void> add(DrawerTab tab) async {
     if (tab.name == null || tab is! ThreadTab) {
       return;
@@ -52,6 +68,7 @@ class HistoryDatabase {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  @override
   Future<void> remove(HistoryTab tab) async {
     final Database db = await _database;
 
@@ -64,6 +81,7 @@ class HistoryDatabase {
         ]);
   }
 
+  @override
   Future<void> removeMultiple(List<HistoryTab> tabs) async {
     final Database db = await _database;
 
@@ -78,12 +96,14 @@ class HistoryDatabase {
     }
   }
 
+  @override
   Future<void> clear() async {
     final Database db = await _database;
 
     await db.delete('history');
   }
 
+  @override
   Future<List<HistoryTab>> getHistory() async {
     final Database db = await _database;
 

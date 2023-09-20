@@ -1,6 +1,6 @@
-import 'package:treechan/data/thread/response_handler.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 
@@ -43,8 +43,8 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
           threadRepository: ThreadRepository(
             boardTag: 'error',
             threadId: 0,
-            threadLoader: ThreadLoader(ResponseHandler()),
-            threadRefresher: ThreadRefresher(ResponseHandler()),
+            threadLoader: getIt<ThreadLoader>(),
+            threadRefresher: getIt<ThreadRefresher>(),
           ),
           postId: 0);
     });
