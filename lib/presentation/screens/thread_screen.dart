@@ -86,8 +86,8 @@ class _ThreadScreenState extends State<ThreadScreen>
               if (state is ThreadLoadedState) {
                 if (widget.currentTab.name == null) {
                   Provider.of<PageProvider>(context, listen: false)
-                      .setName(widget.currentTab, state.threadInfo!.title!);
-                  widget.currentTab.name = state.threadInfo!.title!;
+                      .setName(widget.currentTab, state.threadInfo.title);
+                  widget.currentTab.name = state.threadInfo.title;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     setState(() {});
                   });
@@ -95,7 +95,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                 return FlexibleTreeView<Post>(
                   scrollable: prefs.getBool('2dscroll')!,
                   indent: !Platform.isWindows ? 16 : 24,
-                  showLines: state.threadInfo!.showLines!,
+                  showLines: state.threadInfo.showLines,
                   scrollController:
                       BlocProvider.of<ThreadBloc>(context).scrollController,
                   nodes: state.roots!,
@@ -106,7 +106,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                         .hiddenPosts
                         .contains(node.data.id);
                     return PostWidget(
-                      key: node.getGlobalKey(state.threadInfo!.opPostId!),
+                      key: node.getGlobalKey(state.threadInfo.opPostId),
                       node: node,
                       roots: state.roots!,
                       currentTab: widget.currentTab,

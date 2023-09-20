@@ -1,5 +1,6 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
+import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 
 import '../../domain/models/json/json.dart';
@@ -25,5 +26,5 @@ mixin ThreadBase {
   /// Used to check if some post is actually in the current visible tree.
   final List<TreeNode<Post>> dialogStack = [];
 
-  Root get threadInfo;
+  ThreadInfo get threadInfo;
 }

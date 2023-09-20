@@ -66,7 +66,7 @@ class _BranchScreenState extends State<BranchScreen>
                   key: ValueKey(state.branch.data.id),
                   scrollable: prefs.getBool('2dscroll')!,
                   indent: !Platform.isWindows ? 16 : 24,
-                  showLines: state.threadInfo.showLines!,
+                  showLines: state.threadInfo.showLines,
                   scrollController:
                       BlocProvider.of<BranchBloc>(context).scrollController,
                   nodes: [state.branch],

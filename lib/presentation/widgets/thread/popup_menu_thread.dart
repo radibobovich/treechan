@@ -77,7 +77,7 @@ PopupMenuItem<dynamic> _getShareMenuButton(ThreadBase bloc) {
     onTap: () {
       final threadInfo = bloc.threadInfo;
       Share.share(
-          'https://2ch.hk/${threadInfo.board!.id}/res/${threadInfo.opPostId}.html');
+          'https://2ch.hk/${threadInfo.boardTag}/res/${threadInfo.opPostId}.html');
     },
   );
 }
@@ -92,8 +92,8 @@ PopupMenuItem<dynamic> _getHiddenPostsMenuItem(
       Future.delayed(
           const Duration(milliseconds: 50),
           () => Navigator.pushNamed(context, '/hidden_posts', arguments: {
-                'tag': threadInfo.board!.id!,
-                'threadId': threadInfo.opPostId!
+                'tag': threadInfo.boardTag,
+                'threadId': threadInfo.opPostId
               }));
     },
   );

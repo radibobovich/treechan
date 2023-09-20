@@ -1,6 +1,7 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
@@ -24,7 +25,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   // late final ScrollService scrollService;
 
   @override
-  late Root threadInfo;
+  late ThreadInfo threadInfo;
   ThreadBloc({
     required ThreadRepository threadRepository,
     required ThreadTab tab,
@@ -142,7 +143,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
     if (dialogStack.isEmpty) {
       scrollService.scrollToNodeInDirection(
-          node.parent!.getGlobalKey(threadInfo.opPostId!),
+          node.parent!.getGlobalKey(threadInfo.opPostId),
           direction: AxisDirection.up);
     }
   }
@@ -150,7 +151,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   void shrinkRootBranch(TreeNode<Post> node) {
     final rootNode = Tree.findRootNode(node);
     rootNode.expanded = false;
-    final rootPostKey = rootNode.getGlobalKey(threadInfo.opPostId!);
+    final rootPostKey = rootNode.getGlobalKey(threadInfo.opPostId);
 
     /// Prevent scrolling if called from [PostPreviewDialog] or [EndDrawer]
     if (dialogStack.isEmpty) {
@@ -185,7 +186,7 @@ class ThreadInitialState extends ThreadState {}
 
 class ThreadLoadedState extends ThreadState {
   late final List<TreeNode<Post>>? roots;
-  late final Root? threadInfo;
+  late final ThreadInfo threadInfo;
   ThreadLoadedState({required this.roots, required this.threadInfo});
 }
 
