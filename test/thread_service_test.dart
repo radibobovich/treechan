@@ -2,9 +2,9 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test/test.dart';
-import 'package:treechan/data/thread/response_handler.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
@@ -25,13 +25,17 @@ void main() async {
       'boardSortType': 'bump',
       'test': true
     });
+    const env = Env.test;
+    configureInjection(getIt, env);
   });
   test('ThreadRepository', () async {
     final threadRepository = ThreadRepository(
       boardTag: 'abu',
       threadId: 50074,
-      threadLoader: ThreadLoader(ResponseHandler()),
-      threadRefresher: ThreadRefresher(ResponseHandler()),
+
+      /// it is a real thread so we dont mock loader and refresher
+      threadLoader: ThreadLoader(),
+      threadRefresher: ThreadRefresher(),
     );
 
     List<TreeNode<Post>>? roots = await threadRepository.getRoots();
@@ -71,14 +75,12 @@ void main() async {
   });
 
   test('Thread refresh', () async {
-    // mock response handlers use test responses from assets/test folder
     final threadRepository = ThreadRepository(
       boardTag: 'b',
       threadId: 282647314,
-      threadLoader: ThreadLoader(
-          MockLoadResponseHandler(assetPath: 'assets/test/thread.json')),
-      threadRefresher: ThreadRefresher(MockRefreshResponseHandler(
-          assetPaths: ['assets/test/new_posts.json'])),
+      threadLoader: getIt.get<IThreadLoader>(param1: 'assets/test/thread.json'),
+      threadRefresher:
+          getIt.get<IThreadRefresher>(param1: ['assets/test/new_posts.json']),
     );
 
     List<TreeNode<Post>> roots = List.from(await threadRepository.getRoots());
@@ -133,10 +135,10 @@ void main() async {
       final ThreadRepository repo = ThreadRepository(
         boardTag: 'b',
         threadId: 282647314,
-        threadLoader: ThreadLoader(
-            MockLoadResponseHandler(assetPath: 'assets/test/thread.json')),
-        threadRefresher: ThreadRefresher(MockRefreshResponseHandler(
-            assetPaths: ['assets/test/new_posts.json'])),
+        threadLoader:
+            getIt.get<IThreadLoader>(param1: 'assets/test/thread.json'),
+        threadRefresher:
+            getIt.get<IThreadRefresher>(param1: ['assets/test/new_posts.json']),
       );
       final List<TreeNode<Post>> roots = await repo.getRoots();
       TreeNode<Post>? result = Tree.findNode(roots, 282648865);
@@ -149,10 +151,10 @@ void main() async {
       final ThreadRepository repo = ThreadRepository(
           boardTag: 'b',
           threadId: 282647314,
-          threadLoader: ThreadLoader(
-              MockLoadResponseHandler(assetPath: 'assets/test/thread.json')),
-          threadRefresher: ThreadRefresher(MockRefreshResponseHandler(
-              assetPaths: ['assets/test/new_posts.json'])));
+          threadLoader:
+              getIt.get<IThreadLoader>(param1: 'assets/test/thread.json'),
+          threadRefresher: getIt
+              .get<IThreadRefresher>(param1: ['assets/test/new_posts.json']));
       final List<TreeNode<Post>> roots = await repo.getRoots();
       List<TreeNode<Post>> results = Tree.findAllNodes(roots, 282649012);
       expect(results.length, 2, reason: "Wrong search results count.");
