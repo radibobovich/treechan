@@ -163,7 +163,7 @@ class ScrollService {
     }
     Timer.periodic(const Duration(milliseconds: 60), (timer) async {
       if (currentOffset == null) {
-        if (_scrollController.offset == 0 ||
+        if ((direction == AxisDirection.up && _scrollController.offset == 0) ||
             (direction == AxisDirection.down &&
                 _scrollController.offset ==
                     _scrollController.position.maxScrollExtent)) {
@@ -254,7 +254,6 @@ class ScrollService {
     });
     await expandCompleter.future;
 
-    ///
     if (forcedDirection == null &&
         rootNode.data.id > getFirstVisiblePost().node.data.id) {
       forcedDirection = AxisDirection.down;
@@ -269,6 +268,7 @@ class ScrollService {
     /// This may cause problems while finding post.
     // await updateScrollPosition();
     final GlobalKey key = node.getGlobalKey(tabId);
+    debugPrint('scrollToNode() got node key $key');
     _scrollToNode(key, forcedDirection: forcedDirection);
   }
 
