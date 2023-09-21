@@ -149,7 +149,7 @@ class TabManager {
   void setName(DrawerTab tab, String name) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       tab.name = name;
-      getIt<HistoryDatabase>().add(tab);
+      getIt<IHistoryDatabase>().add(tab);
     });
   }
 
