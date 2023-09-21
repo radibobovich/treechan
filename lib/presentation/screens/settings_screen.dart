@@ -91,6 +91,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     });
                   },
                 ),
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.fiber_new),
+                  title: const Text(
+                      'Отображать кнопку "Показать" в уведомлении о загрузке новых постов'),
+                  initialValue:
+                      prefs.getBool('showSnackBarActionOnThreadRefresh')!,
+                  onToggle: (value) {
+                    setState(() {
+                      prefs.setBool('showSnackBarActionOnThreadRefresh', value);
+                    });
+                  },
+                ),
                 SettingsTile.navigation(
                   leading: const Icon(Icons.download),
                   title: const Text('Место сохранения медиа'),
