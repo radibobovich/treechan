@@ -83,8 +83,11 @@ class Tree {
     final record = await getTree();
 
     final List<TreeNode<Post>> newRoots = record.$1;
-    final Map<int, List<TreeNode<Post>>> newPlainNodes = record.$2;
-
+    // final Map<int, List<TreeNode<Post>>> newPlainNodes = record.$2;
+    /// We don't use newPlainNodes got from [getTree] function
+    /// because when we copyWith a node below, it changes its key
+    /// so the map doesn't represent the new tree.
+    final Map<int, List<TreeNode<Post>>> newPlainNodes = {};
     if (newRoots.isEmpty) return {};
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
@@ -98,10 +101,14 @@ class Tree {
             /// Depth will be also increased by one in [addNode] method
             /// Also override key to avoid duplicate GlobalObjectKeys
             /// of [TreeNodeWidget] in flexible_tree_view package
-            parentNode.addNode(newRoot.copyWith(
+            final newUniqueNode = newRoot.copyWith(
                 key: parentNode.data.id.toString() + newRoot.data.id.toString(),
                 newKey: true)
-              ..depth = parentNode.depth);
+              ..depth = parentNode.depth;
+
+            _populateNewPlainNodes(newUniqueNode, newPlainNodes);
+
+            parentNode.addNode(newUniqueNode);
 
             /// find index of a child to add it to the post children list
             int childIndex =
@@ -116,15 +123,41 @@ class Tree {
             posts[nodeIndex].children.add(childIndex);
           }
         } else {
-          roots.add(newRoot);
+          final newUniqueNode = newRoot.copyWith(
+              key: opPostId.toString() + newRoot.data.id.toString(),
+              newKey: true)
+            ..depth = 0;
+
+          _populateNewPlainNodes(newUniqueNode, newPlainNodes);
+          roots.add(newUniqueNode);
         }
       }
 
       if (newRoot.data.parents.isEmpty) {
-        roots.add(newRoot);
+        final newUniqueNode = newRoot.copyWith(
+            key: opPostId.toString() + newRoot.data.id.toString(), newKey: true)
+          ..depth = 0;
+
+        roots.add(newUniqueNode);
+        _populateNewPlainNodes(newUniqueNode, newPlainNodes);
       }
     }
     return newPlainNodes;
+  }
+
+  /// Node keys are changed after copyWith, so we can't use
+  /// [newPlainNodes] got from [getTree] function - it has old keys.
+  /// We have to create a new map with new keys on our own.
+  static void _populateNewPlainNodes(TreeNode<Post> newUniqueNode,
+      Map<int, List<TreeNode<Post>>> newPlainNodes) {
+    Tree.performForEveryNode(newUniqueNode, (node) {
+      final id = node.data.id;
+      if (newPlainNodes[id] == null) {
+        newPlainNodes[id] = [node];
+      } else {
+        newPlainNodes[id]!.add(node);
+      }
+    });
   }
 
   /// Finds first node by post id in the list of trees.
@@ -266,6 +299,7 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
         post.parents.contains(opPostId) ||
         _isExternalReference(postsWithId, post.parents)) {
       // find posts which are replies to the OP-post
+
       TreeNode<Post> node = TreeNode<Post>(
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
