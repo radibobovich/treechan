@@ -191,11 +191,14 @@ class PageProvider with ChangeNotifier {
 
   GlobalKey<ScaffoldMessengerState> messengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  void showSnackBar(String message) {
-    messengerKey.currentState?.showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 2),
-    ));
+  void showSnackBar(String message, {SnackBarAction? action}) {
+    messengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        action: action,
+      ),
+    );
   }
 
   @override
