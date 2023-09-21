@@ -46,6 +46,7 @@ class _ThreadScreenState extends State<ThreadScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+        key: _threadScaffoldKey,
         endDrawer: AppEndDrawer(currentTab: widget.currentTab),
         onEndDrawerChanged: (isOpened) {
           if (isOpened) {
@@ -127,4 +128,14 @@ class _ThreadScreenState extends State<ThreadScreen>
           ),
         ));
   }
+}
+
+final _threadScaffoldKey = GlobalKey<ScaffoldState>();
+
+void openEndDrawer() {
+  _threadScaffoldKey.currentState!.openEndDrawer();
+}
+
+void closeEndDrawer() {
+  _threadScaffoldKey.currentState!.openEndDrawer();
 }
