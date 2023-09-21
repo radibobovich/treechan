@@ -140,10 +140,12 @@ class _PostWidgetState extends State<PostWidget>
         timer = PausableTimer(const Duration(seconds: 5), () {
           wantKeepAlive = false;
           updateKeepAlive();
-          animationController!.forward().then((value) {
-            wantKeepAlive = false;
-            updateKeepAlive();
-          });
+          if (mounted) {
+            animationController!.forward().then((value) {
+              wantKeepAlive = false;
+              updateKeepAlive();
+            });
+          }
           post.isHighlighted = false;
         });
         post.firstTimeSeen = false;
