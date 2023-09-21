@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/di/injection.dart';
 
@@ -59,7 +60,9 @@ class HistoryDatabase implements IHistoryDatabase {
 
   @override
   Future<void> add(DrawerTab tab) async {
-    if (tab.name == null || tab is! ThreadTab) {
+    final prefs = await SharedPreferences.getInstance();
+    final bool keepHistory = prefs.getBool('keepHistory') ?? true;
+    if (tab.name == null || tab is! ThreadTab || !keepHistory) {
       return;
     }
     final Database db = await _database;
