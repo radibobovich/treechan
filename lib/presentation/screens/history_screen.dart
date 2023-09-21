@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/history_database.dart';
 import 'package:treechan/di/injection.dart';
 
@@ -18,8 +19,12 @@ class HistoryScreen extends StatelessWidget {
       builder: (context, state) {
         return WillPopScope(
           onWillPop: () async {
-            if (state is HistorySearchState) {
-              BlocProvider.of<HistoryBloc>(context).add(LoadHistoryEvent());
+            debugPrint(state.runtimeType.toString());
+            if (state is HistorySearchState ||
+                state is HistorySelectedState ||
+                state is HistorySearchSelectedState) {
+              context.read<HistoryBloc>().add(LoadHistoryEvent());
+              context.read<HistoryBloc>().resetSelection();
               return Future.value(false);
             } else {
               return Future.value(true);
@@ -33,6 +38,39 @@ class HistoryScreen extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class ToggleKeepHistoryButton extends StatefulWidget {
+  const ToggleKeepHistoryButton({super.key});
+
+  @override
+  State<ToggleKeepHistoryButton> createState() =>
+      _ToggleKeepHistoryButtonState();
+}
+
+class _ToggleKeepHistoryButtonState extends State<ToggleKeepHistoryButton> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final prefs = snapshot.data as SharedPreferences;
+            final bool keepHistory = prefs.getBool('keepHistory') ?? true;
+            return IconButton(
+                icon: keepHistory
+                    ? const Icon(Icons.pause)
+                    : const Icon(Icons.play_arrow),
+                onPressed: () {
+                  setState(() {
+                    prefs.setBool('keepHistory', !keepHistory);
+                  });
+                });
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
   }
 }
 
@@ -59,7 +97,8 @@ class HistoryAppBar extends StatelessWidget {
                   showHistoryClearDialog(
                       bcontext: context, clearHistory: state.clearHistory);
                 },
-              )
+              ),
+              const ToggleKeepHistoryButton()
             ],
           );
         } else if (state is HistorySelectedState) {
