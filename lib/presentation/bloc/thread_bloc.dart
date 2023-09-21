@@ -1,11 +1,13 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
+import 'package:treechan/presentation/screens/thread_screen.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
@@ -101,9 +103,16 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
             );
           }
           if (event.source != RefreshSource.tracker) {
-            provider.showSnackBar(threadRepository.newPostsCount > 0
-                ? 'Новых постов: ${threadRepository.newPostsCount}'
-                : 'Нет новых постов');
+            final prefs = await SharedPreferences.getInstance();
+            provider.showSnackBar(
+                threadRepository.newPostsCount > 0
+                    ? 'Новых постов: ${threadRepository.newPostsCount}'
+                    : 'Нет новых постов',
+                action:
+                    prefs.getBool('showSnackBarActionOnThreadRefresh') ?? true
+                        ? SnackBarAction(
+                            label: 'Показать', onPressed: () => openEndDrawer())
+                        : null);
           }
         } on ThreadNotFoundException {
           if (event.source != RefreshSource.tracker) {
