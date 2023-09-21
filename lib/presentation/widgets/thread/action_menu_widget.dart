@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
-
+import 'package:treechan/presentation/bloc/thread_base.dart';
 import '../../../data/hidden_posts.database.dart';
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
@@ -28,6 +28,8 @@ class ActionMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = currentTab.getBloc(context);
+    debugPrint(
+        'Post ${node.data.id} action menu opened, global key is ${node.getGlobalKey((currentTab as IdMixin).id)}, object key is ${node.key}');
     return SizedBox(
         width: double.minPositive,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -200,11 +202,11 @@ class ActionMenu extends StatelessWidget {
         );
         return;
       } else {
-        bloc.scrollService.scrollToNode(
-          node,
-          (currentTab as IdMixin).id,
-          // await bloc.threadRepository.getRoots(),
-        );
+        (bloc as ThreadBase).scrollService.scrollToNode(
+              node,
+              (currentTab as IdMixin).id,
+              // await bloc.threadRepository.getRoots(),
+            );
       }
     }
   }
