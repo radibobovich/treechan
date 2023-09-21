@@ -23,6 +23,10 @@ void main() async {
       '2dscroll': false,
       'androidDestinationType': 'directoryDownloads',
       'boardSortType': 'bump',
+      'keepHistory': true,
+      'trackerAutoRefresh': true,
+      'refreshInterval': 60,
+      'showSnackBarActionOnThreadRefresh': true,
       'test': true
     });
     const env = Env.test;
