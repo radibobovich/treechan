@@ -35,5 +35,11 @@ Future<void> initializePreferences() async {
   if (prefs.getInt('refreshInterval') == null) {
     await prefs.setInt('refreshInterval', 60);
   }
+  if (prefs.getBool('showSnackBarActionOnThreadRefresh') == null) {
+    await prefs.setBool('showSnackBarActionOnThreadRefresh', true);
+  }
+  if (prefs.getBool('keepHistory') == null) {
+    await prefs.setBool('keepHistory', true);
+  }
   return;
 }
