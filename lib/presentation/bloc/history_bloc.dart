@@ -8,7 +8,9 @@ import '../../domain/models/tab.dart';
 class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   late List<HistoryTab> history;
   late HistorySearchService searchService;
-  List<HistoryTab> selected = [];
+  final List<HistoryTab> _selected = [];
+
+  List<HistoryTab> get selected => _selected;
   HistoryBloc() : super(HistoryInitialState()) {
     on<LoadHistoryEvent>((event, emit) async {
       try {
@@ -75,9 +77,13 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
         return;
       }
       getIt<HistoryDatabase>().removeMultiple(selected);
-      selected = [];
+      _selected.clear();
       add(LoadHistoryEvent());
     });
+  }
+
+  void resetSelection() {
+    selected.clear();
   }
 }
 
