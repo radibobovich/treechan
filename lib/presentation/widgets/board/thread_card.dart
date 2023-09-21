@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 import 'package:treechan/data/hidden_threads_database.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
+import 'package:treechan/utils/constants/dev.dart';
 
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
@@ -81,8 +83,8 @@ class _ThreadCardState extends State<ThreadCard> {
   void openThread(BuildContext context) {
     FocusManager.instance.primaryFocus?.unfocus();
     context.read<PageProvider>().addTab(ThreadTab(
-        id: widget.thread.posts[0].id,
-        tag: widget.thread.posts[0].board,
+        id: env == Env.prod ? widget.thread.posts[0].id : debugThreadId,
+        tag: env == Env.prod ? widget.thread.posts[0].board : debugBoardTag,
         name: widget.thread.posts[0].subject,
         prevTab: widget.currentTab));
   }
