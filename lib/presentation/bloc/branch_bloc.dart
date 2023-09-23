@@ -102,7 +102,9 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
           }
           provider.trackerRepository.markAsDead(tab);
         } on NoConnectionException {
-          // do nothing
+          if (event.source == RefreshSource.tracker) {
+            provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
+          }
         } on Exception catch (e) {
           emit(BranchErrorState(message: "Неизвестная ошибка", exception: e));
         }
@@ -130,6 +132,17 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
       scrollService.scrollToNodeInDirection(rootPostKey,
           direction: AxisDirection.up);
     }
+  }
+
+  void resetNewPostsCount() {
+    provider.trackerRepository.updateBranchByTab(
+        tab: tab as BranchTab,
+        posts: null,
+        newPosts: 0,
+        newReplies: 0,
+        forceNewPosts: true,
+        forceNewReplies: true);
+    provider.trackerCubit.loadTracker();
   }
 }
 

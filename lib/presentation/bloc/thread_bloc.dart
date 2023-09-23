@@ -7,7 +7,6 @@ import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
-import 'package:treechan/presentation/screens/thread_screen.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
@@ -21,7 +20,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   // final ThreadTab tab;
   // final PageProvider provider;
   final ScrollController endDrawerScrollController = ScrollController();
-
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   // final List<TreeNode<Post>> dialogStack = [];
   double? endDrawerScrollPosition;
   // late final ScrollService scrollService;
@@ -40,7 +39,6 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     this.key = key;
     scrollController = ScrollController();
     scrollService = ScrollService(scrollController);
-
     on<LoadThreadEvent>(
       (event, emit) async {
         try {
@@ -108,11 +106,12 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
                 threadRepository.newPostsCount > 0
                     ? 'Новых постов: ${threadRepository.newPostsCount}'
                     : 'Нет новых постов',
-                action:
-                    prefs.getBool('showSnackBarActionOnThreadRefresh') ?? true
-                        ? SnackBarAction(
-                            label: 'Показать', onPressed: () => openEndDrawer())
-                        : null);
+                action: threadRepository.newPostsCount > 0 &&
+                        (prefs.getBool('showSnackBarActionOnThreadRefresh') ??
+                            true)
+                    ? SnackBarAction(
+                        label: 'Показать', onPressed: () => _openEndDrawer())
+                    : null);
           }
         } on ThreadNotFoundException {
           if (event.source != RefreshSource.tracker) {
@@ -120,7 +119,9 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
           }
           provider.trackerRepository.markAsDead(tab);
         } on NoConnectionException {
-          // do nothing
+          if (event.source == RefreshSource.tracker) {
+            provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
+          }
         } on Exception catch (e) {
           emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
         }
@@ -169,11 +170,26 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     }
   }
 
+  void resetNewPostsCount() {
+    provider.trackerRepository.updateThreadByTab(
+        tab: tab as ThreadTab,
+        posts: null,
+        newPosts: 0,
+        newReplies: 0,
+        forceNewPosts: true,
+        forceNewReplies: true);
+    provider.trackerCubit.loadTracker();
+  }
+
   @override
   Future<void> close() {
     scrollController.dispose();
     endDrawerScrollController.dispose();
     return super.close();
+  }
+
+  void _openEndDrawer() {
+    scaffoldKey.currentState!.openEndDrawer();
   }
 }
 
