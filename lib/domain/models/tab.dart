@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/config/local_notifications.dart';
 import 'package:treechan/presentation/bloc/branch_bloc.dart';
 
 import '../../presentation/bloc/board_bloc.dart';
@@ -13,6 +14,29 @@ abstract class DrawerTab {
   String? name;
   DrawerTab({required this.name});
   getBloc(BuildContext context);
+
+  factory DrawerTab.fromPush(PushUpdateNotification notification) {
+    if (notification.type == 'thread') {
+      return ThreadTab(
+        tag: notification.boardTag,
+        name: notification.name,
+        prevTab: boardListTab,
+        id: notification.id,
+      );
+    } else if (notification.type == 'branch') {
+      assert(notification.threadId != null,
+          'threadId must not be null for branch');
+      return BranchTab(
+        tag: notification.boardTag,
+        name: notification.name,
+        prevTab: boardListTab,
+        id: notification.id,
+        threadId: notification.threadId!,
+      );
+    } else {
+      throw Exception('Unknown notification type');
+    }
+  }
 }
 
 mixin TagMixin {
@@ -119,10 +143,10 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
 class BranchTab extends DrawerTab with TagMixin, IdMixin<BranchTab> {
   final int threadId;
   BranchTab({
-    required super.name,
-    required tag,
-    required prevTab,
-    required id,
+    required String super.name,
+    required String tag,
+    required DrawerTab prevTab,
+    required int id,
     required this.threadId,
   }) {
     this.tag = tag;
