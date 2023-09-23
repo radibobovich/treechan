@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:treechan/config/local_notifications.dart';
 import 'package:treechan/domain/models/refresh_notification.dart';
 import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 import 'package:treechan/exceptions.dart';
+import 'package:treechan/utils/hash.dart';
+import 'package:treechan/utils/string.dart';
 
 import '../../data/tracker_database.dart';
 import '../../presentation/provider/tab_manager.dart';
@@ -37,10 +43,11 @@ class TrackerRepository {
   ///
   /// A [TrackedItem] is passed to the stream on [autoRefresh] calls.
   /// The stream is listened to in [TrackerCubit] and updates the UI accordingly.
-  final StreamController<TrackedItem> autoRefreshNotifier =
-      StreamController<TrackedItem>.broadcast();
+  final StreamController<AutoRefreshNotification> autoRefreshNotifier =
+      StreamController<AutoRefreshNotification>.broadcast();
 
   TrackerRepository._internal() {
+    // start routine
     autoRefresh();
   }
 
@@ -49,17 +56,74 @@ class TrackerRepository {
   List<TrackedThread> threads = [];
   List<TrackedBranch> branches = [];
 
+  void sendPushNotification() async {
+    debugPrint('sendPushNotification() has been triggered.');
+    final prefs = await SharedPreferences.getInstance();
+    bool getAllUpdates = prefs.getBool('getAllUpdates') ?? false;
+
+    final List<TrackedItem> nonZeroDifference = [...threads, ...branches]
+        .where((element) => element.newPostsDiff != 0)
+        .toList();
+    if (nonZeroDifference.isEmpty) {
+      debugPrint(
+          'newPosts did not changed since last update. Nothing to notify about.');
+    }
+
+    for (var item in nonZeroDifference) {
+      String itemType = item is TrackedThread ? 'тред' : 'ветк';
+
+      String body = '';
+      String personalBody = '';
+      final shortName = truncate(item.name, 30, ellipsis: true);
+      body = '''В $itemTypeе $shortName новых постов: ${item.newPosts}, '''
+          '''новых ответов: ${item.newReplies}.''';
+      personalBody =
+          'Вам ответили в $itemTypeе $shortName $item.newReplies раз(а).';
+
+      final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+      /// We use hash of the tag and id to make sure that notifications for the same
+      /// thread/branch are replaced instead of creating new ones
+      final int notificationId = hashStringAndInt(item.tag, item.id);
+
+      final notification = PushUpdateNotification(
+        type: item is TrackedThread ? 'thread' : 'branch',
+        boardTag: item.tag,
+        id: item.id,
+        name: item.name,
+      )..toJson();
+      final payload = jsonEncode(notification);
+
+      if (getAllUpdates && item.newReplies != 0) {
+        await flutterLocalNotificationsPlugin.show(notificationId,
+            'Вам ответили', personalBody, personalGroupNotificationDetails,
+            payload: payload);
+      } else if (getAllUpdates) {
+        await flutterLocalNotificationsPlugin.show(
+            notificationId,
+            'Новые посты (${item.newPosts})',
+            body,
+            normalGroupNotificationDetails,
+            payload: payload);
+      }
+    }
+    // await groupNotifications();
+  }
+
   Future<void> autoRefresh() async {
     while (true) {
       final prefs = await SharedPreferences.getInstance();
       final autoRefreshEnabled = prefs.getBool('trackerAutoRefresh') ?? true;
       final refreshInterval = prefs.getInt('refreshInterval') ?? 60;
 
+      final commonList = [...threads, ...branches];
       if (autoRefreshEnabled) {
-        for (var item in [...threads, ...branches]) {
+        debugPrint('Starting auto refresh...');
+        for (int i = 0; i < commonList.length; i++) {
           /// Duration between each item refresh to avoid getting 429 error
           await Future.delayed(const Duration(milliseconds: 2000));
-          autoRefreshNotifier.add(item);
+          autoRefreshNotifier.add(AutoRefreshNotification(
+              item: commonList[i], isLast: i == commonList.length - 1));
         }
       }
 
@@ -89,12 +153,10 @@ class TrackerRepository {
 
   /// Adds branch to the tracker database.
   Future<void> addBranchByTab(
-      {required BranchTab tab,
-      required int posts,
-      required int threadId}) async {
+      {required BranchTab tab, required int posts}) async {
     await db.addBranch(
       tab.tag,
-      threadId,
+      tab.threadId,
       tab.id,
       tab.name ?? "Ветка",
       posts,
@@ -153,6 +215,13 @@ class TrackerRepository {
     refreshNotifier.add(RefreshNotification.fromTab(tab, isDead: isDead));
   }
 
+  /// Call this from [ThreadBloc] when failed to refresh thread due
+  /// to [NoConnectionException].
+  void notifyFailedConnectionOnRefresh(IdMixin tab) {
+    refreshNotifier
+        .add(RefreshNotification.fromTab(tab, isDead: false, isError: true));
+  }
+
   /// Marks thread or branch as dead. Called when thread is not found on refresh.
   Future<void> markAsDead(IdMixin tab) async {
     if (tab is ThreadTab) {
@@ -174,6 +243,24 @@ class TrackerRepository {
     }
   }
 
+  Future<TrackedThread> getTrackedThread(String tag, int threadId) async {
+    final map = await db.getTrackedThread(tag, threadId);
+
+    return TrackedThread(
+      tag: map['tag'],
+      threadId: map['threadId'],
+      name: map['name'],
+      posts: map['posts'],
+      newPosts: map['newPosts'],
+      newPostsDiff: map['newPostsDiff'],
+      newReplies: map['newReplies'],
+      newRepliesDiff: map['newRepliesDiff'],
+      isDead: map['isDead'] == 1,
+      addTimestamp: map['addTimestamp'],
+      refreshTimestamp: map['refreshTimestamp'],
+    );
+  }
+
   /// Gets all tracked threads from the database.
   /// This also updates [threads] field.
   Future<List<TrackedThread>> getTrackedThreads() async {
@@ -188,7 +275,9 @@ class TrackerRepository {
         name: map['name'],
         posts: map['posts'],
         newPosts: map['newPosts'],
+        newPostsDiff: map['newPostsDiff'],
         newReplies: map['newReplies'],
+        newRepliesDiff: map['newRepliesDiff'],
         isDead: map['isDead'] == 1,
         addTimestamp: map['addTimestamp'],
         refreshTimestamp: map['refreshTimestamp'],
@@ -196,6 +285,25 @@ class TrackerRepository {
     });
     this.threads = threads;
     return threads;
+  }
+
+  Future<TrackedBranch> getTrackedBranch(String tag, int branchId) async {
+    final map = await db.getTrackedBranch(tag, branchId);
+
+    return TrackedBranch(
+      tag: map['tag'],
+      branchId: map['branchId'],
+      threadId: map['threadId'],
+      name: map['name'],
+      posts: map['posts'],
+      newPosts: map['newPosts'],
+      newPostsDiff: map['newPostsDiff'],
+      newReplies: map['newReplies'],
+      newRepliesDiff: map['newRepliesDiff'],
+      isDead: map['isDead'] == 1,
+      addTimestamp: map['addTimestamp'],
+      refreshTimestamp: map['refreshTimestamp'],
+    );
   }
 
   /// Gets all tracked branches from the database.
@@ -213,7 +321,9 @@ class TrackerRepository {
         name: map['name'],
         posts: map['posts'],
         newPosts: map['newPosts'],
+        newPostsDiff: map['newPostsDiff'],
         newReplies: map['newReplies'],
+        newRepliesDiff: map['newRepliesDiff'],
         isDead: map['isDead'] == 1,
         addTimestamp: map['addTimestamp'],
         refreshTimestamp: map['refreshTimestamp'],
@@ -237,7 +347,7 @@ class TrackerRepository {
   Future<void> refreshItem(TrackedItem item) async {
     final IdMixin tab = tabManager!.findTab(
       tag: item.tag,
-      threadId: item.id,
+      threadId: item is TrackedThread ? item.id : null,
       branchId: item is TrackedBranch ? item.branchId : null,
     );
 
@@ -247,13 +357,16 @@ class TrackerRepository {
     }
     if (tab is ThreadTab) {
       await _refreshThread(tab);
+      return;
     } else if (tab is BranchTab) {
       await _refreshBranch(tab);
+      return;
     }
   }
 
   Future<void> _refreshThread(ThreadTab tab) async {
-    tabManager!.refreshTab(tab: tab, source: RefreshSource.tracker);
+    Future.delayed(const Duration(milliseconds: 50),
+        () => tabManager!.refreshTab(tab: tab, source: RefreshSource.tracker));
 
     await refreshNotifier.stream.firstWhere((notification) {
       return notification.tag == tab.tag && notification.id == tab.id;
@@ -261,7 +374,8 @@ class TrackerRepository {
   }
 
   Future<void> _refreshBranch(BranchTab tab) async {
-    tabManager!.refreshTab(tab: tab, source: RefreshSource.tracker);
+    Future.delayed(const Duration(milliseconds: 50),
+        () => tabManager!.refreshTab(tab: tab, source: RefreshSource.tracker));
 
     await refreshNotifier.stream.firstWhere((notification) {
       return notification.tag == tab.tag && notification.id == tab.id;
@@ -271,6 +385,7 @@ class TrackerRepository {
   Future<void> _refreshClosedTab(TrackedItem item) async {
     if (item is TrackedThread) {
       await _refreshClosedThread(item);
+      return;
     } else if (item is TrackedBranch) {
       await _refreshClosedBranch(item);
     }
@@ -308,6 +423,12 @@ class TrackerRepository {
         prevTab: boardListTab,
       );
       markAsDead(mockTab);
+    } on NoConnectionException catch (e) {
+      debugPrint('Failed to refresh closed thread: ${e.toString()}');
+      Future.delayed(
+          const Duration(milliseconds: 10),
+          () => refreshNotifier.add(RefreshNotification.fromItem(thread,
+              isDead: false, isError: true)));
     } finally {
       await refreshNotifier.stream.firstWhere((notification) {
         return notification.tag == thread.tag &&
@@ -324,8 +445,9 @@ class TrackerRepository {
       if (branchRepo == null) {
         final threadRepo =
             ThreadRepositoryManager().get(branch.tag, branch.threadId);
-        if (threadRepo.postsCount == 0) await threadRepo.load();
-
+        if (threadRepo.postsCount == 0) {
+          await threadRepo.load();
+        }
         branchRepo =
             BranchRepositoryManager().create(threadRepo, branch.branchId);
       }
@@ -339,7 +461,7 @@ class TrackerRepository {
           id: branch.branchId,
           threadId: branch.threadId,
           tag: branch.tag,
-          name: null,
+          name: '',
           prevTab: boardListTab);
       updateBranchByTab(
           tab: mockTab,
@@ -353,9 +475,15 @@ class TrackerRepository {
           id: branch.branchId,
           threadId: branch.threadId,
           tag: branch.tag,
-          name: null,
+          name: '',
           prevTab: boardListTab);
       await markAsDead(mockTab);
+    } on NoConnectionException catch (e) {
+      debugPrint('Failed to refresh closed branch: (${e.toString()}');
+      Future.delayed(
+          const Duration(milliseconds: 10),
+          () => refreshNotifier.add(RefreshNotification.fromItem(branch,
+              isDead: false, isError: true)));
     } finally {
       await refreshNotifier.stream.firstWhere((notification) {
         return notification.tag == branch.tag &&
@@ -385,7 +513,7 @@ class TrackerRepository {
         tag: item.tag,
         id: item.branchId,
         threadId: item.threadId,
-        name: null,
+        name: '',
         prevTab: boardListTab,
       );
       await updateBranchByTab(
