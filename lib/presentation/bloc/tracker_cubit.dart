@@ -10,8 +10,13 @@ class TrackerCubit extends Cubit<TrackerState> {
   final TrackerRepository trackerRepository;
   TrackerCubit({required this.trackerRepository})
       : super(TrackerInitialState()) {
-    trackerRepository.autoRefreshNotifier.stream.listen((item) {
-      refreshItem(item);
+    trackerRepository.autoRefreshNotifier.stream.listen((notification) async {
+      if (notification.isLast) {
+        await refreshItem(notification.item);
+        trackerRepository.sendPushNotification();
+      } else {
+        refreshItem(notification.item);
+      }
     });
   }
 
