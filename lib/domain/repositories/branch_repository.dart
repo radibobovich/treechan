@@ -80,13 +80,16 @@ class BranchRepository implements Repository {
 
     /// Trim posts to a new ones.
     List<Post> newPosts = posts.getRange(lastIndex! + 1, posts.length).toList();
-    newPostsCount = newPosts.length;
+    // newPostsCount = newPosts.length;
 
     /// Buila a tree from new posts.
     Tree treeService =
         Tree(posts: newPosts, opPostId: threadRepository.threadInfo.opPostId);
     final record = await treeService.getTree(skipPostsModify: true);
     final List<TreeNode<Post>> newRoots = record.$1;
+
+    newPostsCount = 0;
+    Tree.performForEveryNodeInRoots(newRoots, (node) => newPostsCount++);
 
     /// Attach obtained trees to the branch nodes.
     if (newRoots.isEmpty) return;
