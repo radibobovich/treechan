@@ -20,9 +20,9 @@ class TrackerDatabase {
 
   Future<Database> _createDatabase() async {
     const String sql1 =
-        'CREATE TABLE thread_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newReplies INTEGER, isDead INTEGER)';
+        'CREATE TABLE thread_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
     const String sql2 =
-        'CREATE TABLE branch_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, branchId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newReplies INTEGER, isDead INTEGER)';
+        'CREATE TABLE branch_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, branchId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
     if (Platform.isWindows || Platform.isLinux) {
       databaseFactory = databaseFactoryFfi;
       return databaseFactory.openDatabase(
@@ -66,7 +66,9 @@ class TrackerDatabase {
       'refreshTimestamp': DateTime.now().millisecondsSinceEpoch,
       'posts': posts,
       'newPosts': 0,
+      'newPostsDiff': 0,
       'newReplies': 0,
+      'newRepliesDiff': 0,
       'isDead': 0
     });
   }
@@ -89,20 +91,25 @@ class TrackerDatabase {
       required bool isDead}) async {
     final Database db = await _database;
 
-    final Map<String, dynamic> currentValues = (await db.query('thread_tracker',
-            where: 'threadId = ? AND tag = ?',
-            whereArgs: [threadId, tag],
-            limit: 1))
-        .first;
+    final List<Map<String, dynamic>> currentValuesResponse = (await db.query(
+        'thread_tracker',
+        where: 'threadId = ? AND tag = ?',
+        whereArgs: [threadId, tag],
+        limit: 1));
+
+    if (currentValuesResponse.isEmpty) return;
+    final Map<String, dynamic> currentValues = currentValuesResponse.first;
 
     final updateValues = {
       'refreshTimestamp': DateTime.now().millisecondsSinceEpoch,
       'posts': posts ?? currentValues['posts'],
       'newPosts':
           forceNewPosts ? newPosts : currentValues['newPosts'] + newPosts,
+      'newPostsDiff': newPosts,
       'newReplies': forceNewReplies
           ? newReplies
           : currentValues['newReplies'] + newReplies,
+      'newRepliesDiff': newReplies,
       'isDead': isDead ? 1 : currentValues['isDead'],
     };
 
@@ -127,7 +134,9 @@ class TrackerDatabase {
       'refreshTimestamp': DateTime.now().millisecondsSinceEpoch,
       'posts': posts,
       'newPosts': 0,
+      'newPostsDiff': 0,
       'newReplies': 0,
+      'newRepliesDiff': 0,
       'isDead': 0
     });
   }
@@ -151,20 +160,25 @@ class TrackerDatabase {
       int? threadId}) async {
     final Database db = await _database;
 
-    final Map<String, dynamic> currentValues = (await db.query('branch_tracker',
-            where: 'branchId = ? AND tag = ?',
-            whereArgs: [branchId, tag],
-            limit: 1))
-        .first;
+    final List<Map<String, dynamic>> currentValuesResponse = (await db.query(
+        'branch_tracker',
+        where: 'branchId = ? AND tag = ?',
+        whereArgs: [branchId, tag],
+        limit: 1));
+
+    if (currentValuesResponse.isEmpty) return;
+    final Map<String, dynamic> currentValues = currentValuesResponse.first;
 
     final updateValues = {
       'refreshTimestamp': DateTime.now().millisecondsSinceEpoch,
       'posts': posts ?? currentValues['posts'],
       'newPosts':
           forceNewPosts ? newPosts : currentValues['newPosts'] + newPosts,
+      'newPostsDiff': newPosts,
       'newReplies': forceNewReplies
           ? newReplies
           : currentValues['newReplies'] + newReplies,
+      'newRepliesDiff': newReplies,
       'isDead': isDead ? 1 : currentValues['isDead'],
     };
 
@@ -177,7 +191,9 @@ class TrackerDatabase {
 
     final updateValues = {
       'newPosts': 0,
+      'newPostsDiff': 0,
       'newReplies': 0,
+      'newRepliesDiff': 0,
     };
 
     await db.update('thread_tracker', updateValues,
@@ -189,12 +205,26 @@ class TrackerDatabase {
 
     final updateValues = {
       'newPosts': 0,
+      'newPostsDiff': 0,
       'newReplies': 0,
+      'newRepliesDiff': 0,
     };
 
     await db.update('branch_tracker', updateValues,
         where: 'branchId = ? AND tag = ? AND threadId = ?',
         whereArgs: [branchId, tag, threadId]);
+  }
+
+  Future<Map<String, dynamic>> getTrackedThread(
+      String tag, int threadId) async {
+    final Database db = await _database;
+
+    final List<Map<String, dynamic>> maps = await db.query('thread_tracker',
+        where: 'threadId = ? AND tag = ?',
+        whereArgs: [threadId, tag],
+        limit: 1);
+
+    return maps.first;
   }
 
   Future<List<Map<String, dynamic>>> getTrackedThreads() async {
@@ -204,6 +234,18 @@ class TrackerDatabase {
         await db.query('thread_tracker', orderBy: 'addTimestamp ASC');
 
     return maps;
+  }
+
+  Future<Map<String, dynamic>> getTrackedBranch(
+      String boardTag, int branchId) async {
+    final Database db = await _database;
+
+    final List<Map<String, dynamic>> maps = await db.query('branch_tracker',
+        where: 'branchId = ? AND tag = ?',
+        whereArgs: [branchId, boardTag],
+        limit: 1);
+
+    return maps.first;
   }
 
   Future<List<Map<String, dynamic>>> getTrackedBranches() async {
