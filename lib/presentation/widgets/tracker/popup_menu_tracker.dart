@@ -11,6 +11,7 @@ class PopupMenuTracker extends StatelessWidget {
       padding: EdgeInsets.zero,
       itemBuilder: (context) {
         return <PopupMenuEntry>[
+          _getFilterButton(),
           _getIntervalButton(context),
         ];
       },
@@ -21,12 +22,49 @@ class PopupMenuTracker extends StatelessWidget {
 void showPopupMenuTracker(BuildContext context) {
   final RelativeRect rect = RelativeRect.fromLTRB(
       MediaQuery.of(context).size.width - 136, // width of popup menu
-      MediaQuery.of(context).size.height - 1 * 48 - 60,
+      MediaQuery.of(context).size.height - 2 * 48 - 60,
       // 48 is the height of one tile, 60 is approx. height of bottom bars
       0,
       0);
   showMenu(
       context: context, position: rect, items: [_getIntervalButton(context)]);
+}
+
+PopupMenuItem<dynamic> _getFilterButton() {
+  return const PopupMenuItem(child: FilterSwitch());
+}
+
+class FilterSwitch extends StatefulWidget {
+  const FilterSwitch({
+    super.key,
+  });
+
+  @override
+  State<FilterSwitch> createState() => _FilterSwitchState();
+}
+
+class _FilterSwitchState extends State<FilterSwitch> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final prefs = snapshot.data as SharedPreferences;
+            final getAllUpdates = prefs.getBool('getAllUpdates') ?? false;
+            return SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Все уведомления'),
+              value: getAllUpdates,
+              onChanged: (value) {
+                prefs.setBool('getAllUpdates', !getAllUpdates);
+                setState(() {});
+              },
+            );
+          }
+          return const SizedBox.shrink();
+        });
+  }
 }
 
 PopupMenuItem<dynamic> _getIntervalButton(BuildContext context) {
