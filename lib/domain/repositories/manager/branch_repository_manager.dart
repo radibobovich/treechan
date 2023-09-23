@@ -43,8 +43,8 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
           threadRepository: ThreadRepository(
             boardTag: 'error',
             threadId: 0,
-            threadLoader: getIt<ThreadLoader>(),
-            threadRefresher: getIt<ThreadRefresher>(),
+            threadLoader: getIt<IThreadLoader>(),
+            threadRefresher: getIt<IThreadRefresher>(),
           ),
           postId: 0);
     });
