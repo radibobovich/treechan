@@ -190,7 +190,7 @@ class TabManager {
       return _tabs.keys.firstWhere(
           (tab) => tab is BranchTab && tab.tag == tag && tab.id == branchId,
           orElse: () => BranchTab(
-              name: null,
+              name: '',
               tag: 'error',
               prevTab: boardListTab,
               threadId: -1,
@@ -199,17 +199,25 @@ class TabManager {
   }
 
   void refreshTab({DrawerTab? tab, RefreshSource? source}) {
-    final currentBloc = _tabs[tab ?? currentTab];
-
-    if (currentBloc is board_list.BoardListBloc) {
-      currentBloc.add(board_list.RefreshBoardListEvent());
-    } else if (currentBloc is BoardBloc) {
-      currentBloc.add(RefreshBoardEvent());
-    } else if (currentBloc is ThreadBloc) {
-      currentBloc
-          .add(RefreshThreadEvent(source: source ?? RefreshSource.thread));
-    } else if (currentBloc is BranchBloc) {
-      currentBloc.add(RefreshBranchEvent(source ?? RefreshSource.branch));
+    final bloc = _tabs[tab ?? currentTab];
+    final currentTabBloc = _tabs[currentTab];
+    if (bloc is board_list.BoardListBloc) {
+      bloc.add(board_list.RefreshBoardListEvent());
+    } else if (bloc is BoardBloc) {
+      bloc.add(RefreshBoardEvent());
+    } else if (bloc is ThreadBloc) {
+      /// we don't want to auto refresh tab if it is currently opened
+      /// (bad UX)
+      if (source == RefreshSource.tracker && bloc == currentTabBloc) return;
+      bloc.add(RefreshThreadEvent(source: source ?? RefreshSource.thread));
+    } else if (bloc is BranchBloc) {
+      if (source == RefreshSource.tracker &&
+          (bloc == currentTabBloc ||
+              (currentTabBloc is ThreadBloc &&
+                  (bloc.tab as BranchTab).threadId == currentTabBloc.tab.id))) {
+        return;
+      }
+      bloc.add(RefreshBranchEvent(source ?? RefreshSource.branch));
     }
   }
 
