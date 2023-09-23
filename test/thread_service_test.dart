@@ -27,6 +27,7 @@ void main() async {
       'trackerAutoRefresh': true,
       'refreshInterval': 60,
       'showSnackBarActionOnThreadRefresh': true,
+      'getAllUpdates': false,
       'test': true
     });
     const env = Env.test;
