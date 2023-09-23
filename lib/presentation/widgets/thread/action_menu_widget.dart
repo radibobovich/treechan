@@ -259,7 +259,7 @@ class ActionMenu extends StatelessWidget {
     if (currentTab is ThreadTab) {
       threadId = (currentTab as ThreadTab).id;
     } else if (currentTab is BranchTab) {
-      threadId = (currentTab as BranchTab).id;
+      threadId = (currentTab as BranchTab).threadId;
     } else {
       throw Exception('Unknown tab type');
     }
