@@ -4,7 +4,9 @@ abstract class TrackedItem {
   final String name;
   final int posts;
   final int newPosts;
+  final int newPostsDiff;
   final int newReplies;
+  final int newRepliesDiff;
   final bool isDead;
   final int addTimestamp;
   final int refreshTimestamp;
@@ -15,7 +17,9 @@ abstract class TrackedItem {
       required this.name,
       required this.posts,
       required this.newPosts,
+      required this.newPostsDiff,
       required this.newReplies,
+      required this.newRepliesDiff,
       required this.isDead,
       required this.addTimestamp,
       required this.refreshTimestamp});
@@ -30,7 +34,9 @@ class TrackedThread extends TrackedItem {
       required super.name,
       required super.posts,
       required super.newPosts,
+      required super.newPostsDiff,
       required super.newReplies,
+      required super.newRepliesDiff,
       required super.isDead,
       required super.addTimestamp,
       required super.refreshTimestamp});
@@ -49,7 +55,9 @@ class TrackedBranch extends TrackedItem {
       required super.name,
       required super.posts,
       required super.newPosts,
+      required super.newPostsDiff,
       required super.newReplies,
+      required super.newRepliesDiff,
       required super.isDead,
       required super.addTimestamp,
       required super.refreshTimestamp});
