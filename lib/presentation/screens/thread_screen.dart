@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../exceptions.dart';
 import '../provider/page_provider.dart';
@@ -26,7 +27,7 @@ class ThreadScreen extends StatefulWidget {
     required this.currentTab,
     required this.prevTab,
   });
-  final DrawerTab currentTab;
+  final ThreadTab currentTab;
   final DrawerTab prevTab;
   @override
   State<ThreadScreen> createState() => _ThreadScreenState();
@@ -46,7 +47,7 @@ class _ThreadScreenState extends State<ThreadScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-        key: _threadScaffoldKey,
+        key: context.read<ThreadBloc>().scaffoldKey,
         endDrawer: AppEndDrawer(currentTab: widget.currentTab),
         onEndDrawerChanged: (isOpened) {
           if (isOpened) {
@@ -56,30 +57,7 @@ class _ThreadScreenState extends State<ThreadScreen>
             BlocProvider.of<ThreadBloc>(context).storeEndDrawerScrollPosition();
           }
         },
-        appBar: AppBar(
-          title: Text(
-            widget.currentTab.name ?? "Загрузка...",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          leading: !Platform.isWindows
-              ? GoBackButton(currentTab: widget.currentTab)
-              : IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                ),
-          actions: <Widget>[
-            IconButton(
-                onPressed: () async {
-                  BlocProvider.of<ThreadBloc>(context)
-                      .add(RefreshThreadEvent());
-                },
-                icon: const Icon(Icons.refresh)),
-            const PopupMenuThread()
-          ],
-        ),
+        appBar: ThreadAppBar(currentTab: widget.currentTab),
         body: rebuild.ShouldRebuild(
           shouldRebuild: (oldWidget, newWidget) => false,
           child: BlocBuilder<ThreadBloc, ThreadState>(
@@ -130,12 +108,49 @@ class _ThreadScreenState extends State<ThreadScreen>
   }
 }
 
-final _threadScaffoldKey = GlobalKey<ScaffoldState>();
+class ThreadAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const ThreadAppBar({
+    super.key,
+    required this.currentTab,
+  });
 
-void openEndDrawer() {
-  _threadScaffoldKey.currentState!.openEndDrawer();
-}
+  final ThreadTab currentTab;
 
-void closeEndDrawer() {
-  _threadScaffoldKey.currentState!.openEndDrawer();
+  @override
+  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+      key: UniqueKey(),
+      onVisibilityChanged: (info) {
+        if (info.visibleFraction > 0) {
+          context.read<ThreadBloc>().resetNewPostsCount();
+        }
+      },
+      child: AppBar(
+        title: Text(
+          currentTab.name ?? "Загрузка...",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        leading: !Platform.isWindows
+            ? GoBackButton(currentTab: currentTab)
+            : IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
+        actions: <Widget>[
+          IconButton(
+              onPressed: () async {
+                BlocProvider.of<ThreadBloc>(context).add(RefreshThreadEvent());
+              },
+              icon: const Icon(Icons.refresh)),
+          const PopupMenuThread()
+        ],
+      ),
+    );
+  }
 }

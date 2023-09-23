@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:should_rebuild/should_rebuild.dart';
 import 'package:treechan/utils/constants/enums.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../domain/models/json/post_json.dart';
 import '../../domain/models/tab.dart';
@@ -18,7 +19,7 @@ import '../widgets/thread/post_widget.dart';
 class BranchScreen extends StatefulWidget {
   const BranchScreen({super.key, required this.currentTab});
 
-  final DrawerTab currentTab;
+  final BranchTab currentTab;
   @override
   State<BranchScreen> createState() => _BranchScreenState();
 }
@@ -34,30 +35,7 @@ class _BranchScreenState extends State<BranchScreen>
     return ShouldRebuild(
       shouldRebuild: (oldWidget, newWidget) => false,
       child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              widget.currentTab.name ?? "Загрузка...",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            leading: !Platform.isWindows
-                ? GoBackButton(currentTab: widget.currentTab)
-                : IconButton(
-                    icon: const Icon(Icons.menu),
-                    onPressed: () {
-                      Scaffold.of(context).openDrawer();
-                    },
-                  ),
-            actions: <Widget>[
-              IconButton(
-                  onPressed: () async {
-                    BlocProvider.of<BranchBloc>(context)
-                        .add(RefreshBranchEvent(RefreshSource.branch));
-                  },
-                  icon: const Icon(Icons.refresh)),
-              // const PopupMenuBranch()
-            ],
-          ),
+          appBar: BranchAppBar(currentTab: widget.currentTab),
           body: BlocBuilder<BranchBloc, BranchState>(
             builder: (context, state) {
               if (state is BranchLoadedState) {
@@ -97,6 +75,53 @@ class _BranchScreenState extends State<BranchScreen>
               }
             },
           )),
+    );
+  }
+}
+
+class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const BranchAppBar({
+    super.key,
+    required this.currentTab,
+  });
+
+  final BranchTab currentTab;
+  @override
+  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+      key: UniqueKey(),
+      onVisibilityChanged: (info) {
+        if (info.visibleFraction > 0) {
+          context.read<BranchBloc>().resetNewPostsCount();
+        }
+      },
+      child: AppBar(
+        title: Text(
+          currentTab.name ?? "Загрузка...",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        leading: !Platform.isWindows
+            ? GoBackButton(currentTab: currentTab)
+            : IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
+        actions: <Widget>[
+          IconButton(
+              onPressed: () async {
+                BlocProvider.of<BranchBloc>(context)
+                    .add(RefreshBranchEvent(RefreshSource.branch));
+              },
+              icon: const Icon(Icons.refresh)),
+          // const PopupMenuBranch()
+        ],
+      ),
     );
   }
 }
