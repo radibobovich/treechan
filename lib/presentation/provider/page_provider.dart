@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/config/local_notifications.dart';
 import 'package:treechan/domain/models/catalog.dart';
 import 'package:treechan/domain/repositories/tracker_repository.dart';
 import 'package:treechan/presentation/bloc/tracker_cubit.dart';
@@ -56,6 +57,9 @@ class PageProvider with ChangeNotifier {
     pageController =
         TabController(length: pages.length, vsync: gotState, initialIndex: 2);
     _initTrackerCubit();
+    pushNotificationStreamController.stream.listen((notification) {
+      addTab(DrawerTab.fromPush(notification));
+    });
   }
 
   late final TrackerCubit trackerCubit;
@@ -173,9 +177,7 @@ class PageProvider with ChangeNotifier {
     } else if (currentTab is BranchTab) {
       final tab = currentTab;
       await trackerRepository.addBranchByTab(
-          tab: tab,
-          posts: (bloc as BranchBloc).branchRepository.postsCount,
-          threadId: tab.id);
+          tab: tab, posts: (bloc as BranchBloc).branchRepository.postsCount);
     }
     trackerCubit.loadTracker();
   }
