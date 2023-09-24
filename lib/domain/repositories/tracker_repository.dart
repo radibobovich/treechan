@@ -90,6 +90,7 @@ class TrackerRepository {
         type: item is TrackedThread ? 'thread' : 'branch',
         boardTag: item.tag,
         id: item.id,
+        threadId: item is TrackedBranch ? item.threadId : null,
         name: item.name,
       )..toJson();
       final payload = jsonEncode(notification);
