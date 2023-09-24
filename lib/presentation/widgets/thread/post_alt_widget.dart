@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/config/themes.dart';
 import '../../../domain/models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -89,7 +90,7 @@ class _PostHeaderBorderless extends StatelessWidget {
               Text(
                 post.name,
                 style: post.email == "mailto:sage"
-                    ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
+                    ? TextStyle(color: context.colors.boldText)
                     : const TextStyle(
                         color: Color.fromARGB(255, 116, 116, 116)),
               ),
