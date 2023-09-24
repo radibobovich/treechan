@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
+import 'package:treechan/utils/string.dart';
 import '../../../data/hidden_posts.database.dart';
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
@@ -225,7 +226,9 @@ class ActionMenu extends StatelessWidget {
             children: [
               Text('Пост #${node.data.id}'),
               Text('Доска: ${node.data.board}'),
-              Text('Автор: ${node.data.name}'),
+              node.data.board != 's'
+                  ? Text('Автор: ${node.data.name}')
+                  : Text('Автор: ${extractUserInfo(node.data.name)}'),
               Text('Дата создания: ${node.data.date}'),
               Text('Порядковый номер: ${node.data.number}'),
               Text('Посты-родители: ${getParents(node)}'),
@@ -234,6 +237,10 @@ class ActionMenu extends StatelessWidget {
                   'ОП: ${node.data.op || node.data.number == 1 ? 'да' : 'нет'}'),
               Text(
                   'e-mail: ${node.data.email.isEmpty ? 'нет' : node.data.email}'),
+              node.data.board == 's'
+                  ? Text(
+                      'Устройство: ${extractUserInfo(node.data.name, mode: ExtractMode.info)}')
+                  : const SizedBox.shrink(),
               SelectableText('Ссылка на пост: ${getPostLink(node)}'),
               IconButton(
                   onPressed: () async {
