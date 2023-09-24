@@ -96,6 +96,81 @@ class AppTheme {
           bodyMedium: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
           bodySmall: TextStyle(color: Color.fromARGB(255, 125, 125, 125))),
       hintColor: const Color.fromARGB(255, 125, 125, 125));
+
+  static final ThemeData dark = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.black, brightness: Brightness.dark)
+          .copyWith(
+        primary: const Color.fromARGB(255, 255, 102, 0),
+        background: const Color(0xFF1F1F1F),
+        onSurface: const Color(0xFFE1E1E1),
+        secondary: const Color.fromARGB(255, 255, 102, 0),
+      ),
+      extensions: <ThemeExtension<dynamic>>[
+        CustomColors(boldText: const Color.fromARGB(255, 255, 102, 0))
+      ],
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      primaryColor: const Color.fromARGB(255, 25, 39, 52),
+      secondaryHeaderColor: const Color.fromARGB(255, 255, 102, 0),
+      appBarTheme: const AppBarTheme(color: Color(0xFF1F1F1F)),
+      drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF1F1F1F)),
+      cardTheme: const CardTheme(color: Color(0xFF1E1E1E)),
+      dialogTheme: const DialogTheme(backgroundColor: Color(0xFF1F1F1F)),
+      tabBarTheme: const TabBarTheme(
+          indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(color: Color(0xFFE1E1E1)))),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.black,
+        selectedItemColor: Color.fromARGB(255, 255, 102, 0),
+        unselectedItemColor: Color(0xFFE1E1E1),
+      ),
+      iconTheme: const IconThemeData(color: Color(0xFFE1E1E1)),
+      dividerTheme: const DividerThemeData(color: Color(0x99A0A0A0)),
+      snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Colors.black,
+          contentTextStyle: TextStyle(color: Color(0xFFE1E1E1))),
+      textTheme: const TextTheme(
+          titleMedium: TextStyle(color: Color(0xFFE1E1E1)),
+          bodyMedium: TextStyle(color: Color(0xFFE1E1E1)),
+          bodySmall: TextStyle(color: Color(0xFFA0A0A0))));
+  static final ThemeData amoled = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.black, brightness: Brightness.dark)
+          .copyWith(
+        primary: const Color.fromARGB(255, 255, 102, 0),
+        background: const Color(0xFF000000),
+        onSurface: const Color(0xFFE1E1E1),
+        secondary: const Color.fromARGB(255, 255, 102, 0),
+      ),
+      extensions: <ThemeExtension<dynamic>>[
+        CustomColors(boldText: const Color.fromARGB(255, 255, 102, 0))
+      ],
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF000000),
+      primaryColor: const Color.fromARGB(255, 25, 39, 52),
+      secondaryHeaderColor: const Color.fromARGB(255, 255, 102, 0),
+      appBarTheme: const AppBarTheme(color: Color(0xFF000000)),
+      drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF000000)),
+      cardTheme: const CardTheme(color: Color(0xFF141414)),
+      dialogTheme: const DialogTheme(backgroundColor: Color(0xFF141414)),
+      tabBarTheme: const TabBarTheme(
+          indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(color: Color(0xFFE1E1E1)))),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.black,
+        selectedItemColor: Color.fromARGB(255, 255, 102, 0),
+        unselectedItemColor: Color(0xFFE1E1E1),
+      ),
+      iconTheme: const IconThemeData(color: Color(0xFFE1E1E1)),
+      dividerTheme: const DividerThemeData(color: Color(0x99282828)),
+      snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Colors.black,
+          contentTextStyle: TextStyle(color: Color(0xFFE1E1E1))),
+      textTheme: const TextTheme(
+          titleMedium: TextStyle(color: Color(0xFFE1E1E1)),
+          bodyMedium: TextStyle(color: Color(0xFFE1E1E1)),
+          bodySmall: TextStyle(color: Color(0xFFA0A0A0))));
 }
 
 class CustomColors extends ThemeExtension<CustomColors> {
@@ -120,6 +195,10 @@ ThemeData getTheme(String theme) {
       return AppTheme.makabaNight;
     case 'Makaba Classic':
       return AppTheme.makabaClassic;
+    case 'Dark':
+      return AppTheme.dark;
+    case 'Amoled':
+      return AppTheme.amoled;
   }
   return AppTheme.makabaClassic;
 }

@@ -9,7 +9,8 @@ Future<void> initializePreferences() async {
   }
 
   if (prefs.getStringList('themes') == null) {
-    await prefs.setStringList('themes', ['Makaba Night', 'Makaba Classic']);
+    await prefs.setStringList(
+        'themes', ['Makaba Classic', 'Makaba Night', 'Dark', 'Amoled']);
   }
   if (prefs.getString('theme') == null) {
     await prefs.setString('theme', 'Makaba Classic');
