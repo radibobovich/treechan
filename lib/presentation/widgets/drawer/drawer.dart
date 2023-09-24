@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide SearchBar;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/config/themes.dart';
 
 import '../../provider/page_provider.dart';
 import '../../../domain/models/tab.dart';
@@ -127,7 +128,7 @@ class TabTile extends StatelessWidget {
     return ListTile(
       selected: context.watch<PageProvider>().tabManager.currentIndex == index,
       textColor: Theme.of(context).textTheme.titleMedium!.color,
-      selectedColor: Theme.of(context).secondaryHeaderColor,
+      selectedColor: context.colors.boldText,
       visualDensity: const VisualDensity(vertical: -2),
       contentPadding: const EdgeInsets.fromLTRB(16, 0, 4, 0),
       title: Text(
