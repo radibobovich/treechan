@@ -14,6 +14,14 @@ class ThreadsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (threads.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 50),
+          child: Text('Нет отслеживаемых тредов'),
+        ),
+      );
+    }
     return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -38,6 +46,14 @@ class BranchesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (branches.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 50),
+        child: Center(
+          child: Text('Нет отслеживаемых веток'),
+        ),
+      );
+    }
     return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
