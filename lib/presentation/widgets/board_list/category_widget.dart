@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/config/themes.dart';
 import 'package:treechan/presentation/screens/board_list_screen.dart';
 
 import '../../../utils/constants/enums.dart';
@@ -51,7 +52,7 @@ class CategoryHeader extends StatelessWidget {
           style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).secondaryHeaderColor)),
+              color: context.colors.boldText)),
     );
   }
 }
