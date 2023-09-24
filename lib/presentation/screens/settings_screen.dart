@@ -103,21 +103,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     });
                   },
                 ),
-                SettingsTile.navigation(
-                  leading: const Icon(Icons.download),
-                  title: const Text('Место сохранения медиа'),
-                  value: Text(getDestinationName(
-                      prefs.getString('androidDestinationType')!)),
-                  onPressed: (context) {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext bcontext) {
-                          return AlertDialog(
-                              contentPadding: const EdgeInsets.all(10),
-                              content: DestinationSelector());
-                        }).then((value) => setState(() {}));
-                  },
-                )
+                // SettingsTile.navigation(
+                //   leading: const Icon(Icons.download),
+                //   title: const Text('Место сохранения медиа'),
+                //   value: Text(getDestinationName(
+                //       prefs.getString('androidDestinationType')!)),
+                //   onPressed: (context) {
+                //     showDialog(
+                //         context: context,
+                //         builder: (BuildContext bcontext) {
+                //           return AlertDialog(
+                //               contentPadding: const EdgeInsets.all(10),
+                //               content: DestinationSelector());
+                //         }).then((value) => setState(() {}));
+                //   },
+                // )
               ])
         ],
       ),
@@ -125,20 +125,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-String getDestinationName(String destination) {
-  switch (destination) {
-    case 'directoryDownloads':
-      return 'Загрузки';
-    case 'directoryPictures':
-      return 'Галерея';
-    case 'directoryDCIM':
-      return 'DCIM';
-    case 'directoryMovies':
-      return 'Movies';
-    default:
-      return 'Неизвестно';
-  }
-}
+// String getDestinationName(String destination) {
+//   switch (destination) {
+//     case 'directoryDownloads':
+//       return 'Загрузки';
+//     case 'directoryPictures':
+//       return 'Галерея';
+//     case 'directoryDCIM':
+//       return 'DCIM';
+//     case 'directoryMovies':
+//       return 'Movies';
+//     default:
+//       return 'Неизвестно';
+//   }
+// }
 
 class ThemesSelector extends StatelessWidget {
   const ThemesSelector({
@@ -175,36 +175,36 @@ class ThemesSelector extends StatelessWidget {
   }
 }
 
-class DestinationSelector extends StatelessWidget {
-  DestinationSelector({super.key});
-  final List<String> destinations = [
-    'directoryDownloads',
-    'directoryPictures',
-    'directoryDCIM',
-  ];
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.minPositive,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: destinations.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(getDestinationName(destinations[index])),
-                onTap: () {
-                  prefs.setString(
-                      'androidDestinationType', destinations[index]);
-                  Navigator.pop(context);
-                },
-              );
-            },
-          )
-        ],
-      ),
-    );
-  }
-}
+// class DestinationSelector extends StatelessWidget {
+//   DestinationSelector({super.key});
+//   final List<String> destinations = [
+//     'directoryDownloads',
+//     'directoryPictures',
+//     'directoryDCIM',
+//   ];
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox(
+//       width: double.minPositive,
+//       child: Column(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           ListView.builder(
+//             shrinkWrap: true,
+//             itemCount: destinations.length,
+//             itemBuilder: (context, index) {
+//               return ListTile(
+//                 title: Text(getDestinationName(destinations[index])),
+//                 onTap: () {
+//                   prefs.setString(
+//                       'androidDestinationType', destinations[index]);
+//                   Navigator.pop(context);
+//                 },
+//               );
+//             },
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
