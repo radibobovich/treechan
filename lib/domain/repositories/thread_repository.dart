@@ -72,7 +72,6 @@ class ThreadRepository implements Repository {
   List<TreeNode<Post>> get getLastNodes => _lastNodes;
 
   /// Contains thread information like maxNum, postsCount, etc.
-  /// TODO: create a separate class for thread info, dont use Root
   late ThreadInfo _threadInfo;
   ThreadInfo get threadInfo => _threadInfo;
 
