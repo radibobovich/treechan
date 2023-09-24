@@ -17,6 +17,7 @@ void main() {
     'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Microsoft Windows 10: Palemoon)</span>',
     'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Microsoft Windows 10: Internet Explorer)</span>',
     'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Microsoft Windows 10: unknown)</span>',
+    'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Microsoft Windows Vista: Firefox based)</span>',
     'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Microsoft Windows 7: unknown)</span>',
     'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Microsoft Windows 8: unknown)</span>',
     'Аноним&nbsp;<span style=\"color:rgb(164,164,164);\">(Apple Mac: unknown)</span>',
