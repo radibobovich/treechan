@@ -5,3 +5,28 @@ enum FavoriteListAction { add, remove, toggleReorder, saveAll }
 enum SortBy { page, bump, time }
 
 enum RefreshSource { thread, branch, tracker }
+
+enum System {
+  android,
+  ios,
+  fuchsia,
+  haiku,
+  linux,
+  macos,
+  windows7,
+  windows8,
+  windows10,
+  unknown
+}
+
+enum Browser {
+  chromium,
+  firefox,
+  opera,
+  safari,
+  mobileSafari,
+  yandex,
+  unknown,
+  palemoon,
+  internetExplorer
+}
