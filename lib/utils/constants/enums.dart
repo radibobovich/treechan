@@ -14,6 +14,7 @@ enum System {
   linux,
   macos,
   windows7,
+  windowsVista,
   windows8,
   windows10,
   unknown
