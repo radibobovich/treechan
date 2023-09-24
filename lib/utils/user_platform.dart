@@ -17,6 +17,8 @@ System getUserOS(String input) {
     return System.windows7;
   } else if (userInfo.contains('Microsoft Windows 8')) {
     return System.windows8;
+  } else if (userInfo.contains('Microsoft Windows Vista')) {
+    return System.windowsVista;
   } else if (userInfo.contains('iOS') || userInfo.contains('Apple GayPhone')) {
     return System.ios;
   } else if (userInfo.contains('Fuchsia')) {
@@ -58,6 +60,7 @@ final Map<System, SvgPicture> systemSvgIcons = {
   System.linux: getSvgAsset('assets/icons/os/linux.svg'),
   System.macos: getSvgAsset('assets/icons/os/macos.svg'),
   System.windows7: getSvgAsset('assets/icons/os/windows_7.svg'),
+  System.windowsVista: getSvgAsset('assets/icons/os/windows_vista.svg'),
   System.windows8: getSvgAsset('assets/icons/os/windows_8.svg'),
   System.ios: getSvgAsset('assets/icons/os/ios.svg'),
   System.fuchsia: getSvgAsset('assets/icons/os/fuchsia.svg'),
