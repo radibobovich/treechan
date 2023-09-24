@@ -4,7 +4,9 @@ import 'package:treechan/data/hidden_threads_database.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
+import 'package:treechan/presentation/widgets/shared/user_platform_icons.dart';
 import 'package:treechan/utils/constants/dev.dart';
+import 'package:treechan/utils/string.dart';
 
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
@@ -54,7 +56,7 @@ class _ThreadCardState extends State<ThreadCard> {
                     child: _CardHeader(thread: widget.thread),
                   ),
                   Text.rich(TextSpan(
-                    text: widget.thread.posts[0].subject,
+                    text: widget.thread.posts.first.subject,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )),
                 ],
@@ -65,9 +67,9 @@ class _ThreadCardState extends State<ThreadCard> {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MediaPreview(files: widget.thread.posts[0].files),
+                      MediaPreview(files: widget.thread.posts.first.files),
                       HtmlContainer(
-                        post: widget.thread.posts[0],
+                        post: widget.thread.posts.first,
                         currentTab: widget.currentTab,
                         // onOpenCatalog: onOpenCatalog,
                       ),
@@ -83,9 +85,9 @@ class _ThreadCardState extends State<ThreadCard> {
   void openThread(BuildContext context) {
     FocusManager.instance.primaryFocus?.unfocus();
     context.read<PageProvider>().addTab(ThreadTab(
-        id: env == Env.prod ? widget.thread.posts[0].id : debugThreadId,
-        tag: env == Env.prod ? widget.thread.posts[0].board : debugBoardTag,
-        name: widget.thread.posts[0].subject,
+        id: env == Env.prod ? widget.thread.posts.first.id : debugThreadId,
+        tag: env == Env.prod ? widget.thread.posts.first.board : debugBoardTag,
+        name: widget.thread.posts.first.subject,
         prevTab: widget.currentTab));
   }
 }
@@ -101,10 +103,15 @@ class _CardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateTimeService dateTimeSerivce =
-        DateTimeService(timestamp: thread!.posts[0].timestamp);
+        DateTimeService(timestamp: thread!.posts.first.timestamp);
     return Row(
       children: [
-        Text(thread?.posts[0].name ?? "No author"),
+        thread!.posts.first.board != 's'
+            ? Text(thread?.posts.first.name ?? "No author")
+            : Text(extractUserInfo(thread!.posts.first.name)),
+        thread!.posts.first.board == 's'
+            ? UserPlatformIcons(userName: thread!.posts.first.name)
+            : const SizedBox.shrink(),
         const Spacer(),
         Text(dateTimeSerivce.getAdaptiveDate(),
             style:
