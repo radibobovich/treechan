@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/config/themes.dart';
 import 'package:treechan/domain/models/tracked_item.dart';
 
 import '../bloc/tracker_cubit.dart';
@@ -62,7 +63,7 @@ class TrackerBuilder extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).secondaryHeaderColor)),
+                      color: context.colors.boldText)),
             ),
             ThreadsList(
               threads: threads,
@@ -74,7 +75,7 @@ class TrackerBuilder extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).secondaryHeaderColor)),
+                      color: context.colors.boldText)),
             ),
             BranchesList(
               branches: branches,
