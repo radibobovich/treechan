@@ -85,7 +85,6 @@ class _TrackerTileState extends State<TrackerTile>
       );
       context.read<PageProvider>().addTab(tab);
     }
-    context.read<TrackerCubit>().markAsRead(item);
   }
 }
 
