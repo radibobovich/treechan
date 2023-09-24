@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/domain/services/image_download_service.dart';
 
 import '../../../domain/models/json/json.dart';
 import 'package:extended_image/extended_image.dart';
@@ -52,11 +53,13 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
 
   List<Widget> media = [];
   List<String> fullResLinks = [];
+  List<String> previewLinks = [];
   List<String> videoLinks = [];
 
   for (var file in files) {
     if (_galleryTypes.contains(file.type)) {
       fullResLinks.add(file.path!);
+      previewLinks.add(file.thumbnail!);
     } else if (_videoTypes.contains(file.type)) {
       videoLinks.add(file.path!);
     }
@@ -64,6 +67,7 @@ List<Widget> _getImages(List<File>? files, BuildContext context) {
   for (var file in files) {
     media.add(_MediaItemPreview(
         imageLinks: fullResLinks,
+        previewLinks: previewLinks,
         file: file,
         context: context,
         type: file.type!));
@@ -76,12 +80,14 @@ class _MediaItemPreview extends StatefulWidget {
   const _MediaItemPreview(
       {Key? key,
       required this.imageLinks,
+      required this.previewLinks,
       required this.file,
       required this.context,
       required this.type})
       : super(key: key);
 
   final List<String> imageLinks;
+  final List<String> previewLinks;
   final File file;
   final BuildContext context;
   final int type;
@@ -149,6 +155,8 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
                 IconButton(
                   icon: const Icon(Icons.save),
                   onPressed: () {
+                    downloadImage(
+                        widget.imageLinks[pageController.page?.toInt() ?? 0]);
                     // imageDownloadService.downloadImage();
                     // fix infinite duration
 
@@ -168,6 +176,7 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
             body: (_galleryTypes.contains(widget.type))
                 ? SwipeGallery(
                     imageLinks: widget.imageLinks,
+                    previewLinks: widget.previewLinks,
                     pageController: pageController,
                     onDownloadImage: (imageUrl, fileName) {
                       // imageDownloadService.setUrl(url: imageUrl);
