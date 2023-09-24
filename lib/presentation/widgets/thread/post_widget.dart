@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/config/themes.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
 import '../../../domain/models/json/json.dart';
@@ -245,7 +246,7 @@ class _PostHeader extends StatelessWidget {
         children: [
           Text(post.name,
               style: post.email == "mailto:sage"
-                  ? TextStyle(color: Theme.of(context).secondaryHeaderColor)
+                  ? TextStyle(color: context.colors.boldText)
                   : null),
           post.op == true
               ? const Padding(
