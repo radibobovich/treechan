@@ -1,3 +1,15 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+
+downloadImage(String url) async {
+  var response =
+      await Dio().get(url, options: Options(responseType: ResponseType.bytes));
+  await ImageGallerySaver.saveImage(Uint8List.fromList(response.data),
+      quality: 100, name: "hello");
+}
+
+
 // import 'dart:io';
 
 // import 'package:image_downloader/image_downloader.dart';
