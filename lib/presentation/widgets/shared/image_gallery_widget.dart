@@ -75,6 +75,9 @@ class _SwipeGalleryState extends State<SwipeGallery>
         return Colors.black.withOpacity(min(1.0, max(1.0 - opacity, 0.0)));
       },
       child: ExtendedImageGesturePageView.builder(
+        physics: widget.imageLinks.length == 1
+            ? const NeverScrollableScrollPhysics()
+            : const ClampingScrollPhysics(),
         onPageChanged: (int page) {
           _preloadImage(page - 1);
           _preloadImage(page + 1);
