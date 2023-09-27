@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/hidden_posts.database.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
+import 'package:treechan/domain/models/tab.dart';
+import 'package:treechan/domain/repositories/tracker_repository.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/fix_html_video.dart';
 
@@ -120,7 +122,11 @@ class ThreadRepository implements Repository {
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
-  Future<void> refresh() async {
+  ///
+  /// Branches are calling this method when they are refreshed,
+  /// bypassing [ThreadBloc] refresh method, so you should use
+  /// [trackerRepo] when refreshing branch to update tracker from here.
+  Future<void> refresh({TrackerRepository? trackerRepo}) async {
     /// If thread hasn't been loaded properly you can't refresh it
     /// RefreshThreadEvent will fire LoadThreadEvent after so it will be loaded
     if (_posts.isEmpty) {
@@ -164,6 +170,14 @@ class ThreadRepository implements Repository {
         'New posts sort executed in ${stopwatch.elapsedMicroseconds} microseconds');
 
     _setShowLinesProperty(_roots);
+
+    trackerRepo?.updateThreadByTab(
+      tab: ThreadTab(
+          name: null, tag: boardTag, prevTab: boardListTab, id: threadId),
+      posts: postsCount,
+      newPosts: newPostsCount,
+      newReplies: newReplies,
+    );
     return;
   }
 
