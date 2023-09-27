@@ -21,9 +21,9 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
         boardTag: env == Env.prod ? tag : debugBoardTag,
         threadId: env == Env.prod ? id : debugThreadId,
         // param1 only used in test and dev environments
-        threadLoader: getIt<IThreadLoader>(param1: debugThreadPath),
+        threadLoader: getIt<IThreadRemoteLoader>(param1: debugThreadPath),
         threadRefresher:
-            getIt<IThreadRefresher>(param1: debugThreadUpdatePaths));
+            getIt<IThreadRemoteRefresher>(param1: debugThreadUpdatePaths));
     _repos.add(threadRepo);
     return threadRepo;
   }
