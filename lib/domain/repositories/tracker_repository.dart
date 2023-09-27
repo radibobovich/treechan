@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/config/local_notifications.dart';
@@ -70,6 +71,16 @@ class TrackerRepository {
     }
 
     for (var item in nonZeroDifference) {
+      /// Don't send push notification if the tab is currently opened
+      if (tabManager!.currentTab is IdMixin && tabManager!.isAppInForeground) {
+        if (tabManager!.currentTab as IdMixin ==
+            tabManager!.findTab(
+                tag: item.tag,
+                threadId: item is TrackedThread ? item.id : null,
+                branchId: item is TrackedBranch ? item.branchId : null)) {
+          return;
+        }
+      }
       String itemType = item is TrackedThread ? 'тред' : 'ветк';
 
       String body = '';
@@ -366,8 +377,9 @@ class TrackerRepository {
   }
 
   Future<void> _refreshThread(ThreadTab tab) async {
-    Future.delayed(const Duration(milliseconds: 50),
-        () => tabManager!.refreshTab(tab: tab, source: RefreshSource.tracker));
+    Future.delayed(const Duration(milliseconds: 50), () {
+      tabManager!.refreshTab(tab: tab, source: RefreshSource.tracker);
+    });
 
     await refreshNotifier.stream.firstWhere((notification) {
       return notification.tag == tab.tag && notification.id == tab.id;
