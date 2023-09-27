@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/config/themes.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
+import 'package:treechan/presentation/widgets/shared/media_preview_widget.dart';
 import 'package:treechan/presentation/widgets/thread/post_widget.dart';
 
 import '../../../domain/models/json/json.dart';
@@ -40,7 +41,7 @@ class AppEndDrawer extends StatelessWidget {
                   itemCount: lastPosts.length,
                   itemBuilder: (_, index) {
                     final node = lastPosts[index];
-                    return PostPreview(
+                    return EndDrawerPostWidget(
                         key: PageStorageKey(node.data.id),
                         node: node,
                         currentTab: currentTab);
@@ -59,8 +60,8 @@ class AppEndDrawer extends StatelessWidget {
   }
 }
 
-class PostPreview extends StatelessWidget {
-  const PostPreview({
+class EndDrawerPostWidget extends StatelessWidget {
+  const EndDrawerPostWidget({
     super.key,
     required this.node,
     required this.currentTab,
@@ -79,8 +80,10 @@ class PostPreview extends StatelessWidget {
         child: Padding(
             padding: const EdgeInsets.all(4.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _PostHeader(post: node.data),
+                MediaPreview(files: node.data.files, height: 60),
                 HtmlContainer(
                   post: node.data,
                   currentTab: currentTab,
