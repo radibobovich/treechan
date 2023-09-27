@@ -9,6 +9,7 @@ import 'package:mockito/mockito.dart';
 import 'package:treechan/data/thread/response_handler.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/exceptions.dart';
 
 abstract class IThreadRefresher {
   // ignore: unused_element
@@ -21,9 +22,11 @@ abstract class IThreadRefresher {
       required int lastPostId});
 }
 
-@Injectable(as: IThreadRefresher, env: [Env.prod])
-class ThreadRefresher implements IThreadRefresher {
-  ThreadRefresher();
+abstract class IThreadRemoteRefresher extends IThreadRefresher {}
+
+@Injectable(as: IThreadRemoteRefresher, env: [Env.prod])
+class ThreadRemoteRefresher implements IThreadRemoteRefresher {
+  ThreadRemoteRefresher();
   final IResponseHandler responseHandler = getIt<IResponseHandler>();
   @override
   Future<http.Response> _getRefreshResponse(
@@ -35,7 +38,10 @@ class ThreadRefresher implements IThreadRefresher {
         "https://2ch.hk/api/mobile/v2/after/$boardTag/$threadId/${lastPostId + 1}";
 
     return await responseHandler.getResponse(
-        url: url, boardTag: boardTag, threadId: threadId);
+      url: url,
+      onResponseError: (int statusCode) =>
+          _onThreadRefreshResponseError(statusCode, boardTag, threadId),
+    );
   }
 
   @override
@@ -52,9 +58,9 @@ class ThreadRefresher implements IThreadRefresher {
   }
 }
 
-@Injectable(as: IThreadRefresher, env: [Env.test, Env.dev])
-class MockThreadRefresher extends Mock implements IThreadRefresher {
-  MockThreadRefresher({@factoryParam required this.assetPaths});
+@Injectable(as: IThreadRemoteRefresher, env: [Env.test, Env.dev])
+class MockThreadRemoteRefresher extends Mock implements IThreadRemoteRefresher {
+  MockThreadRemoteRefresher({@factoryParam required this.assetPaths});
   final List<String> assetPaths;
   int refreshCount = 0;
   @override
@@ -86,5 +92,15 @@ class MockThreadRefresher extends Mock implements IThreadRefresher {
 
     debugPrint('Thread $boardTag/$threadId refreshed');
     return postListFromJson(jsonDecode(response.body)["posts"]);
+  }
+}
+
+Never _onThreadRefreshResponseError(
+    int responseCode, String boardTag, int threadId) {
+  if (responseCode == 404) {
+    throw ThreadNotFoundException(message: "404", tag: boardTag, id: threadId);
+  } else {
+    throw Exception(
+        "Failed to refresh $boardTag/$threadId. Status code: $responseCode");
   }
 }
