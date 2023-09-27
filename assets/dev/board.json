@@ -1,0 +1,173 @@
+{
+    "advert_bottom_image": "/banners/4gQaWQjM41r6dfy5.png",
+    "advert_bottom_link": "/banners/4gQaWQjM41r6dfy5/",
+    "advert_mobile_image": "/banners/RAswFRQKQQGKYy5c.png",
+    "advert_mobile_link": "/banners/RAswFRQKQQGKYy5c/",
+    "advert_top_image": "/banners/4gQaWQjM41r6dfy5.png",
+    "advert_top_link": "/banners/4gQaWQjM41r6dfy5/",
+    "board": {
+      "bump_limit": 500,
+      "category": "Разное",
+      "default_name": "Аноним",
+      "enable_dices": false,
+      "enable_flags": false,
+      "enable_icons": false,
+      "enable_likes": false,
+      "enable_names": false,
+      "enable_oekaki": true,
+      "enable_posting": true,
+      "enable_sage": true,
+      "enable_shield": false,
+      "enable_subject": false,
+      "enable_thread_tags": false,
+      "enable_trips": false,
+      "file_types": [
+        "jpg",
+        "png",
+        "gif",
+        "webm",
+        "sticker",
+        "mp4",
+        "youtube",
+        "webp",
+        "webp",
+        "webp",
+        "webp",
+        "webp"
+      ],
+      "id": "b",
+      "info": "",
+      "info_outer": "бред",
+      "max_comment": 15000,
+      "max_files_size": 20480,
+      "max_pages": 10,
+      "name": "Бред",
+      "threads_per_page": 21
+    },
+    "board_banner_image": "/ololo/nvr_1.jpg",
+    "board_banner_link": "nvr",
+    "board_speed": 2266,
+    "current_page": 0,
+    "current_thread": 0,
+    "is_board": true,
+    "is_index": false,
+    "pages": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "threads": [
+      {
+        "files_count": 1,
+        "posts": [
+          {
+            "banned": 0,
+            "board": "b",
+            "closed": 1,
+            "comment": "<p>Главный новостной канал в Телеге&nbsp;<a href=\"https://t.me/ru2ch\">https://t.me/ru2ch</a><br><br>/po/раша - в <a href=\"https://2ch.hk/po/\" target=\"_blank\">/po/<br><br></a>Олсо, добро пожаловать на новую мужицкую доску <a href=\"http://2ch.hk/man/\" target=\"_blank\">/man/</a><br></p>",
+            "date": "06/04/22 Срд 17:16:54",
+            "email": "",
+            "endless": 0,
+            "files": [
+              {
+                "displayname": "изображение.png",
+                "fullname": "изображение.png",
+                "height": 210,
+                "md5": "3b5a90b70afd97c99fc2cdaf5485b5d4",
+                "name": "16492546145510.png",
+                "path": "/b/src/266160769/16492546145510.png",
+                "size": 55,
+                "thumbnail": "/b/thumb/266160769/16492546145510s.jpg",
+                "tn_height": 150,
+                "tn_width": 220,
+                "type": 2,
+                "width": 307
+              }
+            ],
+            "files_count": 1,
+            "lasthit": 1649254614,
+            "name": "Аноним",
+            "num": 266160769,
+            "op": 0,
+            "parent": 0,
+            "posts_count": 0,
+            "sticky": 4,
+            "subject": "Главный новостной канал о всех события с Украиной и в мире https://t.me/ru2ch_news",
+            "tags": "",
+            "timestamp": 1649254614,
+            "trip": "",
+            "views": 98619
+          }
+        ],
+        "posts_count": 0,
+        "thread_num": 266160769
+      },
+      {
+        "files_count": 12,
+        "posts": [
+          {
+            "banned": 0,
+            "board": "b",
+            "closed": 0,
+            "comment": "А вы знали, что кабанчики и хантерши считают что у айтишников <strong><span class=\"u\">ПЕРЕГРЕТЫЕ</span> зарплаты</strong>?<br><br><a href=\"https:&#47;&#47;pro.rbc.ru&#47;demo&#47;64d49ab89a7947dbc6fe9e7b\" target=\"_blank\" rel=\"nofollow noopener noreferrer\">https:&#47;&#47;pro.rbc.ru&#47;demo&#47;64d49ab89a7947dbc6fe9e7b</a><br><br>На второй картинке авторка статьи.<br><br>Не зарплаты мирового уровня, А ПЕРЕГРЕТЫЕ?",
+            "date": "20/09/23 Срд 21:49:41",
+            "email": "",
+            "endless": 0,
+            "files": [
+                {
+                  "displayname": "346920727080344.jpeg",
+                  "fullname": "346920727080344.jpeg",
+                  "height": 364,
+                  "md5": "4be82036bd738e06470a02a721fbd641",
+                  "name": "16952357823140.jpg",
+                  "path": "/b/src/293335313/16952357823140.jpg",
+                  "size": 106,
+                  "thumbnail": "/b/thumb/293335313/16952357823140s.jpg",
+                  "tn_height": 154,
+                  "tn_width": 250,
+                  "type": 1,
+                  "width": 590
+                },
+                {
+                  "displayname": "mubhyphfcgaq2no[...].png",
+                  "fullname": "mubhyphfcgaq2noc8cvhnbw8et6vfe0s.png",
+                  "height": 572,
+                  "md5": "66ddd9329d54efec3791288515b412f4",
+                  "name": "16952357823171.png",
+                  "path": "/b/src/293335313/16952357823171.png",
+                  "size": 602,
+                  "thumbnail": "/b/thumb/293335313/16952357823171s.jpg",
+                  "tn_height": 158,
+                  "tn_width": 250,
+                  "type": 2,
+                  "width": 900
+                }
+              ],
+            "files_count": 12,
+            "lasthit": 1695830193,
+            "name": "Аноним",
+            "num": 293335313,
+            "op": 0,
+            "parent": 0,
+            "posts_count": 282,
+            "sticky": 0,
+            "subject": "А вы знали, что кабанчики и хантерши считают что у айтишников ПЕРЕГРЕТЫЕ зарплаты?  https://pro.rbc.",
+            "tags": "",
+            "timestamp": 1695235781,
+            "trip": "",
+            "views": 116
+          }
+        ],
+        "posts_count": 282,
+        "thread_num": 293335313
+      }
+    ]
+  }
