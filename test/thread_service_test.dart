@@ -44,8 +44,8 @@ void main() async {
       threadId: 50074,
 
       /// it is a real thread so we dont mock loader and refresher
-      threadLoader: ThreadLoader(),
-      threadRefresher: ThreadRefresher(),
+      threadLoader: ThreadRemoteLoader(),
+      threadRefresher: ThreadRemoteRefresher(),
     );
 
     List<TreeNode<Post>>? roots = await threadRepository.getRoots();
@@ -88,9 +88,10 @@ void main() async {
     final threadRepository = ThreadRepository(
       boardTag: 'b',
       threadId: 282647314,
-      threadLoader: getIt.get<IThreadLoader>(param1: 'assets/test/thread.json'),
-      threadRefresher:
-          getIt.get<IThreadRefresher>(param1: ['assets/test/new_posts.json']),
+      threadLoader:
+          getIt.get<IThreadRemoteLoader>(param1: 'assets/test/thread.json'),
+      threadRefresher: getIt
+          .get<IThreadRemoteRefresher>(param1: ['assets/test/new_posts.json']),
     );
 
     List<TreeNode<Post>> roots = List.from(await threadRepository.getRoots());
@@ -146,9 +147,9 @@ void main() async {
         boardTag: 'b',
         threadId: 282647314,
         threadLoader:
-            getIt.get<IThreadLoader>(param1: 'assets/test/thread.json'),
-        threadRefresher:
-            getIt.get<IThreadRefresher>(param1: ['assets/test/new_posts.json']),
+            getIt.get<IThreadRemoteLoader>(param1: 'assets/test/thread.json'),
+        threadRefresher: getIt.get<IThreadRemoteRefresher>(
+            param1: ['assets/test/new_posts.json']),
       );
       final List<TreeNode<Post>> roots = await repo.getRoots();
       TreeNode<Post>? result = Tree.findNode(roots, 282648865);
@@ -162,9 +163,9 @@ void main() async {
           boardTag: 'b',
           threadId: 282647314,
           threadLoader:
-              getIt.get<IThreadLoader>(param1: 'assets/test/thread.json'),
-          threadRefresher: getIt
-              .get<IThreadRefresher>(param1: ['assets/test/new_posts.json']));
+              getIt.get<IThreadRemoteLoader>(param1: 'assets/test/thread.json'),
+          threadRefresher: getIt.get<IThreadRemoteRefresher>(
+              param1: ['assets/test/new_posts.json']));
       final List<TreeNode<Post>> roots = await repo.getRoots();
       List<TreeNode<Post>> results = Tree.findAllNodes(roots, 282649012);
       expect(results.length, 2, reason: "Wrong search results count.");
