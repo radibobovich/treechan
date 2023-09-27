@@ -217,6 +217,10 @@ class ScrollService {
     // final TreeNode<Post> node = Tree.findNode(roots, post.id)!;
     late final TreeNode<Post> rootNode;
 
+    if (_scrollController.offset == 0) {
+      _scrollController.animateTo(10,
+          duration: const Duration(milliseconds: 16), curve: Curves.easeOut);
+    }
     Completer<void> expandCompleter = Completer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       /// Expand parent nodes so the renderObject of the node is visible
