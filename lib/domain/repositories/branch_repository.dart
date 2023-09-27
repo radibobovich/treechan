@@ -83,8 +83,10 @@ class BranchRepository implements Repository {
     // newPostsCount = newPosts.length;
 
     /// Buila a tree from new posts.
-    Tree treeService =
-        Tree(posts: newPosts, opPostId: threadRepository.threadInfo.opPostId);
+    Tree treeService = Tree(
+        posts: newPosts,
+        opPostId: threadRepository.threadInfo.opPostId,
+        oldPostsCount: lastIndex + 1);
     final record = await treeService.getTree(skipPostsModify: true);
     final List<TreeNode<Post>> newRoots = record.$1;
 
@@ -97,8 +99,9 @@ class BranchRepository implements Repository {
       for (var parentId in newRoot.data.parents) {
         if (parentId == threadRepository.threadInfo.opPostId) continue;
         // find a parent
-        // TreeNode<Post>? node = Tree.findFirstNode([_root!], parentId);
-        final List<TreeNode<Post>> parentNodes = nodesAt(parentId);
+        List<TreeNode<Post>> parentNodes =
+            Tree.findAllNodes([_root!], parentId);
+        // final List<TreeNode<Post>> parentNodes = nodesAt(parentId);
         for (var parentNode in parentNodes) {
           /// fix depth because here we add the same root in multiple places of the tree
           /// Depth will be also increased by one in [addNode] method
@@ -129,7 +132,8 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
   // find all posts that are replying to this one
   List<int> children = post.children;
   for (var index in children) {
-    final child = posts[index - postIndex];
+    final Post child;
+    child = posts[index - postIndex];
     // add replies to them too
     childrenToAdd.add(TreeNode(
 

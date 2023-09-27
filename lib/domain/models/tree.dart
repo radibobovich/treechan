@@ -11,12 +11,19 @@ import 'package:html/parser.dart' as html;
 
 /// Handles everything related to the tree building, updating and searching.
 class Tree {
-  Tree({required this.posts, required this.opPostId});
+  Tree({
+    required this.posts,
+    required this.opPostId,
+    this.oldPostsCount = 0,
+  });
 
   final List<Post> posts;
-
   // final Root threadInfo;
   final int opPostId;
+
+  /// Used to set new posts children indexes correctly (relative to the all
+  /// posts list, not to the new posts list).
+  final int oldPostsCount;
 
   /// Contains all comment tree roots.
   ///
@@ -33,11 +40,12 @@ class Tree {
     final prefs = await SharedPreferences.getInstance();
     if (!skipPostsModify) {
       _findPostParents();
+      findChildren(posts, oldPostsCount);
     }
-    findChildren(posts);
-    var record = await compute(_createTreeModel, (posts, opPostId, prefs))
-        .timeout(const Duration(seconds: 90))
-        .onError((error, stackTrace) {
+    var record =
+        await compute(_createTreeModel, (posts, opPostId, prefs, oldPostsCount))
+            .timeout(const Duration(seconds: 90))
+            .onError((error, stackTrace) {
       debugPrint('TimeoutException:');
       throw TreeBuilderTimeoutException('Building tree took too long.');
     });
@@ -276,11 +284,12 @@ class Tree {
 /// Creates list of comment roots and map all nodes by post id.
 /// This is a heavy function and defined outside the class to use in an isolate.
 Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
-    (List<Post>, int, SharedPreferences) record) async {
+    (List<Post>, int, SharedPreferences, int) record) async {
   List<Post> posts = record.$1;
   // Root threadInfo = record.$2;
   int opPostId = record.$2;
   SharedPreferences prefs = record.$3;
+  int lastPostIndex = record.$4;
 
   final Map<int, List<TreeNode<Post>>> plainNodes = {};
 
@@ -299,12 +308,13 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
         post.parents.contains(opPostId) ||
         _isExternalReference(postsWithId, post.parents)) {
       // find posts which are replies to the OP-post
-
       TreeNode<Post> node = TreeNode<Post>(
         expanded: !prefs.getBool("postsCollapsed")!,
         data: post,
         children: post.id != opPostId
-            ? _attachChildren(post, posts, prefs, plainNodes, stopwatch, 1).$1
+            ? _attachChildren(
+                    post, posts, prefs, plainNodes, lastPostIndex, stopwatch, 1)
+                .$1
             : [],
       );
       roots.add(node);
@@ -328,6 +338,7 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
     List<Post> posts,
     SharedPreferences prefs,
     Map<int, List<TreeNode<Post>>> plainNodes,
+    int lastPostIndex,
     Stopwatch stopwatch,
     int depth) {
   /// Kills isolate if it takes too long
@@ -338,7 +349,9 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
   // find all posts that are replying to this one
   List<int> children = post.children;
   for (var index in children) {
-    final child = posts[index];
+    /// Here we use absolute index but we are working with new posts only
+    /// so we have to subtract [lastPostIndex].
+    final child = posts[index - lastPostIndex];
 
     final node = TreeNode(
 
@@ -347,8 +360,8 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
         /// attached in multiple places of the tree.
         key: UniqueKey().toString(),
         data: child,
-        children: _attachChildren(
-                child, posts, prefs, plainNodes, stopwatch, depth + 1)
+        children: _attachChildren(child, posts, prefs, plainNodes,
+                lastPostIndex, stopwatch, depth + 1)
             .$1,
         expanded: !prefs.getBool("postsCollapsed")!);
     childrenToAdd.add(node);
@@ -365,12 +378,14 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
   return (childrenToAdd, plainNodes);
 }
 
-List<Post> findChildren(List<Post> posts) {
+List<Post> findChildren(List<Post> posts, int oldPostsCount) {
   for (var cpost in posts) {
     List<int> childrenIndexes = [];
     for (int i = 0; i < posts.length; i++) {
       if (posts[i].parents.contains(cpost.id)) {
-        childrenIndexes.add(i);
+        /// this index will be wrong in list of new posts but correct
+        /// in the all posts list
+        childrenIndexes.add(i + oldPostsCount);
       }
     }
     cpost.children = childrenIndexes;

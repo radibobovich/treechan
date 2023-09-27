@@ -67,6 +67,7 @@ class ThreadRepository implements Repository {
   /// thats why value is a list of nodes.
   final Map<int, List<TreeNode<Post>>> _plainNodes = {};
   List<TreeNode<Post>> nodesAt(int id) => _plainNodes[id] ?? [];
+  Map<int, List<TreeNode<Post>>> get plainNodes => _plainNodes;
 
   final List<TreeNode<Post>> _lastNodes = [];
   List<TreeNode<Post>> get getLastNodes => _lastNodes;
@@ -127,17 +128,22 @@ class ThreadRepository implements Repository {
     }
     // final ThreadFetcherDeprecated fetcher = ThreadFetcherDeprecated(
     //     boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
+    final int oldPostsCount = _posts.length;
 
     List<Post> newPosts = await _threadRefresher.getNewPosts(
         boardTag: boardTag, threadId: threadId, lastPostId: _threadInfo.maxNum);
     newPostsCount = newPosts.length;
     if (newPosts.isEmpty) return;
-
     updateInfo(newPosts);
     _posts.addAll(newPosts);
 
-    // create tree for new posts
-    final Tree treeService = Tree(posts: newPosts, opPostId: _threadInfo.id);
+    // pass new posts so later we call attachNewRoots which will
+    // build mini trees from new posts and attach them to the main tree
+    final Tree treeService = Tree(
+      posts: newPosts,
+      opPostId: _threadInfo.id,
+      oldPostsCount: oldPostsCount,
+    );
 
     /// This function actually updates [_roots].
     /// It returns [newPlainNodes] just to add them to [_lastNodes] more easily.
