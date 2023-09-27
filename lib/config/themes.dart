@@ -117,6 +117,7 @@ class AppTheme {
       drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF1F1F1F)),
       cardTheme: const CardTheme(color: Color(0xFF1E1E1E)),
       dialogTheme: const DialogTheme(backgroundColor: Color(0xFF1F1F1F)),
+      cardColor: const Color(0xFF1F1F1F),
       tabBarTheme: const TabBarTheme(
           indicator: UnderlineTabIndicator(
               borderSide: BorderSide(color: Color(0xFFE1E1E1)))),
@@ -134,6 +135,7 @@ class AppTheme {
           titleMedium: TextStyle(color: Color(0xFFE1E1E1)),
           bodyMedium: TextStyle(color: Color(0xFFE1E1E1)),
           bodySmall: TextStyle(color: Color(0xFFA0A0A0))));
+
   static final ThemeData amoled = ThemeData(
       colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.black, brightness: Brightness.dark)
@@ -153,6 +155,7 @@ class AppTheme {
       appBarTheme: const AppBarTheme(color: Color(0xFF000000)),
       drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF000000)),
       cardTheme: const CardTheme(color: Color(0xFF141414)),
+      cardColor: const Color(0xFF000000),
       dialogTheme: const DialogTheme(backgroundColor: Color(0xFF141414)),
       tabBarTheme: const TabBarTheme(
           indicator: UnderlineTabIndicator(
@@ -167,6 +170,7 @@ class AppTheme {
       snackBarTheme: const SnackBarThemeData(
           backgroundColor: Colors.black,
           contentTextStyle: TextStyle(color: Color(0xFFE1E1E1))),
+      hintColor: const Color(0xFFA0A0A0),
       textTheme: const TextTheme(
           titleMedium: TextStyle(color: Color(0xFFE1E1E1)),
           bodyMedium: TextStyle(color: Color(0xFFE1E1E1)),
