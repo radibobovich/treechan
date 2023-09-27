@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
+import 'package:treechan/domain/usecases/post_actions.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
@@ -128,6 +129,27 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
       },
     );
   }
+
+  @override
+  void goToPost(TreeNode<Post> node, {required BuildContext? context}) {
+    final goToPostUseCase = GoToPostUseCase();
+    goToPostUseCase(
+      GoToPostParams(
+        threadRepository: threadRepository,
+        currentTab: tab,
+        node: node,
+        dialogStack: dialogStack,
+        popUntil: context != null
+            ? () => Navigator.of(context).popUntil(ModalRoute.withName('/'))
+            : () {},
+        addTab: (DrawerTab tab) => provider.addTab(tab),
+        scrollService: scrollService,
+        threadScrollService: scrollService,
+        getThreadScrollService: null,
+      ),
+    );
+  }
+
   void restoreEndDrawerScrollPosition() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (endDrawerScrollController.hasClients) {
