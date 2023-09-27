@@ -2,6 +2,7 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
+import 'package:treechan/domain/repositories/tracker_repository.dart';
 
 import '../../main.dart';
 import '../../utils/constants/enums.dart';
@@ -52,12 +53,17 @@ class BranchRepository implements Repository {
     _root!.addNodes(await compute(
         _attachChildren, {post, postIndex, posts.sublist(postIndex), prefs}));
 
-    Tree.performForEveryNode(_root, (node) => _posts.add(node.data));
+    Set<int> postIds = {};
+    Tree.performForEveryNode(_root, (node) {
+      bool isNew = postIds.add(node.data.id);
+      if (isNew) _posts.add(node.data);
+    });
   }
 
   /// Gets new added posts from [threadRepository], build its trees and attaches
   /// these trees to a current tree.
-  Future<void> refresh(RefreshSource source, {int? lastIndex}) async {
+  Future<void> refresh(RefreshSource source,
+      {int? lastIndex, TrackerRepository? trackerRepo}) async {
     List<Post> posts;
 
     /// If refresh has been called from thread page you don't need to call
@@ -72,7 +78,7 @@ class BranchRepository implements Repository {
       posts = threadRepository.posts;
       lastIndex = posts.length - 1;
 
-      await threadRepository.refresh();
+      await threadRepository.refresh(trackerRepo: trackerRepo);
     }
 
     /// Get a list with new posts
@@ -89,9 +95,6 @@ class BranchRepository implements Repository {
         oldPostsCount: lastIndex + 1);
     final record = await treeService.getTree(skipPostsModify: true);
     final List<TreeNode<Post>> newRoots = record.$1;
-
-    newPostsCount = 0;
-    Tree.performForEveryNodeInRoots(newRoots, (node) => newPostsCount++);
 
     /// Attach obtained trees to the branch nodes.
     if (newRoots.isEmpty) return;
@@ -115,6 +118,15 @@ class BranchRepository implements Repository {
         }
       }
     }
+    // int postsCountAfterRefresh = 0;
+    Set<int> newPostIds = {};
+    Tree.performForEveryNode(_root, (node) {
+      bool isNew = newPostIds.add(node.data.id);
+      if (isNew) {
+        _posts.add(node.data);
+      }
+    });
+    newPostsCount = newPostIds.length;
   }
 }
 
