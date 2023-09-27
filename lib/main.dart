@@ -10,7 +10,6 @@ import 'package:treechan/config/local_notifications.dart';
 import 'package:treechan/config/themes.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/router.dart';
-import 'package:treechan/utils/constants/dev.dart';
 import 'config/preferences.dart';
 import 'presentation/provider/page_provider.dart';
 import 'presentation/provider/tab_manager.dart';
@@ -22,6 +21,14 @@ StreamController<String> theme = StreamController();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  /// Environment variable.
+  ///
+  /// Set it to [Env.dev] to use [MockThreadLoader] and [MockThreadRefresher].
+  ///
+  /// Don't forget to set it back to [Env.prod] before release build, otherwise
+  /// an exception will be thrown.
+  env = Env.dev;
 
   configureInjection(getIt, env);
 
