@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
+import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/presentation/provider/bloc_handler.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 
@@ -224,10 +225,24 @@ class TabManager {
   /// Called when a thread has been refreshed.
   void refreshRelatedBranches(ThreadTab threadTab, int lastIndex) {
     for (var bloc in _tabs.values) {
-      if (bloc is BranchBloc && (bloc.tab as BranchTab).id == threadTab.id) {
+      if (bloc is BranchBloc &&
+          (bloc.tab as BranchTab).threadId == threadTab.id) {
         bloc.add(
             RefreshBranchEvent(RefreshSource.thread, lastIndex: lastIndex));
       }
+    }
+  }
+
+  ScrollService? getThreadScrollService(
+      {required String boardTag, required int threadId}) {
+    final tab = findTab(tag: boardTag, threadId: threadId);
+    if (tab.id == -1) {
+      return null;
+    }
+    if (tab is ThreadTab) {
+      return (tabs[tab] as ThreadBloc).scrollService;
+    } else {
+      throw Exception('tab is not ThreadTab');
     }
   }
 }
