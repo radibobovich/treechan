@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
+import 'package:treechan/domain/usecases/post_actions.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:treechan/utils/constants/enums.dart';
@@ -109,6 +110,36 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
           emit(BranchErrorState(message: "Неизвестная ошибка", exception: e));
         }
       },
+    );
+  }
+
+  @override
+  void goToPost(TreeNode<Post> node, {required BuildContext? context}) {
+    if (context == null) {
+      throw Exception('context must be provided for goToPost from branch');
+    }
+    final goToPostUseCase = GoToPostUseCase();
+    goToPostUseCase(
+      GoToPostParams(
+        threadRepository: threadRepository,
+        currentTab: tab,
+        node: node,
+        dialogStack: dialogStack,
+        popUntil: () =>
+            Navigator.of(context).popUntil(ModalRoute.withName('/')),
+        addTab: (tab) => provider.addTab(tab),
+        scrollService: scrollService,
+        threadScrollService: threadBloc != null && !threadBloc!.isClosed
+            ? threadBloc!.scrollService
+            : null,
+        getThreadScrollService: () async {
+          final scrollService = provider.tabManager.getThreadScrollService(
+              boardTag: (tab as TagMixin).tag,
+              threadId: (tab as BranchTab).threadId);
+          await Future.delayed(const Duration(seconds: 2));
+          return scrollService;
+        },
+      ),
     );
   }
 
