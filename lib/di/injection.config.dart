@@ -47,31 +47,31 @@ _i1.GetIt init(
       _prod,
     },
   );
-  gh.factory<_i5.IThreadLoader>(
-    () => _i5.ThreadLoader(),
+  gh.factory<_i5.IThreadRemoteLoader>(
+    () => _i5.ThreadRemoteLoader(),
     registerFor: {_prod},
   );
-  gh.factoryParam<_i5.IThreadLoader, String, dynamic>(
+  gh.factoryParam<_i5.IThreadRemoteLoader, String, dynamic>(
     (
       assetPath,
       _,
     ) =>
-        _i5.MockThreadLoader(assetPath: assetPath),
+        _i5.MockThreadRemoteLoader(assetPath: assetPath),
     registerFor: {
       _test,
       _dev,
     },
   );
-  gh.factory<_i6.IThreadRefresher>(
-    () => _i6.ThreadRefresher(),
+  gh.factory<_i6.IThreadRemoteRefresher>(
+    () => _i6.ThreadRemoteRefresher(),
     registerFor: {_prod},
   );
-  gh.factoryParam<_i6.IThreadRefresher, List<String>, dynamic>(
+  gh.factoryParam<_i6.IThreadRemoteRefresher, List<String>, dynamic>(
     (
       assetPaths,
       _,
     ) =>
-        _i6.MockThreadRefresher(assetPaths: assetPaths),
+        _i6.MockThreadRemoteRefresher(assetPaths: assetPaths),
     registerFor: {
       _test,
       _dev,
