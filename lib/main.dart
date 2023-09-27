@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -57,18 +58,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final PageProvider provider = PageProvider(tabManager: TabManager());
+
     return StreamBuilder<String>(
       initialData: prefs.getString('theme'),
       stream: theme.stream,
       builder: (context, snapshot) {
         return ChangeNotifierProvider(
-          create: (context) => PageProvider(tabManager: TabManager()),
-          child: MaterialApp(
-            title: 'Flutter Demo',
-            theme: getTheme(snapshot.data!),
-            home: const PageNavigator(),
-            initialRoute: '/',
-            onGenerateRoute: (settings) => getRoute(settings),
+          create: (context) => provider,
+          child: FGBGNotifier(
+            onEvent: (value) {
+              provider.tabManager.appLifeCycleStreamController.add(value);
+            },
+            child: MaterialApp(
+              title: 'Flutter Demo',
+              theme: getTheme(snapshot.data!),
+              home: const PageNavigator(),
+              initialRoute: '/',
+              onGenerateRoute: (settings) => getRoute(settings),
+            ),
           ),
         );
       },
