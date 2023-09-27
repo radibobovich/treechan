@@ -83,7 +83,9 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
           add(LoadThreadEvent());
 
           provider.tabManager.refreshRelatedBranches(tab, lastIndex);
+
           await Future.delayed(const Duration(milliseconds: 10));
+
           if (event.source == RefreshSource.thread &&
               scrollController.hasClients &&
               threadRepository.newPostsCount > 0 &&
@@ -94,11 +96,19 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
           }
 
           if (event.source == RefreshSource.tracker) {
+            bool shouldNotifyNewPosts = true;
+            if (provider.tabManager.currentTab == tab &&
+                provider.tabManager.isAppInForeground) {
+              shouldNotifyNewPosts = false;
+            }
             provider.trackerRepository.updateThreadByTab(
               tab: tab,
               posts: threadRepository.postsCount,
-              newPosts: threadRepository.newPostsCount,
+              newPosts:
+                  shouldNotifyNewPosts ? threadRepository.newPostsCount : 0,
+              forceNewPosts: shouldNotifyNewPosts ? false : true,
               newReplies: threadRepository.newReplies,
+              forceNewReplies: shouldNotifyNewPosts ? false : true,
             );
           }
           if (event.source != RefreshSource.tracker) {
@@ -113,6 +123,17 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
                     ? SnackBarAction(
                         label: 'Показать', onPressed: () => _openEndDrawer())
                     : null);
+          }
+          if (event.source == RefreshSource.thread) {
+            await provider.trackerRepository.updateThreadByTab(
+              tab: tab,
+              posts: threadRepository.postsCount,
+              newPosts: 0,
+              forceNewPosts: true,
+              newReplies: 0,
+              forceNewReplies: true,
+            );
+            provider.trackerCubit.loadTracker();
           }
         } on ThreadNotFoundException {
           if (event.source != RefreshSource.tracker) {
