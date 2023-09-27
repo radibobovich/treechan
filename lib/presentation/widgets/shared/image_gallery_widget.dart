@@ -6,17 +6,16 @@ typedef DoubleClickAnimationListener = void Function();
 
 /// A gallery that opens when user tap on image preview.
 class SwipeGallery extends StatefulWidget {
-  const SwipeGallery(
-      {super.key,
-      required this.imageLinks,
-      required this.previewLinks,
-      required this.pageController,
-      required this.onDownloadImage});
+  const SwipeGallery({
+    super.key,
+    required this.imageLinks,
+    required this.previewLinks,
+    required this.pageController,
+  });
 
   final List<String> imageLinks;
   final List<String> previewLinks;
   final ExtendedPageController pageController;
-  final Function onDownloadImage;
 
   @override
   State<SwipeGallery> createState() => _SwipeGalleryState();
@@ -83,7 +82,6 @@ class _SwipeGalleryState extends State<SwipeGallery>
           _preloadImage(page + 1);
         },
         itemBuilder: (context, index) {
-          widget.onDownloadImage(widget.imageLinks[index], index);
           return ExtendedImage.network(
             widget.imageLinks[index],
             fit: BoxFit.contain,
