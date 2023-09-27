@@ -9,8 +9,9 @@ import 'package:injectable/injectable.dart';
 abstract class IResponseHandler {
   Future<http.Response> getResponse({
     required String url,
-    required String boardTag,
-    required int threadId,
+    required Never Function(int) onResponseError,
+    // required String boardTag,
+    // required int threadId,
   });
 }
 
@@ -19,8 +20,9 @@ class ResponseHandler implements IResponseHandler {
   @override
   Future<http.Response> getResponse({
     required String url,
-    required String boardTag,
-    required int threadId,
+    required Never Function(int) onResponseError,
+    // required String boardTag,
+    // required int threadId,
   }) async {
     http.Response response;
     try {
@@ -31,12 +33,8 @@ class ResponseHandler implements IResponseHandler {
 
     if (response.statusCode == 200) {
       return response;
-    } else if (response.statusCode == 404) {
-      throw ThreadNotFoundException(
-          message: "404", tag: boardTag, id: threadId);
     } else {
-      throw Exception(
-          "Failed to fetch thread $boardTag/$threadId. Status code: ${response.statusCode}");
+      onResponseError(response.statusCode);
     }
   }
 }
