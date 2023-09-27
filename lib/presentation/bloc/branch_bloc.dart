@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/json/json.dart';
 import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
+import 'package:treechan/domain/repositories/tracker_repository.dart';
 import 'package:treechan/domain/usecases/post_actions.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
@@ -73,8 +74,13 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
               scrollService.saveCurrentScrollInfo();
             }
           }
+          TrackerRepository? trackerRepoForThreadRepo =
+              event.source == RefreshSource.thread
+                  ? null
+                  : provider.trackerRepository;
           await branchRepository.refresh(event.source,
-              lastIndex: event.lastIndex);
+              lastIndex: event.lastIndex,
+              trackerRepo: trackerRepoForThreadRepo);
           add(LoadBranchEvent());
           if (event.source == RefreshSource.branch) {
             if (threadBloc != null && !threadBloc!.isClosed) {
@@ -90,12 +96,36 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
               });
             }
           }
-          if (event.source == RefreshSource.tracker) {
+          if (event.source == RefreshSource.tracker ||
+              event.source == RefreshSource.thread) {
+            bool shouldNotifyNewPosts = true;
+            if (provider.tabManager.currentTab == tab &&
+                provider.tabManager.isAppInForeground) {
+              shouldNotifyNewPosts = false;
+            }
+            await provider.trackerRepository.updateBranchByTab(
+              tab: tab,
+              posts: branchRepository.postsCount,
+              newPosts:
+                  shouldNotifyNewPosts ? branchRepository.newPostsCount : 0,
+              forceNewPosts: shouldNotifyNewPosts ? false : true,
+              newReplies:
+                  shouldNotifyNewPosts ? branchRepository.newReplies : 0,
+              forceNewReplies: shouldNotifyNewPosts ? false : true,
+            );
+            if (event.source == RefreshSource.thread) {
+              provider.trackerCubit.loadTracker();
+            }
+          } else if (event.source == RefreshSource.branch) {
             provider.trackerRepository.updateBranchByTab(
-                tab: tab,
-                posts: branchRepository.postsCount,
-                newPosts: branchRepository.newPostsCount,
-                newReplies: branchRepository.newReplies);
+              tab: tab,
+              posts: branchRepository.postsCount,
+              newPosts: 0,
+              forceNewPosts: true,
+              newReplies: 0,
+              forceNewReplies: true,
+            );
+            provider.trackerCubit.loadTracker();
           }
         } on ThreadNotFoundException {
           if (event.source != RefreshSource.tracker) {
