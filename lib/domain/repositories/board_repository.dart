@@ -11,8 +11,11 @@ import 'dart:convert';
 import '../../utils/fix_html_video.dart';
 
 class BoardRepository implements Repository {
-  BoardRepository({required this.boardTag, this.currentPage = 0});
-
+  BoardRepository(
+      {required this.boardFetcher,
+      required this.boardTag,
+      this.currentPage = 0});
+  final IBoardFetcher boardFetcher;
   final String boardTag;
   late String boardName;
   SortBy sortType = SortBy.page;
@@ -39,9 +42,10 @@ class BoardRepository implements Repository {
   @override
   Future<void> load() async {
     currentPage = 0;
-    final BoardFetcher fetcher =
-        BoardFetcher(boardTag: boardTag, sortType: sortType);
-    http.Response response = await fetcher.getBoardResponse(currentPage);
+    // final BoardFetcherDeprecated fetcher =
+    //     BoardFetcherDeprecated(boardTag: boardTag, sortType: sortType);
+    http.Response response =
+        await boardFetcher.getBoardResponse(currentPage, boardTag, sortType);
     boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
     _threads = Root.fromJson(jsonDecode(response.body)).threads!;
     for (var thread in _threads) {
@@ -56,9 +60,10 @@ class BoardRepository implements Repository {
     if (_threads.isEmpty) {
       return;
     }
-    final BoardFetcher fetcher =
-        BoardFetcher(boardTag: boardTag, sortType: sortType);
-    http.Response response = await fetcher.getBoardResponse(currentPage + 1);
+    // final BoardFetcherDeprecated fetcher =
+    //     BoardFetcherDeprecated(boardTag: boardTag, sortType: sortType);
+    http.Response response = await boardFetcher.getBoardResponse(
+        currentPage + 1, boardTag, sortType);
     List<Thread> newThreads = Root.fromJson(jsonDecode(response.body)).threads!;
     if (newThreads.isNotEmpty) {
       currentPage += 1;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/data/board_fetcher.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 
@@ -40,13 +42,19 @@ class BlocHandler {
           return BoardBloc(
               key: ValueKey(tab),
               tabProvider: _provider,
-              boardRepository: BoardRepository(boardTag: tab.tag))
+              boardRepository: BoardRepository(
+                  boardFetcher:
+                      getIt<IBoardFetcher>(param1: 'assets/dev/board.json'),
+                  boardTag: tab.tag))
             ..add(LoadBoardEvent());
         } else {
           return BoardBloc(
               key: ValueKey(tab),
               tabProvider: _provider,
-              boardRepository: BoardRepository(boardTag: tab.tag))
+              boardRepository: BoardRepository(
+                  boardFetcher:
+                      getIt<IBoardFetcher>(param1: 'assets/dev/board.json'),
+                  boardTag: tab.tag))
             ..add(ChangeViewBoardEvent(null, query: tab.query));
         }
       case ThreadTab:
