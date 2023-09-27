@@ -8,8 +8,6 @@ import 'package:treechan/utils/string.dart';
 import '../../../data/hidden_posts.database.dart';
 import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
-import '../../../domain/models/tree.dart';
-import '../../../domain/services/scroll_service.dart';
 import '../../../utils/remove_html.dart';
 import '../../provider/page_provider.dart';
 
@@ -147,69 +145,8 @@ class ActionMenu extends StatelessWidget {
   }
 
   Future<void> goToPost(TreeNode<Post> node, BuildContext context) async {
-    dynamic bloc = currentTab.getBloc(context);
-    int tabId = (currentTab as IdMixin).id;
-
-    /// Check if this action was called in post preview dialog
-    if (bloc.dialogStack.isNotEmpty) {
-      final TreeNode<Post> visibleNode = bloc.dialogStack.first;
-
-      Navigator.of(context).popUntil(ModalRoute.withName('/'));
-
-      /// Find current root tree visible post belongs to.
-      final TreeNode<Post> currentRoot = Tree.findRootNode(visibleNode);
-
-      /// Check if desirable post is in the same tree as visible post.
-      if (node == Tree.findNode([currentRoot], node.data.id)) {
-        bloc.scrollService.scrollToParent(node, (currentTab as IdMixin).id);
-      } else {
-        if (currentTab is BranchTab) {
-          IdMixin tab = currentTab as IdMixin;
-
-          /// go to threadTab parent (branch can be opened from previous branch
-          /// so we can't just use tab.prevTab)
-          while (tab is! ThreadTab) {
-            tab = tab.prevTab as IdMixin;
-          }
-
-          /// Adds tab if [ThreadTab] was closed or animates to it if not
-          final provider = Provider.of<PageProvider>(context, listen: false)
-            ..addTab(tab);
-
-          /// Override bloc to one of [ThreadTab] to use it while scrolling
-          /// We can't use [getBloc] since we don't have context containing
-          /// [ThreadBloc], so use provider instead.
-          /// Also override id for scroll function
-          bloc = provider.tabManager.tabs[tab];
-          tabId = tab.id;
-
-          /// wait for tab change
-          await Future.delayed(const Duration(milliseconds: 300));
-        }
-
-        (bloc.scrollService as ScrollService).scrollToNodeByPost(
-          node.data,
-          tabId,
-          roots: await bloc.threadRepository.getRoots(),
-        );
-      }
-    } else {
-      Navigator.of(context).popUntil(ModalRoute.withName('/'));
-      if (node.parent == null) {
-        bloc.scrollService.scrollToNodeByPost(
-          node.data,
-          (currentTab as dynamic).id,
-          roots: await bloc.threadRepository.getRoots(),
-        );
-        return;
-      } else {
-        (bloc as ThreadBase).scrollService.scrollToNode(
-              node,
-              (currentTab as IdMixin).id,
-              // await bloc.threadRepository.getRoots(),
-            );
-      }
-    }
+    ThreadBase bloc = currentTab.getBloc(context);
+    bloc.goToPost(node, context: context);
   }
 
   Future<dynamic> showPostInfo(BuildContext context) {
