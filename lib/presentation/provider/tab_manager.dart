@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
@@ -42,7 +45,18 @@ class TabManager {
     notifyListeners = notifyCallback;
     this.provider = provider;
     blocHandler = BlocHandler(tabs: _tabs, provider: provider);
+    appLifeCycleStreamController.stream.listen((event) {
+      if (event == FGBGType.foreground) {
+        isAppInForeground = true;
+      } else {
+        isAppInForeground = false;
+      }
+    });
   }
+
+  bool isAppInForeground = true;
+  StreamController<FGBGType> appLifeCycleStreamController =
+      StreamController<FGBGType>.broadcast();
 
   BlocProvider<board_list.BoardListBloc> getBoardListScreen(BoardListTab tab) =>
       blocHandler.getBoardListScreen(tab);
@@ -199,9 +213,11 @@ class TabManager {
     }
   }
 
-  void refreshTab({DrawerTab? tab, RefreshSource? source}) {
-    final bloc = _tabs[tab ?? currentTab];
-    final currentTabBloc = _tabs[currentTab];
+  /// Called from bottom navigation bar or from tracker.
+  bool refreshTab({DrawerTab? tab, RefreshSource? source}) {
+    tab ??= currentTab;
+    final bloc = _tabs[tab];
+    // final currentTabBloc = _tabs[currentTab];
     if (bloc is board_list.BoardListBloc) {
       bloc.add(board_list.RefreshBoardListEvent());
     } else if (bloc is BoardBloc) {
@@ -209,17 +225,23 @@ class TabManager {
     } else if (bloc is ThreadBloc) {
       /// we don't want to auto refresh tab if it is currently opened
       /// (bad UX)
-      if (source == RefreshSource.tracker && bloc == currentTabBloc) return;
+      if (source == RefreshSource.tracker &&
+          tab == currentTab &&
+          isAppInForeground) return false;
       bloc.add(RefreshThreadEvent(source: source ?? RefreshSource.thread));
     } else if (bloc is BranchBloc) {
-      if (source == RefreshSource.tracker &&
-          (bloc == currentTabBloc ||
-              (currentTabBloc is ThreadBloc &&
-                  (bloc.tab as BranchTab).threadId == currentTabBloc.tab.id))) {
-        return;
+      /// Prevent refresh of currently opened tab from tracker
+
+      if (isAppInForeground) {
+        if (source == RefreshSource.tracker) {
+          if (tab == currentTab) {
+            return false;
+          }
+        }
       }
       bloc.add(RefreshBranchEvent(source ?? RefreshSource.branch));
     }
+    return true;
   }
 
   /// Called when a thread has been refreshed.
