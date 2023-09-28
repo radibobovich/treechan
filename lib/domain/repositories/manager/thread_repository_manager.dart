@@ -3,6 +3,7 @@ import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 import 'package:treechan/utils/constants/dev.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../../../exceptions.dart';
 import '../thread_repository.dart';
@@ -21,9 +22,10 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
         boardTag: env == Env.prod ? tag : debugBoardTag,
         threadId: env == Env.prod ? id : debugThreadId,
         // param1 only used in test and dev environments
-        threadLoader: getIt<IThreadRemoteLoader>(param1: debugThreadPath),
-        threadRefresher:
-            getIt<IThreadRemoteRefresher>(param1: debugThreadUpdatePaths));
+        threadLoader: getIt<IThreadRemoteLoader>(
+            param1: Imageboard.dvach, param2: debugThreadPath),
+        threadRefresher: getIt<IThreadRemoteRefresher>(
+            param1: Imageboard.dvach, param2: debugThreadUpdatePaths));
     _repos.add(threadRepo);
     return threadRepo;
   }

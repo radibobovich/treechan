@@ -4,6 +4,7 @@ import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/utils/constants/dev.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../../../exceptions.dart';
 import '../branch_repository.dart';
@@ -44,9 +45,10 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
           threadRepository: ThreadRepository(
             boardTag: 'error',
             threadId: 0,
-            threadLoader: getIt<IThreadRemoteLoader>(param1: debugThreadPath),
-            threadRefresher:
-                getIt<IThreadRemoteRefresher>(param1: debugThreadUpdatePaths),
+            threadLoader: getIt<IThreadRemoteLoader>(
+                param1: Imageboard.dvach, param2: debugThreadPath),
+            threadRefresher: getIt<IThreadRemoteRefresher>(
+                param1: Imageboard.dvach, param2: debugThreadUpdatePaths),
           ),
           postId: 0);
     });
