@@ -1,3 +1,4 @@
+@Deprecated('Use File from models/core instead')
 class File {
   String? displayname;
   String? fullname;

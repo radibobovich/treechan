@@ -1,5 +1,6 @@
 import "json.dart";
 
+@Deprecated('Use Thread from models/core instead')
 class Thread {
   // Don't use commented fields, use posts[0] fields instead
   // int? banned;
@@ -95,7 +96,7 @@ class Thread {
       }
       final Post post = Post(
         banned: json['banned'] == 1 ? true : false,
-        board: json['board'],
+        boardTag: json['board'],
         closed: json['closed'] == 1 ? true : false,
         comment: json['comment'],
         date: json['date'],

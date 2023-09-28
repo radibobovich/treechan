@@ -1,7 +1,7 @@
 import "json.dart";
 
+@Deprecated('Use models from models/core instead')
 class Root {
-  // TODO: move some fields to thread
   String? advertMobileImage;
   String? advertMobileLink;
   Board? board;

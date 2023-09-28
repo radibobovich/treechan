@@ -3,12 +3,13 @@ import "package:treechan/presentation/widgets/shared/html_container_widget.dart"
 import "json.dart";
 import "package:flutter/material.dart";
 
+@Deprecated('Use Post from models/core instead')
 class Post {
   /// Banned or not for this post.
   late bool banned;
 
   /// Board tag, for example b
-  late String board;
+  late String boardTag;
 
   /// Needs description.
   late bool closed;
@@ -87,7 +88,7 @@ class Post {
   bool hidden = false;
   Post(
       {this.banned = false,
-      this.board = '',
+      this.boardTag = '',
       this.closed = false,
       this.comment = '',
       this.date = '',
@@ -110,7 +111,7 @@ class Post {
 
   Post.fromJson(Map<String, dynamic> json) {
     banned = json['banned'] == 1 ? true : false;
-    board = json['board'];
+    boardTag = json['board'];
     closed = json['closed'] == 1 ? true : false;
     comment = json['comment'];
     date = json['date'];
@@ -141,7 +142,7 @@ class Post {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['banned'] = banned;
-    data['board'] = board;
+    data['board'] = boardTag;
     data['closed'] = closed;
     data['comment'] = comment;
     data['date'] = date;

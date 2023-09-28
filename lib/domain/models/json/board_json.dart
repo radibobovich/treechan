@@ -16,6 +16,7 @@ List<Post> postListFromJson(List<dynamic> json) {
   return postList;
 }
 
+@Deprecated('Use board from models/core instead')
 class Board {
   int? bumpLimit;
   String? category;
