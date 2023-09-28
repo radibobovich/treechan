@@ -31,3 +31,5 @@ enum Browser {
   palemoon,
   internetExplorer
 }
+
+enum Imageboard { dvach }
