@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
 import 'package:treechan/utils/string.dart';
 import '../../../data/hidden_posts.database.dart';
-import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
 import '../../../utils/remove_html.dart';
 import '../../provider/page_provider.dart';
@@ -162,8 +162,8 @@ class ActionMenu extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Пост #${node.data.id}'),
-              Text('Доска: ${node.data.board}'),
-              node.data.board != 's'
+              Text('Доска: ${node.data.boardTag}'),
+              node.data.boardTag != 's'
                   ? Text('Автор: ${node.data.name}')
                   : Text('Автор: ${extractUserInfo(node.data.name)}'),
               Text('Дата создания: ${node.data.date}'),
@@ -174,7 +174,7 @@ class ActionMenu extends StatelessWidget {
                   'ОП: ${node.data.op || node.data.number == 1 ? 'да' : 'нет'}'),
               Text(
                   'e-mail: ${node.data.email.isEmpty ? 'нет' : node.data.email}'),
-              node.data.board == 's'
+              node.data.boardTag == 's'
                   ? Text(
                       'Устройство: ${extractUserInfo(node.data.name, mode: ExtractMode.info)}')
                   : const SizedBox.shrink(),
@@ -237,6 +237,6 @@ String getPostLink(TreeNode<Post> node) {
   /// If parent = 0 then it is an OP-post => threadId equals to the post id
   int threadId = node.data.parent == 0 ? node.data.id : node.data.parent;
   String link =
-      'https://2ch.hk/${node.data.board}/res/$threadId.html#${node.data.id}';
+      'https://2ch.hk/${node.data.boardTag}/res/$threadId.html#${node.data.id}';
   return link;
 }
