@@ -1,13 +1,14 @@
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/main.dart';
 import 'dart:convert';
 
 import '../../data/board_list_fetcher.dart';
 import '../models/category.dart';
-import '../models/json/json.dart';
 import 'repository.dart';
 
 class BoardListRepository implements Repository {
-  BoardListRepository({this.openAsCatalog});
+  BoardListRepository({required this.fetcher, this.openAsCatalog});
+  final BoardListFetcher fetcher;
 
   bool? openAsCatalog = false;
   final List<Category> _categories = [];
@@ -37,11 +38,9 @@ class BoardListRepository implements Repository {
 
   @override
   Future<void> load() async {
-    String? downloadedBoards = await BoardListFetcher.getBoardListResponse();
-    if (downloadedBoards == null) {
-      return;
-    }
-    _boards.addAll(boardListFromJson(jsonDecode(downloadedBoards)));
+    final List<Board> boards = await fetcher.getBoards();
+
+    _boards.addAll(boards);
 
     for (Board board in _boards) {
       if (board.category == "") {
@@ -50,12 +49,12 @@ class BoardListRepository implements Repository {
 
       // find category in list and add board to it if category exists
       int categoryIndex = _categories
-          .indexWhere((category) => category.categoryName == board.category!);
+          .indexWhere((category) => category.categoryName == board.category);
       if (categoryIndex != -1) {
         _categories[categoryIndex].boards.add(board);
       } else {
         _categories
-            .add(Category(categoryName: board.category!, boards: [board]));
+            .add(Category(categoryName: board.category, boards: [board]));
       }
     }
   }
@@ -65,7 +64,7 @@ class BoardListRepository implements Repository {
     if (jsonBoards == "") {
       return;
     }
-    _favoriteBoards.addAll(boardListFromJson(jsonDecode(jsonBoards)));
+    _favoriteBoards.addAll(_boardListFromJson(jsonDecode(jsonBoards)));
   }
 
   void saveFavoriteBoards(List<Board> boards) {
@@ -89,4 +88,12 @@ class BoardListRepository implements Repository {
     _favoriteBoards.remove(board);
     saveFavoriteBoards(_favoriteBoards);
   }
+}
+
+List<Board> _boardListFromJson(List<dynamic> json) {
+  List<Board> boardList = List.empty(growable: true);
+  for (var boardItem in json) {
+    boardList.add(Board.fromJson(boardItem));
+  }
+  return boardList;
 }

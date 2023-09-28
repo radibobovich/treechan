@@ -4,11 +4,9 @@ import 'package:treechan/domain/repositories/repository.dart';
 import 'package:treechan/utils/fix_blank_space.dart';
 
 import '../../utils/constants/enums.dart';
-import '../models/json/json.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../../utils/fix_html_video.dart';
+import '../models/core/core_models.dart';
 
 class BoardRepository implements Repository {
   BoardRepository(
@@ -42,12 +40,11 @@ class BoardRepository implements Repository {
   @override
   Future<void> load() async {
     currentPage = 0;
-    // final BoardFetcherDeprecated fetcher =
-    //     BoardFetcherDeprecated(boardTag: boardTag, sortType: sortType);
-    http.Response response =
-        await boardFetcher.getBoardResponse(currentPage, boardTag, sortType);
-    boardName = Root.fromJson(jsonDecode(response.body)).board!.name!;
-    _threads = Root.fromJson(jsonDecode(response.body)).threads!;
+    final Board board =
+        await boardFetcher.getBoardApiModel(currentPage, boardTag, sortType);
+
+    boardName = board.name;
+    _threads = board.threads;
     for (var thread in _threads) {
       if (fixBlankSpace(thread.posts[0])) break;
     }
@@ -60,11 +57,11 @@ class BoardRepository implements Repository {
     if (_threads.isEmpty) {
       return;
     }
-    // final BoardFetcherDeprecated fetcher =
-    //     BoardFetcherDeprecated(boardTag: boardTag, sortType: sortType);
-    http.Response response = await boardFetcher.getBoardResponse(
+
+    final Board board = await boardFetcher.getBoardApiModel(
         currentPage + 1, boardTag, sortType);
-    List<Thread> newThreads = Root.fromJson(jsonDecode(response.body)).threads!;
+
+    List<Thread> newThreads = board.threads;
     if (newThreads.isNotEmpty) {
       currentPage += 1;
     }

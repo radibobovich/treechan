@@ -1,21 +1,20 @@
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:mockito/mockito.dart';
-import 'package:treechan/data/thread/response_handler.dart';
+import 'package:treechan/data/rest/rest_client.dart';
 import 'package:treechan/di/injection.dart';
-import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/domain/models/api/dvach/posts_after_dvach_api_model.dart';
+import 'package:treechan/domain/models/api/posts_after_api_model.dart';
 import 'package:treechan/exceptions.dart';
+import 'package:treechan/utils/constants/enums.dart';
+
+import '../../domain/models/core/post.dart';
 
 abstract class IThreadRefresher {
-  // ignore: unused_element
-  Future<http.Response> _getRefreshResponse(
-      String boardTag, int threadId, int lastPostId);
-
   Future<List<Post>> getNewPosts(
       {required String boardTag,
       required int threadId,
@@ -26,23 +25,10 @@ abstract class IThreadRemoteRefresher extends IThreadRefresher {}
 
 @Injectable(as: IThreadRemoteRefresher, env: [Env.prod])
 class ThreadRemoteRefresher implements IThreadRemoteRefresher {
-  ThreadRemoteRefresher();
-  final IResponseHandler responseHandler = getIt<IResponseHandler>();
-  @override
-  Future<http.Response> _getRefreshResponse(
-    String boardTag,
-    int threadId,
-    int lastPostId,
-  ) async {
-    final String url =
-        "https://2ch.hk/api/mobile/v2/after/$boardTag/$threadId/${lastPostId + 1}";
-
-    return await responseHandler.getResponse(
-      url: url,
-      onResponseError: (int statusCode) =>
-          _onThreadRefreshResponseError(statusCode, boardTag, threadId),
-    );
-  }
+  ThreadRemoteRefresher(
+      {@factoryParam required this.imageboard,
+      @factoryParam required assetPaths});
+  final Imageboard imageboard;
 
   @override
   Future<List<Post>> getNewPosts({
@@ -50,33 +36,30 @@ class ThreadRemoteRefresher implements IThreadRemoteRefresher {
     required int threadId,
     required int lastPostId,
   }) async {
-    final http.Response response =
-        await _getRefreshResponse(boardTag, threadId, lastPostId);
+    final RestClient restClient = getIt<RestClient>(
+        instanceName: imageboard.name, param1: _getDio(boardTag, threadId));
+
+    final PostsAfterApiModel apiModel = await restClient.getPostsAfter(
+        boardTag: boardTag, threadId: threadId, id: lastPostId + 1);
 
     debugPrint('Thread $boardTag/$threadId refreshed');
-    return postListFromJson(jsonDecode(response.body)["posts"]);
+
+    if (apiModel is PostsAfterDvachApiModel) {
+      return apiModel.posts.map((post) => Post.fromDvachApi(post)).toList();
+    } else {
+      throw Exception('Unknown api model type');
+    }
   }
 }
 
 @Injectable(as: IThreadRemoteRefresher, env: [Env.test, Env.dev])
 class MockThreadRemoteRefresher extends Mock implements IThreadRemoteRefresher {
-  MockThreadRemoteRefresher({@factoryParam required this.assetPaths});
+  MockThreadRemoteRefresher(
+      {@factoryParam required this.imageboard,
+      @factoryParam required this.assetPaths});
+  final Imageboard imageboard;
   final List<String> assetPaths;
   int refreshCount = 0;
-  @override
-  Future<http.Response> _getRefreshResponse(
-    String boardTag,
-    int threadId,
-    int lastPostId,
-  ) async {
-    String jsonString = await rootBundle.loadString(assetPaths[refreshCount++]);
-    http.Response response = http.Response(jsonString, 200, headers: {
-      HttpHeaders.contentTypeHeader: 'application/json; charset=utf-8'
-    });
-
-    return response;
-  }
-
   @override
   Future<List<Post>> getNewPosts({
     required String boardTag,
@@ -87,11 +70,17 @@ class MockThreadRemoteRefresher extends Mock implements IThreadRemoteRefresher {
       debugPrint('No more refreshes left in refresh asset list.');
       return [];
     }
-    final http.Response response =
-        await _getRefreshResponse(boardTag, threadId, lastPostId);
+
+    final PostsAfterApiModel apiModel = PostsAfterDvachApiModel.fromJson(
+      jsonDecode(await rootBundle.loadString(assetPaths[refreshCount++])),
+    );
 
     debugPrint('Thread $boardTag/$threadId refreshed');
-    return postListFromJson(jsonDecode(response.body)["posts"]);
+
+    return (apiModel as PostsAfterDvachApiModel)
+        .posts
+        .map((post) => Post.fromDvachApi(post))
+        .toList();
   }
 }
 
@@ -103,4 +92,18 @@ Never _onThreadRefreshResponseError(
     throw Exception(
         "Failed to refresh $boardTag/$threadId. Status code: $responseCode");
   }
+}
+
+Dio _getDio(String boardTag, int threadId) {
+  final Dio dio = Dio();
+
+  dio.interceptors.add(
+    InterceptorsWrapper(onResponse: (Response response, handler) {
+      if (response.statusCode != null && response.statusCode != 200) {
+        _onThreadRefreshResponseError(response.statusCode!, boardTag, threadId);
+      }
+      return handler.next(response);
+    }),
+  );
+  return dio;
 }
