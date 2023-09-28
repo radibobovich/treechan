@@ -6,23 +6,21 @@ import 'package:treechan/exceptions.dart';
 
 import 'package:injectable/injectable.dart';
 
+@Deprecated('Use RestClient instead')
 abstract class IResponseHandler {
   Future<http.Response> getResponse({
     required String url,
     required Never Function(int) onResponseError,
-    // required String boardTag,
-    // required int threadId,
   });
 }
 
+@Deprecated('Use RestClient instead')
 @LazySingleton(as: IResponseHandler, env: [Env.test, Env.dev, Env.prod])
 class ResponseHandler implements IResponseHandler {
   @override
   Future<http.Response> getResponse({
     required String url,
     required Never Function(int) onResponseError,
-    // required String boardTag,
-    // required int threadId,
   }) async {
     http.Response response;
     try {
