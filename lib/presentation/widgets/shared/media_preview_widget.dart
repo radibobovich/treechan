@@ -2,10 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/services/image_download_service.dart';
-import 'package:treechan/utils/constants/dev.dart';
 
-import '../../../domain/models/json/json.dart';
 import 'package:extended_image/extended_image.dart';
 
 import 'image_gallery_widget.dart';
@@ -40,10 +39,10 @@ class MediaPreview extends StatelessWidget {
 
 void _fixLinks(List<File> files) {
   for (var file in files) {
-    if (file.thumbnail != null && !file.thumbnail!.contains("http")) {
+    if (!file.thumbnail.contains("http")) {
       file.thumbnail = "https://2ch.hk${file.thumbnail}";
     }
-    if (file.path != null && !file.path!.contains("http")) {
+    if (!file.path.contains("http")) {
       file.path = "https://2ch.hk${file.path}";
     }
   }
@@ -74,10 +73,10 @@ List<Widget> _getImages(List<File> files, BuildContext context,
 
   for (var file in files) {
     if (_galleryTypes.contains(file.type)) {
-      fullResLinks.add(file.path!);
-      previewLinks.add(file.thumbnail!);
+      fullResLinks.add(file.path);
+      previewLinks.add(file.thumbnail);
     } else if (_videoTypes.contains(file.type)) {
-      videoLinks.add(file.path!);
+      videoLinks.add(file.path);
     }
   }
   for (var file in files) {
@@ -85,7 +84,7 @@ List<Widget> _getImages(List<File> files, BuildContext context,
       imageLinks: fullResLinks,
       previewLinks: previewLinks,
       file: file,
-      type: file.type!,
+      type: file.type,
       height: height,
     ));
   }
@@ -125,7 +124,7 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = widget.imageLinks.indexOf(widget.file.path!);
+    final currentIndex = widget.imageLinks.indexOf(widget.file.path);
     final pageController = ExtendedPageController(initialPage: currentIndex);
 
     return GestureDetector(
@@ -191,11 +190,11 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
   Widget getThumbnail(int type) {
     if (_galleryTypes.contains(type)) {
       return Image.network(
-        widget.file.thumbnail!,
+        widget.file.thumbnail,
         height: widget.height,
         width: widget.height *
-            widget.file.width!.toDouble() /
-            widget.file.height!.toDouble(),
+            widget.file.width.toDouble() /
+            widget.file.height.toDouble(),
         fit: BoxFit.fill,
         errorBuilder: (context, error, stackTrace) {
           isLoaded = false;
@@ -206,7 +205,7 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
     } else if (_videoTypes.contains(type)) {
       return Stack(children: [
         Image.network(
-          widget.file.thumbnail!,
+          widget.file.thumbnail,
           height: 140,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {

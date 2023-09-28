@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/data/board_fetcher.dart';
+import 'package:treechan/data/board_list_fetcher.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
 import '../../domain/repositories/board_list_repository.dart';
@@ -35,7 +37,9 @@ class BlocHandler {
     switch (tab.runtimeType) {
       case BoardListTab:
         return board_list.BoardListBloc(
-            key: ValueKey(tab), boardListService: BoardListRepository())
+            key: ValueKey(tab),
+            boardListService: BoardListRepository(
+                fetcher: BoardListFetcher(imageboard: Imageboard.dvach)))
           ..add(board_list.LoadBoardListEvent());
       case BoardTab:
         if ((tab as BoardTab).isCatalog == false) {
@@ -43,8 +47,9 @@ class BlocHandler {
               key: ValueKey(tab),
               tabProvider: _provider,
               boardRepository: BoardRepository(
-                  boardFetcher:
-                      getIt<IBoardFetcher>(param1: 'assets/dev/board.json'),
+                  boardFetcher: getIt<IBoardFetcher>(
+                      param1: Imageboard.dvach,
+                      param2: 'assets/dev/board.json'),
                   boardTag: tab.tag))
             ..add(LoadBoardEvent());
         } else {
@@ -52,8 +57,9 @@ class BlocHandler {
               key: ValueKey(tab),
               tabProvider: _provider,
               boardRepository: BoardRepository(
-                  boardFetcher:
-                      getIt<IBoardFetcher>(param1: 'assets/dev/board.json'),
+                  boardFetcher: getIt<IBoardFetcher>(
+                      param1: Imageboard.dvach,
+                      param2: 'assets/dev/board.json'),
                   boardTag: tab.tag))
             ..add(ChangeViewBoardEvent(null, query: tab.query));
         }

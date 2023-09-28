@@ -1,7 +1,7 @@
-import '../domain/models/json/json.dart';
+import '../domain/models/core/core_models.dart';
 
 bool fixBlankSpace(Post post) {
-  if (post.board == 'pr' && post.id == 1215536) {
+  if (post.boardTag == 'pr' && post.id == 1215536) {
     // trim <br> tag from the end of the comment
     post.comment = post.comment.substring(0, post.comment.length - 4);
   }

@@ -2,11 +2,11 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/config/themes.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
 import 'package:treechan/presentation/widgets/shared/media_preview_widget.dart';
 import 'package:treechan/presentation/widgets/thread/post_widget.dart';
 
-import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
 import '../../../domain/services/date_time_service.dart';
 import '../../bloc/thread_bloc.dart';

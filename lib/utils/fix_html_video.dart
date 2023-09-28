@@ -1,5 +1,6 @@
+import 'package:treechan/domain/models/core/core_models.dart';
+
 import 'constants/enums.dart';
-import '../domain/models/json/json.dart';
 
 /// Removes <video> tag from comment and adds file to files list.
 void fixHtmlVideo(dynamic item, {SortBy? sortType}) {
@@ -21,6 +22,14 @@ void _fixHtmlVideoInBoard(Thread thread) {
       comment.substring(0, thread.posts.first.comment.indexOf("<video")) +
           comment.substring(comment.indexOf("</video>") + 8);
   thread.posts.first.files?.add(File(
+      name: '',
+      fullName: '',
+      displayName: '',
+      size: 0,
+      width: 100,
+      height: 100,
+      tnWidth: 100,
+      tnHeight: 100,
       type: 10,
       path: "https://2ch.hk/$src",
       thumbnail: 'https://via.placeholder.com/640x360.png?text=No+Thumbnail'));
@@ -36,6 +45,14 @@ void _fixHtmlVideoInThread(Post post) {
   post.comment = comment.substring(0, comment.indexOf("<video")) +
       comment.substring(comment.indexOf("</video>") + 8);
   post.files?.add(File(
+      name: '',
+      fullName: '',
+      displayName: '',
+      size: 0,
+      width: 100,
+      height: 100,
+      tnWidth: 100,
+      tnHeight: 100,
       type: 10,
       path: "https://2ch.hk/$src",
       thumbnail: 'https://via.placeholder.com/640x360.png?text=No+Thumbnail'));

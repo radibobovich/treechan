@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/config/themes.dart';
-import '../../../domain/models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../domain/models/tab.dart';

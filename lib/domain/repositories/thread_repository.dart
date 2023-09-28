@@ -3,12 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/hidden_posts.database.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/models/tab.dart';
 import 'package:treechan/domain/repositories/tracker_repository.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/fix_html_video.dart';
-
-import '../models/json/json.dart';
 
 import '../models/thread_info.dart';
 import '../models/tree.dart';

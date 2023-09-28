@@ -1,4 +1,4 @@
-import '../models/json/json.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 
 class BoardSearchService {
   BoardSearchService({required this.threads});

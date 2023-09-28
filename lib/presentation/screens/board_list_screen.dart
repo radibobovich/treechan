@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/presentation/widgets/shared/no_connection_placeholder.dart';
@@ -10,7 +11,6 @@ import '../../domain/models/tab.dart';
 
 import '../bloc/board_list_bloc.dart';
 import '../../domain/models/category.dart';
-import '../../domain/models/json/json.dart';
 
 import '../widgets/board_list/board_list_appbar.dart';
 import '../widgets/board_list/category_widget.dart';
@@ -160,7 +160,7 @@ class BoardTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(board.name!),
+      title: Text(board.name),
       onTap: () {
         if (BlocProvider.of<BoardListBloc>(context).state
             is BoardListSearchState) {
@@ -168,7 +168,7 @@ class BoardTile extends StatelessWidget {
           BlocProvider.of<BoardListBloc>(context).add(LoadBoardListEvent());
         }
         context.read<PageProvider>().addTab(
-            BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
+            BoardTab(name: board.name, tag: board.id, prevTab: boardListTab));
       },
       onLongPress: () {
         showContextMenu(context, board);
@@ -207,7 +207,7 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
           itemBuilder: (context, index) {
             Board board = widget.favorites[index];
             return ListTile(
-              title: Text(board.name!),
+              title: Text(board.name),
               trailing: BlocProvider.of<BoardListBloc>(context).allowReorder
                   ? Icon(
                       Icons.drag_handle,
@@ -230,7 +230,7 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
 
   openBoard(Board board) async {
     Provider.of<PageProvider>(context, listen: false).addTab(
-        BoardTab(name: board.name, tag: board.id!, prevTab: boardListTab));
+        BoardTab(name: board.name, tag: board.id, prevTab: boardListTab));
   }
 
   /// Calls when user reorder favorite boards.

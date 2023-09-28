@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/services/search_service.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../main.dart';
-import '../../../domain/models/json/json.dart';
 import '../../bloc/branch_bloc.dart';
 import '../../bloc/thread_base.dart';
 import '../../provider/page_provider.dart';

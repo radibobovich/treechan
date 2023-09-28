@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/data/hidden_threads_database.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/exceptions.dart';
 
-import '../../domain/models/json/json.dart';
 import '../bloc/board_bloc.dart';
 
 import '../provider/page_provider.dart';

@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/exceptions.dart';
 
-import '../models/json/json.dart';
-
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:html/parser.dart' as html;
+
+import 'core/core_models.dart';
 
 /// Handles everything related to the tree building, updating and searching.
 class Tree {

@@ -5,8 +5,8 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../models/json/post_json.dart';
 import '../../presentation/widgets/thread/post_widget.dart';
+import '../models/core/core_models.dart';
 import '../models/tree.dart';
 
 /// A service generally to scroll to a post after thread refresh.

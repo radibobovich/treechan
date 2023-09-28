@@ -6,7 +6,7 @@ import 'package:treechan/domain/repositories/tracker_repository.dart';
 
 import '../../main.dart';
 import '../../utils/constants/enums.dart';
-import '../models/json/json.dart';
+import '../models/core/core_models.dart';
 import '../models/tree.dart';
 import 'repository.dart';
 

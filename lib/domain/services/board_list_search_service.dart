@@ -1,4 +1,4 @@
-import '../models/json/json.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 
 class BoardListSearchService {
   BoardListSearchService({required this.boards});
@@ -9,9 +9,8 @@ class BoardListSearchService {
       return boards;
     }
     return boards
-        .where((board) => (board.id! + board.name!)
-            .toLowerCase()
-            .contains(query.toLowerCase()))
+        .where((board) =>
+            (board.id + board.name).toLowerCase().contains(query.toLowerCase()))
         .toList();
   }
 }

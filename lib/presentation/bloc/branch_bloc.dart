@@ -1,7 +1,7 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/domain/repositories/tracker_repository.dart';

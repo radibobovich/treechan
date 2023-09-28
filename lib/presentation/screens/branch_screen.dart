@@ -4,10 +4,10 @@ import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:should_rebuild/should_rebuild.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/utils/constants/enums.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../domain/models/json/post_json.dart';
 import '../../domain/models/tab.dart';
 import '../../exceptions.dart';
 import '../../main.dart';

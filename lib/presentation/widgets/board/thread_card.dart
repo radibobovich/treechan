@@ -2,13 +2,13 @@ import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 import 'package:treechan/data/hidden_threads_database.dart';
 import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
 import 'package:treechan/presentation/widgets/shared/user_platform_icons.dart';
 import 'package:treechan/utils/constants/dev.dart';
 import 'package:treechan/utils/string.dart';
 
-import '../../../domain/models/json/json.dart';
 import '../../../domain/models/tab.dart';
 import '../shared/html_container_widget.dart';
 import '../shared/media_preview_widget.dart';
@@ -86,7 +86,9 @@ class _ThreadCardState extends State<ThreadCard> {
     FocusManager.instance.primaryFocus?.unfocus();
     context.read<PageProvider>().addTab(ThreadTab(
         id: env == Env.prod ? widget.thread.posts.first.id : debugThreadId,
-        tag: env == Env.prod ? widget.thread.posts.first.board : debugBoardTag,
+        tag: env == Env.prod
+            ? widget.thread.posts.first.boardTag
+            : debugBoardTag,
         name: widget.thread.posts.first.subject,
         prevTab: widget.currentTab));
   }
@@ -106,10 +108,10 @@ class _CardHeader extends StatelessWidget {
         DateTimeService(timestamp: thread!.posts.first.timestamp);
     return Row(
       children: [
-        thread!.posts.first.board != 's'
+        thread!.posts.first.boardTag != 's'
             ? Text(thread?.posts.first.name ?? "No author")
             : Text(extractUserInfo(thread!.posts.first.name)),
-        thread!.posts.first.board == 's'
+        thread!.posts.first.boardTag == 's'
             ? UserPlatformIcons(userName: thread!.posts.first.name)
             : const SizedBox.shrink(),
         const Spacer(),
@@ -141,7 +143,7 @@ class _CardFooter extends StatelessWidget {
           child: Row(
             children: [
               const Icon(Icons.question_answer, size: 20),
-              Text(thread?.postsCount.toString() ?? "count"),
+              Text(thread?.posts.length.toString() ?? "count"),
               const Spacer(),
             ],
           ),

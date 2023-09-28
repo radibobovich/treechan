@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/data/hidden_threads_database.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/repositories/board_repository.dart';
 
 import '../../utils/constants/enums.dart';
 import '../../domain/services/board_search_service.dart';
-import '../../domain/models/json/json.dart';
 import '../provider/page_provider.dart';
 
 class BoardBloc extends Bloc<BoardEvent, BoardState> {

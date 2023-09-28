@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/config/themes.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/screens/board_list_screen.dart';
 
 import '../../../utils/constants/enums.dart';
 import '../../bloc/board_list_bloc.dart';
 import '../../../domain/models/category.dart';
-import 'package:treechan/domain/models/json/board_json.dart';
 
 /// Used in BoardListScreen to display a list of board categories..
 class CategoryWidget extends StatelessWidget {

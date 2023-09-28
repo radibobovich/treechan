@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/services/board_list_search_service.dart';
 import 'package:treechan/exceptions.dart';
 import '../../utils/constants/enums.dart';
 import '../../domain/repositories/board_list_repository.dart';
 import '../../domain/models/category.dart';
-import '../../domain/models/json/board_json.dart';
 
 class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
   late final BoardListRepository _boardListRepository;

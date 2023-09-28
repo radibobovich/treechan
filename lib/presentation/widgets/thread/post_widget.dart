@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/config/themes.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
 import 'package:treechan/presentation/widgets/shared/user_platform_icons.dart';
 import 'package:treechan/utils/string.dart';
-import '../../../domain/models/json/json.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:pausable_timer/pausable_timer.dart';
@@ -246,7 +246,7 @@ class _PostHeader extends StatelessWidget {
           : const EdgeInsets.fromLTRB(8, 2, 8, 0),
       child: Row(
         children: [
-          Text(post.board != 's' ? post.name : extractUserInfo(post.name),
+          Text(post.boardTag != 's' ? post.name : extractUserInfo(post.name),
               style: post.email == "mailto:sage"
                   ? TextStyle(color: context.colors.boldText)
                   : null),
@@ -266,7 +266,7 @@ class _PostHeader extends StatelessWidget {
                   style: TextStyle(
                       color: Theme.of(context).textTheme.bodySmall!.color))
               : const SizedBox.shrink(),
-          post.board == 's'
+          post.boardTag == 's'
               ? UserPlatformIcons(userName: post.name)
               : const SizedBox.shrink(),
           const Spacer(),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 
-import '../../domain/models/json/json.dart';
+import '../../domain/models/core/core_models.dart';
 import '../../domain/models/tab.dart';
 import '../../domain/repositories/thread_repository.dart';
 import '../../domain/services/scroll_service.dart';

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -14,7 +15,6 @@ import '../provider/page_provider.dart';
 import '../../domain/models/tab.dart';
 
 import '../../main.dart';
-import '../../domain/models/json/json.dart';
 import '../bloc/thread_bloc.dart';
 
 import '../widgets/shared/go_back_widget.dart';
