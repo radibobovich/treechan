@@ -1,5 +1,5 @@
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/models/tab.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
@@ -85,7 +85,6 @@ class GoToPostUseCase implements BaseUseCaseWithParams<GoToPostParams, void> {
   }
 
   Future<(int, ScrollService)> _handleScrollFromBranchTab(
-    // ScrollService? scrollService,
     ScrollService? threadScrollService,
     BranchTab tab,
     Function? getThreadScrollService,
