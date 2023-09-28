@@ -5,10 +5,11 @@ import 'package:test/test.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/di/injection.dart';
-import 'package:treechan/domain/models/json/json.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
+import 'package:treechan/utils/constants/enums.dart';
 import 'package:treechan/utils/remove_html.dart';
 
 // late SharedPreferences prefs;
@@ -44,8 +45,10 @@ void main() async {
       threadId: 50074,
 
       /// it is a real thread so we dont mock loader and refresher
-      threadLoader: ThreadRemoteLoader(),
-      threadRefresher: ThreadRemoteRefresher(),
+      threadLoader:
+          ThreadRemoteLoader(imageboard: Imageboard.dvach, assetPath: ''),
+      threadRefresher:
+          ThreadRemoteRefresher(imageboard: Imageboard.dvach, assetPaths: ''),
     );
 
     List<TreeNode<Post>>? roots = await threadRepository.getRoots();
@@ -88,10 +91,10 @@ void main() async {
     final threadRepository = ThreadRepository(
       boardTag: 'b',
       threadId: 282647314,
-      threadLoader:
-          getIt.get<IThreadRemoteLoader>(param1: 'assets/test/thread.json'),
-      threadRefresher: getIt
-          .get<IThreadRemoteRefresher>(param1: ['assets/test/new_posts.json']),
+      threadLoader: getIt.get<IThreadRemoteLoader>(
+          param1: Imageboard.dvach, param2: 'assets/test/thread.json'),
+      threadRefresher: getIt.get<IThreadRemoteRefresher>(
+          param1: Imageboard.dvach, param2: ['assets/test/new_posts.json']),
     );
 
     List<TreeNode<Post>> roots = List.from(await threadRepository.getRoots());
@@ -146,10 +149,10 @@ void main() async {
       final ThreadRepository repo = ThreadRepository(
         boardTag: 'b',
         threadId: 282647314,
-        threadLoader:
-            getIt.get<IThreadRemoteLoader>(param1: 'assets/test/thread.json'),
+        threadLoader: getIt.get<IThreadRemoteLoader>(
+            param1: Imageboard.dvach, param2: 'assets/test/thread.json'),
         threadRefresher: getIt.get<IThreadRemoteRefresher>(
-            param1: ['assets/test/new_posts.json']),
+            param1: Imageboard.dvach, param2: ['assets/test/new_posts.json']),
       );
       final List<TreeNode<Post>> roots = await repo.getRoots();
       TreeNode<Post>? result = Tree.findNode(roots, 282648865);
@@ -162,10 +165,11 @@ void main() async {
       final ThreadRepository repo = ThreadRepository(
           boardTag: 'b',
           threadId: 282647314,
-          threadLoader:
-              getIt.get<IThreadRemoteLoader>(param1: 'assets/test/thread.json'),
+          threadLoader: getIt.get<IThreadRemoteLoader>(
+              param1: Imageboard.dvach, param2: 'assets/test/thread.json'),
           threadRefresher: getIt.get<IThreadRemoteRefresher>(
-              param1: ['assets/test/new_posts.json']));
+              param1: Imageboard.dvach,
+              param2: ['assets/test/new_posts.json']));
       final List<TreeNode<Post>> roots = await repo.getRoots();
       List<TreeNode<Post>> results = Tree.findAllNodes(roots, 282649012);
       expect(results.length, 2, reason: "Wrong search results count.");
