@@ -46,11 +46,6 @@ Dio _getDio() {
         }
         return handler.next(response);
       },
-      onError: (e, handler) {
-        if (e.type == DioExceptionType.connectionError) {
-          throw NoConnectionException('Check your internet connection.');
-        }
-      },
     ),
   );
   return dio;
