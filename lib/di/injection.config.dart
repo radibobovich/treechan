@@ -13,11 +13,11 @@ import 'package:dio/dio.dart' as _i10;
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
 import 'package:treechan/data/board_fetcher.dart' as _i3;
-import 'package:treechan/data/history_database.dart' as _i5;
-import 'package:treechan/data/response_handler.dart' as _i6;
+import 'package:treechan/data/local/history_database.dart' as _i5;
 import 'package:treechan/data/rest/rest_client.dart' as _i9;
 import 'package:treechan/data/thread/thread_loader.dart' as _i7;
 import 'package:treechan/data/thread/thread_refresher.dart' as _i8;
+import 'package:treechan/deprecated/response_handler.dart' as _i6;
 import 'package:treechan/utils/constants/enums.dart' as _i4;
 
 const String _prod = 'prod';
