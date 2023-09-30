@@ -73,26 +73,28 @@ class MockThreadRemoteLoader extends Mock implements IThreadRemoteLoader {
   }
 }
 
-Never _onThreadLoadResponseError(
-    int statusCode, String boardTag, int threadId) {
-  if (statusCode == 404) {
-    throw ThreadNotFoundException(message: "404", tag: boardTag, id: threadId);
-  } else {
-    throw Exception(
-        "Failed to load thread $boardTag/$threadId. Status code: $statusCode");
-  }
-}
-
 Dio _getDio(String boardTag, int threadId) {
   final Dio dio = Dio();
 
   dio.interceptors.add(
-    InterceptorsWrapper(onResponse: (Response response, handler) {
-      if (response.statusCode != null && response.statusCode != 200) {
-        _onThreadLoadResponseError(response.statusCode!, boardTag, threadId);
-      }
-      return handler.next(response);
-    }),
+    InterceptorsWrapper(
+      onError: (e, handler) {
+        if (e.response?.statusCode != null) {
+          switch (e.response!.statusCode) {
+            case 404:
+              throw ThreadNotFoundException(
+                message: "404",
+                tag: boardTag,
+                id: threadId,
+                requestOptions: e.requestOptions,
+              );
+          }
+          // _onThreadLoadResponseError(response.statusCode!, boardTag, threadId);
+        } else {
+          handler.next(e);
+        }
+      },
+    ),
   );
   return dio;
 }
