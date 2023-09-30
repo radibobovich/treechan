@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
+import 'package:treechan/data/local/history_database.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
 import 'package:treechan/presentation/provider/bloc_handler.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 
-import '../../data/history_database.dart';
 import '../../domain/models/catalog.dart';
 import '../../domain/models/tab.dart';
 
