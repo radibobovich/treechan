@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
@@ -17,15 +19,9 @@ import '../../domain/models/tree.dart';
 import '../../domain/repositories/thread_repository.dart';
 
 class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
-  // final ThreadRepository threadRepository;
-  // Key key;
-  // final ThreadTab tab;
-  // final PageProvider provider;
   final ScrollController endDrawerScrollController = ScrollController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  // final List<TreeNode<Post>> dialogStack = [];
   double? endDrawerScrollPosition;
-  // late final ScrollService scrollService;
 
   @override
   late ThreadInfo threadInfo;
@@ -70,100 +66,174 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
         }
       },
     );
-    on<RefreshThreadEvent>(
-      (event, emit) async {
-        try {
-          //No need to preserve scroll position if the thread hasn't been loaded
-          // correctly. This check is created in case user presses refresh after
-          // failed thread loading.
-          // final int oldPostCount = threadRepository.posts.length;
+    on<RefreshThreadEvent>(_refresh);
+  }
 
-          if (event.source == RefreshSource.thread &&
-              scrollController.hasClients &&
-              scrollController.offset != 0) {
-            scrollService.saveCurrentScrollInfo();
-          }
+  FutureOr<void> _refresh(event, emit) async {
+    try {
+      //No need to preserve scroll position if the thread hasn't been loaded
+      // correctly. This check is created in case user presses refresh after
+      // failed thread loading.
+      // final int oldPostCount = threadRepository.posts.length;
 
-          final int lastIndex = threadRepository.posts.length - 1;
-          await threadRepository.refresh();
-          add(LoadThreadEvent());
+      // if (event.source == RefreshSource.thread &&
+      //     scrollController.hasClients &&
+      //     scrollController.offset != 0) {
+      //   scrollService.saveCurrentScrollInfo();
+      // }
 
-          provider.tabManager.refreshRelatedBranches(tab, lastIndex);
+      // final int lastIndex = threadRepository.posts.length - 1;
+      // await threadRepository.refresh();
+      // add(LoadThreadEvent());
 
-          await Future.delayed(const Duration(milliseconds: 10));
+      // provider.tabManager.refreshRelatedBranches(tab as ThreadTab, lastIndex);
 
-          if (event.source == RefreshSource.thread &&
-              scrollController.hasClients &&
-              threadRepository.newPostsCount > 0 &&
-              scrollController.offset != 0) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              scrollService.updateScrollPosition();
-            });
-          }
+      // await Future.delayed(const Duration(milliseconds: 10));
 
-          if (event.source == RefreshSource.tracker) {
-            bool shouldNotifyNewPosts = true;
-            if (provider.tabManager.currentTab == tab &&
-                provider.tabManager.isAppInForeground) {
-              shouldNotifyNewPosts = false;
-            }
-            provider.trackerRepository.updateThreadByTab(
-              tab: tab,
-              posts: threadRepository.postsCount,
-              newPosts:
-                  shouldNotifyNewPosts ? threadRepository.newPostsCount : 0,
-              forceNewPosts: shouldNotifyNewPosts ? false : true,
-              newReplies: threadRepository.newReplies,
-              forceNewReplies: shouldNotifyNewPosts ? false : true,
-            );
-          }
-          if (event.source != RefreshSource.tracker) {
-            final prefs = await SharedPreferences.getInstance();
-            provider.showSnackBar(
-                threadRepository.newPostsCount > 0
-                    ? 'Новых постов: ${threadRepository.newPostsCount}'
-                    : 'Нет новых постов',
-                action: threadRepository.newPostsCount > 0 &&
-                        (prefs.getBool('showSnackBarActionOnThreadRefresh') ??
-                            true)
-                    ? SnackBarAction(
-                        label: 'Показать', onPressed: () => _openEndDrawer())
-                    : null);
-          }
-          if (event.source == RefreshSource.thread) {
-            await provider.trackerRepository.updateThreadByTab(
-              tab: tab,
-              posts: threadRepository.postsCount,
-              newPosts: 0,
-              forceNewPosts: true,
-              newReplies: 0,
-              forceNewReplies: true,
-            );
-            provider.trackerCubit.loadTracker();
-          }
-        } on ThreadNotFoundException {
-          if (event.source != RefreshSource.tracker) {
-            provider.showSnackBar('Тред умер');
-          }
-          provider.trackerRepository.markAsDead(tab);
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            if (event.source == RefreshSource.tracker) {
-              provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
-            } else {
-              provider.showSnackBar('Проверьте подключение к Интернету.');
-            }
-          } else {
-            if (event.source == RefreshSource.thread) {
-              provider.showSnackBar('Неизвестная ошибка Dio');
-            }
-          }
-        } on Exception {
-          if (event.source == RefreshSource.thread) {
-            provider.showSnackBar('Неизвестная ошибка');
-          }
+      // if (event.source == RefreshSource.thread &&
+      //     scrollController.hasClients &&
+      //     threadRepository.newPostsCount > 0 &&
+      //     scrollController.offset != 0) {
+      //   WidgetsBinding.instance.addPostFrameCallback((_) {
+      //     scrollService.updateScrollPosition();
+      //   });
+      // }
+
+      // if (event.source == RefreshSource.tracker) {
+      //   bool shouldNotifyNewPosts = true;
+      //   if (provider.tabManager.currentTab == tab &&
+      //       provider.tabManager.isAppInForeground) {
+      //     shouldNotifyNewPosts = false;
+      //   }
+      //   provider.trackerRepository.updateThreadByTab(
+      //     tab: tab as ThreadTab,
+      //     posts: threadRepository.postsCount,
+      //     newPosts: shouldNotifyNewPosts ? threadRepository.newPostsCount : 0,
+      //     forceNewPosts: shouldNotifyNewPosts ? false : true,
+      //     newReplies: threadRepository.newReplies,
+      //     forceNewReplies: shouldNotifyNewPosts ? false : true,
+      //   );
+      // }
+      // if (event.source != RefreshSource.tracker) {
+      //   final prefs = await SharedPreferences.getInstance();
+      //   provider.showSnackBar(
+      //       threadRepository.newPostsCount > 0
+      //           ? 'Новых постов: ${threadRepository.newPostsCount}'
+      //           : 'Нет новых постов',
+      //       action: threadRepository.newPostsCount > 0 &&
+      //               (prefs.getBool('showSnackBarActionOnThreadRefresh') ?? true)
+      //           ? SnackBarAction(
+      //               label: 'Показать', onPressed: () => _openEndDrawer())
+      //           : null);
+      // }
+      // if (event.source == RefreshSource.thread) {
+      //   await provider.trackerRepository.updateThreadByTab(
+      //     tab: tab as ThreadTab,
+      //     posts: threadRepository.postsCount,
+      //     newPosts: 0,
+      //     forceNewPosts: true,
+      //     newReplies: 0,
+      //     forceNewReplies: true,
+      //   );
+      //   provider.trackerCubit.loadTracker();
+      // }
+
+      if (event.source == RefreshSource.thread) {
+        await _refreshFromThread();
+      } else if (event.source == RefreshSource.tracker) {
+        await _refreshFromTracker();
+      } else if (event.source == RefreshSource.branch) {
+        throw Exception('You should use ThreadRepository.refresh() method while'
+            ' refreshing from branch');
+      }
+    } on ThreadNotFoundException {
+      if (event.source != RefreshSource.tracker) {
+        provider.showSnackBar('Тред умер');
+      }
+      provider.trackerRepository.markAsDead(tab);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        if (event.source == RefreshSource.tracker) {
+          provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
+        } else {
+          provider.showSnackBar('Проверьте подключение к Интернету.');
         }
-      },
+      } else {
+        if (event.source == RefreshSource.thread) {
+          provider.showSnackBar('Неизвестная ошибка Dio');
+        }
+      }
+    } on Exception {
+      if (event.source == RefreshSource.thread) {
+        provider.showSnackBar('Неизвестная ошибка');
+      }
+    }
+  }
+
+  FutureOr<void> _refreshFromThread() async {
+    bool requiresSavingScrollPosition =
+        scrollController.hasClients && scrollController.offset != 0;
+    if (requiresSavingScrollPosition) {
+      scrollService.saveCurrentScrollInfo();
+    }
+
+    final int lastIndex = threadRepository.posts.length - 1;
+    await threadRepository.refresh();
+    add(LoadThreadEvent());
+
+    provider.tabManager.refreshRelatedBranches(tab as ThreadTab, lastIndex);
+
+    await Future.delayed(const Duration(milliseconds: 10));
+
+    if (requiresSavingScrollPosition && threadRepository.newPostsCount > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollService.updateScrollPosition();
+      });
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    provider.showSnackBar(
+        threadRepository.newPostsCount > 0
+            ? 'Новых постов: ${threadRepository.newPostsCount}'
+            : 'Нет новых постов',
+        action: threadRepository.newPostsCount > 0 &&
+                (prefs.getBool('showSnackBarActionOnThreadRefresh') ?? true)
+            ? SnackBarAction(
+                label: 'Показать', onPressed: () => _openEndDrawer())
+            : null);
+
+    await provider.trackerRepository.updateThreadByTab(
+      tab: tab as ThreadTab,
+      posts: threadRepository.postsCount,
+      newPosts: 0,
+      forceNewPosts: true,
+      newReplies: 0,
+      forceNewReplies: true,
+    );
+    provider.trackerCubit.loadTracker();
+  }
+
+  FutureOr<void> _refreshFromTracker() async {
+    final int lastIndex = threadRepository.posts.length - 1;
+    await threadRepository.refresh();
+    add(LoadThreadEvent());
+
+    provider.tabManager.refreshRelatedBranches(tab as ThreadTab, lastIndex);
+
+    await Future.delayed(const Duration(milliseconds: 10));
+
+    bool shouldNotifyNewPosts = true;
+    if (provider.tabManager.currentTab == tab as ThreadTab &&
+        provider.tabManager.isAppInForeground) {
+      shouldNotifyNewPosts = false;
+    }
+    provider.trackerRepository.updateThreadByTab(
+      tab: tab as ThreadTab,
+      posts: threadRepository.postsCount,
+      newPosts: shouldNotifyNewPosts ? threadRepository.newPostsCount : 0,
+      forceNewPosts: shouldNotifyNewPosts ? false : true,
+      newReplies: threadRepository.newReplies,
+      forceNewReplies: shouldNotifyNewPosts ? false : true,
     );
   }
 

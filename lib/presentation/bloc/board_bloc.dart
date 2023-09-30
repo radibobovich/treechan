@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:treechan/data/hidden_threads_database.dart';
+import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
@@ -34,91 +34,95 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       }
     });
 
-    on<LoadBoardEvent>((event, emit) async {
-      try {
-        hiddenThreads = await HiddenThreadsDatabase()
-            .getHiddenThreadIds(boardRepository.boardTag);
-        final List<Thread>? threads = await boardRepository.getThreads();
-        searchService = BoardSearchService(threads: threads!);
-        emit(BoardLoadedState(
-            boardName: boardRepository.boardName,
-            threads: threads,
-            completeRefresh: event.refreshCompleted));
-      } on BoardNotFoundException {
-        emit(BoardErrorState(message: "404 - Доска не найдена"));
-      } on NoCookieException {
-        emit(BoardErrorState(message: 'Вы не можете просматривать эту доску.'));
-      } on FailedResponseException catch (e) {
-        emit(BoardErrorState(message: "Ошибка ${e.statusCode}.", exception: e));
-      } on DioException catch (e) {
-        if (e.type == DioExceptionType.connectionError) {
-          emit(BoardErrorState(
-              message: "Проверьте подключение к Интернету.", exception: e));
-        } else {
-          emit(
-              BoardErrorState(message: "Неизвестная ошибка Dio", exception: e));
-        }
-      } on Exception catch (e) {
-        emit(BoardErrorState(message: e.toString(), exception: e));
-      }
-    });
-    on<ReloadBoardEvent>(
-      (event, emit) async {
-        try {
-          await boardRepository.load();
-          hiddenThreads = await HiddenThreadsDatabase()
-              .getHiddenThreadIds(boardRepository.boardTag);
-          scrollToTop();
-          add(LoadBoardEvent());
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            emit(BoardErrorState(
-                message: "Проверьте подключение к Интернету.", exception: e));
-          } else {
-            emit(BoardErrorState(
-                message: "Неизвестная ошибка Dio", exception: e));
-          }
-        } on Exception catch (e) {
-          emit(BoardErrorState(message: e.toString(), exception: e));
-        }
-      },
-    );
-    on<RefreshBoardEvent>(
-      (event, emit) async {
-        try {
-          await boardRepository.refresh();
+    on<LoadBoardEvent>(_load);
+    on<ReloadBoardEvent>(_reload);
+    on<RefreshBoardEvent>(_refresh);
+    on<ChangeViewBoardEvent>(_changeView);
+    on<SearchQueryChangedEvent>(_searchQueryChanged);
+  }
 
-          add(LoadBoardEvent());
-        } catch (e) {
-          // emit(BoardErrorState(e.toString()));
-          add(LoadBoardEvent(refreshCompleted: false));
-        }
-      },
-    );
-    on<ChangeViewBoardEvent>((event, emit) async {
-      try {
-        bool changed =
-            await boardRepository.changeSortType(event.sortType!, event.query);
-        if (changed) add(LoadBoardEvent());
-        scrollToTop();
-        if (event.query != null) {
-          Future.delayed(const Duration(milliseconds: 50),
-              () => add(SearchQueryChangedEvent(event.query!)));
-        }
-      } on Exception catch (e) {
-        emit(BoardErrorState(message: e.toString(), exception: e));
+  FutureOr<void> _searchQueryChanged(event, emit) async {
+    // textController.text = event.query;
+    try {
+      emit(BoardSearchState(
+          searchResult: await searchService.search(event.query),
+          query: event.query));
+    } on Exception catch (e) {
+      emit(BoardErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _changeView(event, emit) async {
+    try {
+      bool changed =
+          await boardRepository.changeSortType(event.sortType!, event.query);
+      if (changed) add(LoadBoardEvent());
+      scrollToTop();
+      if (event.query != null) {
+        Future.delayed(const Duration(milliseconds: 50),
+            () => add(SearchQueryChangedEvent(event.query!)));
       }
-    });
-    on<SearchQueryChangedEvent>((event, emit) async {
-      // textController.text = event.query;
-      try {
-        emit(BoardSearchState(
-            searchResult: await searchService.search(event.query),
-            query: event.query));
-      } on Exception catch (e) {
-        emit(BoardErrorState(message: e.toString(), exception: e));
+    } on Exception catch (e) {
+      emit(BoardErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _refresh(event, emit) async {
+    try {
+      await boardRepository.refresh();
+
+      add(LoadBoardEvent());
+    } catch (e) {
+      // emit(BoardErrorState(e.toString()));
+      add(LoadBoardEvent(refreshCompleted: false));
+    }
+  }
+
+  FutureOr<void> _reload(event, emit) async {
+    try {
+      await boardRepository.load();
+      hiddenThreads = await HiddenThreadsDatabase()
+          .getHiddenThreadIds(boardRepository.boardTag);
+      scrollToTop();
+      add(LoadBoardEvent());
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        emit(BoardErrorState(
+            message: "Проверьте подключение к Интернету.", exception: e));
+      } else {
+        emit(BoardErrorState(message: "Неизвестная ошибка Dio", exception: e));
       }
-    });
+    } on Exception catch (e) {
+      emit(BoardErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _load(event, emit) async {
+    try {
+      hiddenThreads = await HiddenThreadsDatabase()
+          .getHiddenThreadIds(boardRepository.boardTag);
+      final List<Thread>? threads = await boardRepository.getThreads();
+      searchService = BoardSearchService(threads: threads!);
+      emit(BoardLoadedState(
+          boardName: boardRepository.boardName,
+          threads: threads,
+          completeRefresh: event.refreshCompleted));
+    } on BoardNotFoundException {
+      emit(BoardErrorState(message: "404 - Доска не найдена"));
+    } on NoCookieException {
+      emit(BoardErrorState(message: 'Вы не можете просматривать эту доску.'));
+    } on FailedResponseException catch (e) {
+      emit(BoardErrorState(message: "Ошибка ${e.statusCode}.", exception: e));
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        emit(BoardErrorState(
+            message: "Проверьте подключение к Интернету.", exception: e));
+      } else {
+        emit(BoardErrorState(message: "Неизвестная ошибка Dio", exception: e));
+      }
+    } on Exception catch (e) {
+      emit(BoardErrorState(message: e.toString(), exception: e));
+    }
   }
 
   void scrollToTop() {

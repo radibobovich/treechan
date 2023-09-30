@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
@@ -20,11 +22,8 @@ import 'thread_base.dart';
 
 class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
   final ThreadBloc? threadBloc;
-  // final BranchTab tab;
-  // final PageProvider provider;
 
   late TreeNode<Post> branch;
-  // late ThreadRepository threadRepository;
   BranchRepository branchRepository;
 
   @override
@@ -37,9 +36,6 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
   @override
   ThreadInfo get threadInfo => threadRepository.threadInfo;
 
-  // final ScrollController scrollController = ScrollController();
-  // late final ScrollService scrollService;
-  // Key key;
   BranchBloc({
     this.threadBloc,
     required this.branchRepository,
@@ -56,101 +52,122 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
     scrollService = ScrollService(
       scrollController,
     );
-    on<LoadBranchEvent>(
-      (event, emit) async {
-        try {
-          branch = await branchRepository.getBranch();
-          emit(BranchLoadedState(
-              branch: branch, threadInfo: threadRepository.threadInfo));
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            emit(BranchErrorState(
-                message: "Проверьте подключение к Интернету.", exception: e));
-          } else {
-            emit(BranchErrorState(
-                message: "Неизвестная ошибка Dio", exception: e));
-          }
-        } on Exception catch (e) {
-          emit(BranchErrorState(message: e.toString(), exception: e));
-        }
-      },
+    on<LoadBranchEvent>(_load);
+
+    on<RefreshBranchEvent>(_refresh);
+  }
+  FutureOr<void> _load(event, emit) async {
+    try {
+      branch = await branchRepository.getBranch();
+      emit(BranchLoadedState(
+          branch: branch, threadInfo: threadRepository.threadInfo));
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        emit(BranchErrorState(
+            message: "Проверьте подключение к Интернету.", exception: e));
+      } else {
+        emit(BranchErrorState(message: "Неизвестная ошибка Dio", exception: e));
+      }
+    } on Exception catch (e) {
+      emit(BranchErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _refresh(event, emit) async {
+    try {
+      if (event.source == RefreshSource.branch) {
+        await _refreshFromBranch(event);
+      } else if (event.source == RefreshSource.thread) {
+        await _refreshFromThread(event);
+      } else if (event.source == RefreshSource.tracker) {
+        await _refreshFromTracker(event);
+      }
+    } on ThreadNotFoundException {
+      if (event.source != RefreshSource.tracker) {
+        provider.showSnackBar('Тред умер');
+      }
+      provider.trackerRepository.markAsDead(tab);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        provider.showSnackBar('Проверьте подключение к Интернету.');
+      } else {
+        provider.showSnackBar('Неизвестная ошибка Dio');
+      }
+    } on Exception {
+      provider.showSnackBar('Неизвестная ошибка');
+    }
+  }
+
+  /// Used when user presses refresh button in [BranchScreen]
+  Future<void> _refreshFromBranch(event) async {
+    if (scrollController.offset != 0) scrollService.saveCurrentScrollInfo();
+
+    TrackerRepository? trackerRepoForThreadRepo = provider.trackerRepository;
+
+    /// Pass trackerRepoForThreadRepo to make related thread repo notify
+    /// tracker repo about its new posts
+    await branchRepository.refresh(event.source,
+        lastIndex: event.lastIndex, trackerRepo: trackerRepoForThreadRepo);
+    add(LoadBranchEvent());
+
+    /// Update related thread screen
+    if (threadBloc != null && !threadBloc!.isClosed) {
+      threadBloc!.add(LoadThreadEvent());
+    }
+
+    await Future.delayed(const Duration(milliseconds: 10));
+
+    if (branchRepository.newPostsCount > 0 && scrollController.offset != 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollService.updateScrollPosition();
+      });
+    }
+
+    provider.trackerRepository.updateBranchByTab(
+      tab: tab as BranchTab,
+      posts: branchRepository.postsCount,
+      newPosts: 0,
+      forceNewPosts: true,
+      newReplies: 0,
+      forceNewReplies: true,
     );
-    on<RefreshBranchEvent>(
-      (event, emit) async {
-        try {
-          if (event.source == RefreshSource.branch) {
-            if (scrollController.offset != 0) {
-              scrollService.saveCurrentScrollInfo();
-            }
-          }
-          TrackerRepository? trackerRepoForThreadRepo =
-              event.source == RefreshSource.thread
-                  ? null
-                  : provider.trackerRepository;
-          await branchRepository.refresh(event.source,
-              lastIndex: event.lastIndex,
-              trackerRepo: trackerRepoForThreadRepo);
-          add(LoadBranchEvent());
-          if (event.source == RefreshSource.branch) {
-            if (threadBloc != null && !threadBloc!.isClosed) {
-              threadBloc!.add(LoadThreadEvent());
-            }
+    provider.trackerCubit.loadTracker();
+  }
 
-            await Future.delayed(const Duration(milliseconds: 10));
+  /// Called when [ThreadBloc.refresh] calls [refreshRelatedBranches()]
+  Future<void> _refreshFromThread(event) async {
+    await branchRepository.refresh(event.source,
+        lastIndex: event.lastIndex, trackerRepo: null);
+    add(LoadBranchEvent());
 
-            if (branchRepository.newPostsCount > 0 &&
-                scrollController.offset != 0) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                scrollService.updateScrollPosition();
-              });
-            }
-          }
-          if (event.source == RefreshSource.tracker ||
-              event.source == RefreshSource.thread) {
-            bool shouldNotifyNewPosts = true;
-            if (provider.tabManager.currentTab == tab &&
-                provider.tabManager.isAppInForeground) {
-              shouldNotifyNewPosts = false;
-            }
-            await provider.trackerRepository.updateBranchByTab(
-              tab: tab,
-              posts: branchRepository.postsCount,
-              newPosts:
-                  shouldNotifyNewPosts ? branchRepository.newPostsCount : 0,
-              forceNewPosts: shouldNotifyNewPosts ? false : true,
-              newReplies:
-                  shouldNotifyNewPosts ? branchRepository.newReplies : 0,
-              forceNewReplies: shouldNotifyNewPosts ? false : true,
-            );
-            if (event.source == RefreshSource.thread) {
-              provider.trackerCubit.loadTracker();
-            }
-          } else if (event.source == RefreshSource.branch) {
-            provider.trackerRepository.updateBranchByTab(
-              tab: tab,
-              posts: branchRepository.postsCount,
-              newPosts: 0,
-              forceNewPosts: true,
-              newReplies: 0,
-              forceNewReplies: true,
-            );
-            provider.trackerCubit.loadTracker();
-          }
-        } on ThreadNotFoundException {
-          if (event.source != RefreshSource.tracker) {
-            provider.showSnackBar('Тред умер');
-          }
-          provider.trackerRepository.markAsDead(tab);
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            provider.showSnackBar('Проверьте подключение к Интернету.');
-          } else {
-            provider.showSnackBar('Неизвестная ошибка Dio');
-          }
-        } on Exception {
-          provider.showSnackBar('Неизвестная ошибка');
-        }
-      },
+    await _notifyTracker();
+
+    provider.trackerCubit.loadTracker();
+  }
+
+  /// Called when [TrackerCubit] refreshes tracked branch
+  Future<void> _refreshFromTracker(event) async {
+    TrackerRepository? trackerRepoForThreadRepo = provider.trackerRepository;
+    await branchRepository.refresh(event.source,
+        lastIndex: event.lastIndex, trackerRepo: trackerRepoForThreadRepo);
+    add(LoadBranchEvent());
+
+    await _notifyTracker();
+  }
+
+  Future<void> _notifyTracker() async {
+    bool shouldNotifyNewPosts = true;
+    if (provider.tabManager.currentTab == tab as BranchTab &&
+        provider.tabManager.isAppInForeground) {
+      shouldNotifyNewPosts = false;
+    }
+    await provider.trackerRepository.updateBranchByTab(
+      tab: tab as BranchTab,
+      posts: branchRepository.postsCount,
+      newPosts: shouldNotifyNewPosts ? branchRepository.newPostsCount : 0,
+      forceNewPosts: shouldNotifyNewPosts ? false : true,
+      newReplies: shouldNotifyNewPosts ? branchRepository.newReplies : 0,
+      forceNewReplies: shouldNotifyNewPosts ? false : true,
     );
   }
 

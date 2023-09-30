@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,78 +19,78 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
       {required BoardListRepository boardListService, required this.key})
       : _boardListRepository = boardListService,
         super(BoardListInitialState()) {
-    on<LoadBoardListEvent>(
-      (event, emit) async {
-        try {
-          categories = await _boardListRepository.getCategories();
-          favorites = _boardListRepository.getFavoriteBoards();
+    on<LoadBoardListEvent>(_load);
+    on<RefreshBoardListEvent>(_refresh);
+    on<EditFavoritesEvent>(_editFavorites);
+    on<SearchQueryChangedEvent>(_searchQueryChanged);
+  }
 
-          emit(BoardListLoadedState(
-              categories: categories,
-              favorites: favorites,
-              allowReorder: allowReorder));
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            emit(BoardListErrorState(
-                message: "Проверьте подключение к Интернету.", exception: e));
-          } else {
-            emit(BoardListErrorState(
-                message: "Неизвестная ошибка Dio", exception: e));
-          }
-        } on Exception catch (e) {
-          emit(BoardListErrorState(message: e.toString(), exception: e));
-        }
-      },
-    );
+  FutureOr<void> _load(event, emit) async {
+    try {
+      categories = await _boardListRepository.getCategories();
+      favorites = _boardListRepository.getFavoriteBoards();
 
-    on<RefreshBoardListEvent>(
-      (event, emit) async {
-        try {
-          await _boardListRepository.refreshBoardList();
-          add(LoadBoardListEvent());
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            emit(BoardListErrorState(
-                message: "Проверьте подключение к Интернету.", exception: e));
-          } else {
-            emit(BoardListErrorState(
-                message: "Неизвестная ошибка Dio", exception: e));
-          }
-        } on Exception catch (e) {
-          emit(BoardListErrorState(message: e.toString(), exception: e));
-        }
-      },
-    );
-    on<EditFavoritesEvent>(
-      (event, emit) async {
-        try {
-          if (event.action == FavoriteListAction.add) {
-            _boardListRepository.addToFavorites(event.board!);
-          } else if (event.action == FavoriteListAction.remove) {
-            _boardListRepository.removeFromFavorites(event.board!);
-          } else if (event.action == FavoriteListAction.toggleReorder) {
-            allowReorder = !allowReorder;
-          } else if (event.action == FavoriteListAction.saveAll) {
-            _boardListRepository.saveFavoriteBoards(event.favorites!);
-          }
-
-          add(LoadBoardListEvent());
-        } on Exception catch (e) {
-          emit(BoardListErrorState(message: e.toString(), exception: e));
-        }
-      },
-    );
-    on<SearchQueryChangedEvent>((event, emit) async {
-      try {
-        searchService =
-            BoardListSearchService(boards: _boardListRepository.boards);
-        emit(BoardListSearchState(
-            searchResult: searchService.search(event.query),
-            query: event.query));
-      } on Exception catch (e) {
-        emit(BoardListErrorState(message: e.toString(), exception: e));
+      emit(BoardListLoadedState(
+          categories: categories,
+          favorites: favorites,
+          allowReorder: allowReorder));
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        emit(BoardListErrorState(
+            message: "Проверьте подключение к Интернету.", exception: e));
+      } else {
+        emit(BoardListErrorState(
+            message: "Неизвестная ошибка Dio", exception: e));
       }
-    });
+    } on Exception catch (e) {
+      emit(BoardListErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _refresh(event, emit) async {
+    try {
+      await _boardListRepository.refreshBoardList();
+      add(LoadBoardListEvent());
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        emit(BoardListErrorState(
+            message: "Проверьте подключение к Интернету.", exception: e));
+      } else {
+        emit(BoardListErrorState(
+            message: "Неизвестная ошибка Dio", exception: e));
+      }
+    } on Exception catch (e) {
+      emit(BoardListErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _editFavorites(event, emit) async {
+    try {
+      if (event.action == FavoriteListAction.add) {
+        _boardListRepository.addToFavorites(event.board!);
+      } else if (event.action == FavoriteListAction.remove) {
+        _boardListRepository.removeFromFavorites(event.board!);
+      } else if (event.action == FavoriteListAction.toggleReorder) {
+        allowReorder = !allowReorder;
+      } else if (event.action == FavoriteListAction.saveAll) {
+        _boardListRepository.saveFavoriteBoards(event.favorites!);
+      }
+
+      add(LoadBoardListEvent());
+    } on Exception catch (e) {
+      emit(BoardListErrorState(message: e.toString(), exception: e));
+    }
+  }
+
+  FutureOr<void> _searchQueryChanged(event, emit) async {
+    try {
+      searchService =
+          BoardListSearchService(boards: _boardListRepository.boards);
+      emit(BoardListSearchState(
+          searchResult: searchService.search(event.query), query: event.query));
+    } on Exception catch (e) {
+      emit(BoardListErrorState(message: e.toString(), exception: e));
+    }
   }
 }
 
