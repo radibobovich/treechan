@@ -84,25 +84,23 @@ class MockThreadRemoteRefresher extends Mock implements IThreadRemoteRefresher {
   }
 }
 
-Never _onThreadRefreshResponseError(
-    int responseCode, String boardTag, int threadId) {
-  if (responseCode == 404) {
-    throw ThreadNotFoundException(message: "404", tag: boardTag, id: threadId);
-  } else {
-    throw Exception(
-        "Failed to refresh $boardTag/$threadId. Status code: $responseCode");
-  }
-}
-
 Dio _getDio(String boardTag, int threadId) {
   final Dio dio = Dio();
-
   dio.interceptors.add(
-    InterceptorsWrapper(onResponse: (Response response, handler) {
-      if (response.statusCode != null && response.statusCode != 200) {
-        _onThreadRefreshResponseError(response.statusCode!, boardTag, threadId);
+    InterceptorsWrapper(onError: (e, handler) {
+      if (e.response?.statusCode != null) {
+        switch (e.response!.statusCode) {
+          case 404:
+            throw ThreadNotFoundException(
+              message: "404",
+              tag: boardTag,
+              id: threadId,
+              requestOptions: e.requestOptions,
+            );
+        }
+      } else {
+        handler.next(e);
       }
-      return handler.next(response);
     }),
   );
   return dio;
