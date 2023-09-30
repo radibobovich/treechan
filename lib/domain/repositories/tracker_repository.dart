@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/config/local_notifications.dart';
+import 'package:treechan/data/local/tracker_database.dart';
 import 'package:treechan/domain/models/refresh_notification.dart';
 import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
@@ -12,7 +13,6 @@ import 'package:treechan/exceptions.dart';
 import 'package:treechan/utils/hash.dart';
 import 'package:treechan/utils/string.dart';
 
-import '../../data/tracker_database.dart';
 import '../../presentation/provider/tab_manager.dart';
 import '../../utils/constants/enums.dart';
 import '../models/tab.dart';

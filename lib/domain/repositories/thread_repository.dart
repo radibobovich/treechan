@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/data/hidden_posts.database.dart';
+import 'package:treechan/data/local/hidden_posts.database.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
@@ -59,6 +59,7 @@ class ThreadRepository implements Repository {
 
   int get postsCount => _posts.length;
 
+  // TODO: move to ThreadInfo
   int newPostsCount = 0;
 
   int newReplies = 0;

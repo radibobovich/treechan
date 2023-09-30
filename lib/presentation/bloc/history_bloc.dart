@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/data/local/history_database.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/services/history_search_service.dart';
 
-import '../../data/history_database.dart';
 import '../../domain/models/tab.dart';
 
 class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {

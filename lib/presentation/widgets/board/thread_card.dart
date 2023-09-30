@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
-import 'package:treechan/data/hidden_threads_database.dart';
+import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';

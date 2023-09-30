@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:treechan/data/history_database.dart';
+import 'package:treechan/data/local/history_database.dart';
 import 'package:treechan/di/injection.dart';
 
 import '../bloc/history_bloc.dart';

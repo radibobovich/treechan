@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/domain/models/tab.dart';
-
-import '../../data/hidden_threads_database.dart';
 
 class HiddenThreadsScreen extends StatefulWidget {
   final String? tag;
