@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -133,7 +134,9 @@ class _BoardScreenState extends State<BoardScreen>
               ),
             );
           } else if (state is BoardErrorState) {
-            if (state.exception is NoConnectionException) {
+            if (state.exception is DioException &&
+                (state.exception as DioException).type ==
+                    DioExceptionType.connectionError) {
               return Scaffold(
                   appBar: PreferredSize(
                       preferredSize: const Size.fromHeight(56),
@@ -142,11 +145,18 @@ class _BoardScreenState extends State<BoardScreen>
                       )),
                   body: const NoConnectionPlaceholder());
             }
-            return Center(
-                child: Text(
-              state.message.toString(),
-              textAlign: TextAlign.center,
-            ));
+            return Scaffold(
+              appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(56),
+                  child: NormalAppBar(
+                    currentTab: widget.currentTab,
+                  )),
+              body: Center(
+                  child: Text(
+                state.message.toString(),
+                textAlign: TextAlign.center,
+              )),
+            );
           } else {
             return Scaffold(
                 appBar: PreferredSize(
