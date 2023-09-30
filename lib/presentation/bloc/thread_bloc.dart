@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,9 +52,14 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
           ));
         } on ThreadNotFoundException catch (e) {
           emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
-        } on NoConnectionException catch (e) {
-          emit(ThreadErrorState(
-              message: "Проверьте подключение к Интернету.", exception: e));
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            emit(ThreadErrorState(
+                message: "Проверьте подключение к Интернету.", exception: e));
+          } else {
+            emit(ThreadErrorState(
+                message: "Неизвестная ошибка Dio", exception: e));
+          }
         } on TreeBuilderTimeoutException catch (e) {
           emit(ThreadErrorState(
               message: "Построение дерева заняло слишком много времени."
@@ -140,12 +146,22 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
             provider.showSnackBar('Тред умер');
           }
           provider.trackerRepository.markAsDead(tab);
-        } on NoConnectionException {
-          if (event.source == RefreshSource.tracker) {
-            provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            if (event.source == RefreshSource.tracker) {
+              provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
+            } else {
+              provider.showSnackBar('Проверьте подключение к Интернету.');
+            }
+          } else {
+            if (event.source == RefreshSource.thread) {
+              provider.showSnackBar('Неизвестная ошибка Dio');
+            }
           }
-        } on Exception catch (e) {
-          emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
+        } on Exception {
+          if (event.source == RefreshSource.thread) {
+            provider.showSnackBar('Неизвестная ошибка');
+          }
         }
       },
     );
