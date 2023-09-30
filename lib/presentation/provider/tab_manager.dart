@@ -102,7 +102,13 @@ class TabManager {
     /// If tab is not tracked, remove it from repository manager
     if (tab is IdMixin &&
         !await provider.trackerRepository.isTracked(tab as IdMixin)) {
-      if (tab is ThreadTab) ThreadRepositoryManager().remove(tab.tag, tab.id);
+      if (tab is ThreadTab) {
+        /// Dont remove thread repo if there are related branches
+        if (!_tabs.keys
+            .any((tab) => tab is BranchTab && tab.threadId == tab.id)) {
+          ThreadRepositoryManager().remove(tab.tag, tab.id);
+        }
+      }
       if (tab is BranchTab) BranchRepositoryManager().remove(tab.tag, tab.id);
     }
     _refreshController();
