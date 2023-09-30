@@ -1,14 +1,19 @@
-class ThreadNotFoundException implements Exception {
-  final String message;
+import 'package:dio/dio.dart';
+
+class ThreadNotFoundException extends DioException {
+  // final String message;
   final String tag;
   final int id;
 
   ThreadNotFoundException(
-      {required this.message, required this.tag, required this.id});
+      {required super.message,
+      required this.tag,
+      required this.id,
+      required super.requestOptions});
 
   @override
   String toString() {
-    return message;
+    return message ?? '';
   }
 }
 
