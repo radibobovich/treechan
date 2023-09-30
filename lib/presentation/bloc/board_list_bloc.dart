@@ -1,8 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/services/board_list_search_service.dart';
-import 'package:treechan/exceptions.dart';
 import '../../utils/constants/enums.dart';
 import '../../domain/repositories/board_list_repository.dart';
 import '../../domain/models/category.dart';
@@ -28,9 +28,14 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
               categories: categories,
               favorites: favorites,
               allowReorder: allowReorder));
-        } on NoConnectionException catch (e) {
-          emit(BoardListErrorState(
-              message: 'Проверьте подключение к Интернету.', exception: e));
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            emit(BoardListErrorState(
+                message: "Проверьте подключение к Интернету.", exception: e));
+          } else {
+            emit(BoardListErrorState(
+                message: "Неизвестная ошибка Dio", exception: e));
+          }
         } on Exception catch (e) {
           emit(BoardListErrorState(message: e.toString(), exception: e));
         }
@@ -42,6 +47,14 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
         try {
           await _boardListRepository.refreshBoardList();
           add(LoadBoardListEvent());
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            emit(BoardListErrorState(
+                message: "Проверьте подключение к Интернету.", exception: e));
+          } else {
+            emit(BoardListErrorState(
+                message: "Неизвестная ошибка Dio", exception: e));
+          }
         } on Exception catch (e) {
           emit(BoardListErrorState(message: e.toString(), exception: e));
         }
