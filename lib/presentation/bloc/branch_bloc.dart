@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,6 +62,14 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
           branch = await branchRepository.getBranch();
           emit(BranchLoadedState(
               branch: branch, threadInfo: threadRepository.threadInfo));
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            emit(BranchErrorState(
+                message: "Проверьте подключение к Интернету.", exception: e));
+          } else {
+            emit(BranchErrorState(
+                message: "Неизвестная ошибка Dio", exception: e));
+          }
         } on Exception catch (e) {
           emit(BranchErrorState(message: e.toString(), exception: e));
         }
@@ -132,12 +141,14 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
             provider.showSnackBar('Тред умер');
           }
           provider.trackerRepository.markAsDead(tab);
-        } on NoConnectionException {
-          if (event.source == RefreshSource.tracker) {
-            provider.trackerRepository.notifyFailedConnectionOnRefresh(tab);
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            provider.showSnackBar('Проверьте подключение к Интернету.');
+          } else {
+            provider.showSnackBar('Неизвестная ошибка Dio');
           }
-        } on Exception catch (e) {
-          emit(BranchErrorState(message: "Неизвестная ошибка", exception: e));
+        } on Exception {
+          provider.showSnackBar('Неизвестная ошибка');
         }
       },
     );
