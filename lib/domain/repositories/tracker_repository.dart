@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -435,7 +436,7 @@ class TrackerRepository {
         prevTab: boardListTab,
       );
       markAsDead(mockTab);
-    } on NoConnectionException catch (e) {
+    } on DioException catch (e) {
       debugPrint('Failed to refresh closed thread: ${e.toString()}');
       Future.delayed(
           const Duration(milliseconds: 10),
@@ -490,7 +491,7 @@ class TrackerRepository {
           name: '',
           prevTab: boardListTab);
       await markAsDead(mockTab);
-    } on NoConnectionException catch (e) {
+    } on DioException catch (e) {
       debugPrint('Failed to refresh closed branch: (${e.toString()}');
       Future.delayed(
           const Duration(milliseconds: 10),
