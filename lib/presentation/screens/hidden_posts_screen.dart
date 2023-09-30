@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../../data/hidden_posts.database.dart';
+import 'package:treechan/data/local/hidden_posts.database.dart';
 
 class HiddenPostsScreen extends StatefulWidget {
   final String tag;
