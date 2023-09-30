@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/data/hidden_threads_database.dart';
@@ -49,9 +50,14 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
         emit(BoardErrorState(message: 'Вы не можете просматривать эту доску.'));
       } on FailedResponseException catch (e) {
         emit(BoardErrorState(message: "Ошибка ${e.statusCode}.", exception: e));
-      } on NoConnectionException catch (e) {
-        emit(BoardErrorState(
-            message: 'Проверьте подключение к Интернету.', exception: e));
+      } on DioException catch (e) {
+        if (e.type == DioExceptionType.connectionError) {
+          emit(BoardErrorState(
+              message: "Проверьте подключение к Интернету.", exception: e));
+        } else {
+          emit(
+              BoardErrorState(message: "Неизвестная ошибка Dio", exception: e));
+        }
       } on Exception catch (e) {
         emit(BoardErrorState(message: e.toString(), exception: e));
       }
@@ -64,6 +70,14 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
               .getHiddenThreadIds(boardRepository.boardTag);
           scrollToTop();
           add(LoadBoardEvent());
+        } on DioException catch (e) {
+          if (e.type == DioExceptionType.connectionError) {
+            emit(BoardErrorState(
+                message: "Проверьте подключение к Интернету.", exception: e));
+          } else {
+            emit(BoardErrorState(
+                message: "Неизвестная ошибка Dio", exception: e));
+          }
         } on Exception catch (e) {
           emit(BoardErrorState(message: e.toString(), exception: e));
         }
