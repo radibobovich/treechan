@@ -80,8 +80,8 @@ class BoardTab extends DrawerTab with TagMixin {
       {this.isCatalog = false,
       this.query,
       super.name,
-      required tag,
-      required prevTab}) {
+      required String tag,
+      required DrawerTab prevTab}) {
     this.tag = tag;
     this.prevTab = prevTab;
   }
@@ -105,9 +105,9 @@ class BoardTab extends DrawerTab with TagMixin {
 class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
   ThreadTab({
     required super.name,
-    required tag,
-    required prevTab,
-    required id,
+    required String tag,
+    required DrawerTab prevTab,
+    required int id,
   }) {
     this.tag = tag;
     this.prevTab = prevTab;
@@ -128,16 +128,6 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
       timestamp: DateTime.now(),
     );
   }
-
-  // @override
-  // bool operator ==(Object other) {
-  //   if (identical(this, other)) return true;
-
-  //   return other is ThreadTab && tag == other.tag && id == other.id;
-  // }
-
-  // @override
-  // int get hashCode => tag.hashCode ^ id.hashCode;
 }
 
 class BranchTab extends DrawerTab with TagMixin, IdMixin<BranchTab> {
