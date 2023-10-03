@@ -57,6 +57,7 @@ class _BranchScreenState extends State<BranchScreen>
                     return PostWidget(
                       // get separated key set based on branch node id
                       key: node.getGlobalKey(state.branch.data.id),
+                      bloc: context.read<BranchBloc>(),
                       node: node,
                       roots: [state.branch],
                       currentTab: widget.currentTab,

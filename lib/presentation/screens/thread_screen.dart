@@ -71,12 +71,12 @@ class _ThreadScreenState extends State<ThreadScreen>
                     setState(() {});
                   });
                 }
+                final bloc = context.read<ThreadBloc>();
                 return FlexibleTreeView<Post>(
                   scrollable: prefs.getBool('2dscroll')!,
                   indent: !Platform.isWindows ? 16 : 24,
                   showLines: state.threadInfo.showLines,
-                  scrollController:
-                      BlocProvider.of<ThreadBloc>(context).scrollController,
+                  scrollController: bloc.scrollController,
                   nodes: state.roots!,
                   nodeWidth: MediaQuery.of(context).size.width / 1.5,
                   nodeItemBuilder: (context, node) {
@@ -85,6 +85,7 @@ class _ThreadScreenState extends State<ThreadScreen>
                         .hiddenPosts
                         .contains(node.data.id);
                     return PostWidget(
+                      bloc: bloc,
                       key: node.getGlobalKey(state.threadInfo.opPostId),
                       node: node,
                       roots: state.roots!,

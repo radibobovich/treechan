@@ -79,6 +79,7 @@ class _SpoilerTextState extends State<_SpoilerText> {
 class HtmlContainer extends StatelessWidget {
   const HtmlContainer(
       {Key? key,
+      required this.bloc,
       required this.post,
       required this.currentTab,
       this.treeNode,
@@ -86,6 +87,7 @@ class HtmlContainer extends StatelessWidget {
       this.scrollService})
       : super(key: key);
   // data can be Post or Thread object
+  final ThreadBase? bloc;
   final Post post;
   final TreeNode<Post>? treeNode;
   final List<TreeNode<Post>>? roots;
@@ -126,7 +128,7 @@ class HtmlContainer extends StatelessWidget {
           },
           "a": (node, children) {
             return GestureDetector(
-              onTap: () => openLink(node, context),
+              onTap: () => openLink(node, context, bloc),
               child: Text(
                 // custom link color render
                 style: TextStyle(
@@ -150,7 +152,9 @@ class HtmlContainer extends StatelessWidget {
     );
   }
 
-  void openLink(RenderContext node, BuildContext context) {
+  void openLink(RenderContext node, BuildContext context, ThreadBase? bloc) {
+    assert(bloc != null || currentTab is BoardTab,
+        'You should pass bloc while opening link from thread or branch screen');
     String url = node.tree.element!.attributes['href']!;
     String? searchTag = node.tree.element!.attributes['title'];
     // check if link points to some post in thread
@@ -160,7 +164,7 @@ class HtmlContainer extends StatelessWidget {
       // get post id placed after # symbol
       int id = int.parse(url.substring(url.indexOf("#") + 1));
       if (roots != null && roots!.isNotEmpty && treeNode != null) {
-        openPostPreview(context, id);
+        openPostPreview(context, id, bloc!);
       }
 
       // check if link is external relative to this thread
@@ -204,8 +208,9 @@ class HtmlContainer extends StatelessWidget {
     return url.contains("/${tab.tag}/res/${tab.id}.html#");
   }
 
-  Future<void> openPostPreview(BuildContext context, int id) async {
-    final ThreadBase bloc = currentTab.getBloc(context);
+  Future<void> openPostPreview(
+      BuildContext context, int id, ThreadBase bloc) async {
+    // final ThreadBase bloc = currentTab.getBloc(context);
     showDialog(
         context: context,
         builder: (_) {
@@ -223,6 +228,7 @@ class HtmlContainer extends StatelessWidget {
                           id == treeNode!.parent!.data.id)
                       ? treeNode!.parent
                       : null,
+                  bloc: bloc,
                   roots: roots ?? [],
                   nodeFinder: bloc.threadRepository.nodesAt,
                   id: id,
@@ -235,6 +241,7 @@ class HtmlContainer extends StatelessWidget {
             return BlocProvider.value(
                 value: bloc as BranchBloc,
                 child: PostPreviewDialog(
+                    bloc: bloc,
                     node: (treeNode!.parent != null &&
                             id == treeNode!.parent!.data.id)
                         ? treeNode!.parent
@@ -248,15 +255,14 @@ class HtmlContainer extends StatelessWidget {
             throw Exception(
                 'Tried to open post preview with unsupported bloc type: ${currentTab.runtimeType.toString()}');
           }
-        }).then((value) => (currentTab.getBloc(context).dialogStack
-            as List<TreeNode<Post>>)
-        .remove(treeNode));
+        }).then((value) => bloc.dialogStack.remove(treeNode));
   }
 }
 
 class PostPreviewDialog extends StatelessWidget {
   const PostPreviewDialog(
-      {required this.roots,
+      {required this.bloc,
+      required this.roots,
       required this.currentTab,
       required this.scrollService,
       super.key,
@@ -264,6 +270,7 @@ class PostPreviewDialog extends StatelessWidget {
       this.id,
       this.nodeFinder})
       : assert(node != null || id != null, 'node or id must be not null');
+  final ThreadBase bloc;
   final TreeNode<Post>? node;
   final List<TreeNode<Post>> roots;
   final int? id;
@@ -276,6 +283,7 @@ class PostPreviewDialog extends StatelessWidget {
         child: SingleChildScrollView(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         PostWidget(
+          bloc: bloc,
           node: node ??
               ((nodeFinder != null)
                   ? nodeFinder!(id).first
@@ -294,33 +302,4 @@ Future<void> tryLaunchUrl(String url) async {
   if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
     throw Exception('Could not launch $url');
   }
-}
-
-/// Used in [EndDrawer]
-// TreeNode<Post> getMockNode(int id, BuildContext context, DrawerTab currentTab) {
-//   final List<Post> posts;
-//   if (currentTab is ThreadTab) {
-//     // posts = (bloc as ThreadBloc).threadService.getPosts;
-//     posts = context.read<ThreadBloc>().threadService.getPosts;
-//   } else {
-//     // posts = (bloc as BranchBloc).threadService.getPosts;
-//     posts = context.read<BranchBloc>().threadService.getPosts;
-//   }
-//   final Post post = posts.firstWhere((element) => element.id == id);
-//   return TreeNode(data: post);
-// }
-
-int countATags(String text) {
-  int count = 0;
-  int index = 0;
-  String substring = 'class="post-reply-link"';
-  while (index < text.length) {
-    index = text.indexOf(substring, index);
-    if (index == -1) {
-      break;
-    }
-    count++;
-    index += substring.length;
-  }
-  return count;
 }

@@ -12,12 +12,14 @@ import '../../../utils/remove_html.dart';
 import '../../provider/page_provider.dart';
 
 class ActionMenu extends StatelessWidget {
+  final dynamic bloc;
   final DrawerTab currentTab;
   final TreeNode<Post> node;
   final Function setStateCallBack;
   final bool calledFromEndDrawer;
   const ActionMenu({
     super.key,
+    required this.bloc,
     required this.currentTab,
     required this.node,
     required this.setStateCallBack,
@@ -26,7 +28,7 @@ class ActionMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = currentTab.getBloc(context);
+    // final bloc = currentTab.getBloc(context);
     debugPrint(
         'Post ${node.data.id} action menu opened, global key is ${node.getGlobalKey((currentTab as IdMixin).id)}, object key is ${node.key}');
     return SizedBox(
@@ -145,8 +147,8 @@ class ActionMenu extends StatelessWidget {
   }
 
   Future<void> goToPost(TreeNode<Post> node, BuildContext context) async {
-    ThreadBase bloc = currentTab.getBloc(context);
-    bloc.goToPost(node, context: context);
+    // ThreadBase bloc = currentTab.getBloc(context);
+    (bloc as ThreadBase).goToPost(node, context: context);
   }
 
   Future<dynamic> showPostInfo(BuildContext context) {

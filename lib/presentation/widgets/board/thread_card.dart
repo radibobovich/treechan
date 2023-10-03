@@ -17,11 +17,8 @@ import '../shared/media_preview_widget.dart';
 class ThreadCard extends StatefulWidget {
   final Thread thread;
   final BoardTab currentTab;
-  const ThreadCard({
-    Key? key,
-    required this.thread,
-    required this.currentTab,
-  }) : super(key: key);
+  const ThreadCard({Key? key, required this.thread, required this.currentTab})
+      : super(key: key);
 
   @override
   State<ThreadCard> createState() => _ThreadCardState();
@@ -69,6 +66,7 @@ class _ThreadCardState extends State<ThreadCard> {
                     children: [
                       MediaPreview(files: widget.thread.posts.first.files),
                       HtmlContainer(
+                        bloc: null,
                         post: widget.thread.posts.first,
                         currentTab: widget.currentTab,
                         // onOpenCatalog: onOpenCatalog,
@@ -101,18 +99,18 @@ class _CardHeader extends StatelessWidget {
     required this.thread,
   }) : super(key: key);
 
-  final Thread? thread;
+  final Thread thread;
   @override
   Widget build(BuildContext context) {
     DateTimeService dateTimeSerivce =
-        DateTimeService(timestamp: thread!.posts.first.timestamp);
+        DateTimeService(timestamp: thread.posts.first.timestamp);
     return Row(
       children: [
-        thread!.posts.first.boardTag != 's'
-            ? Text(thread?.posts.first.name ?? "No author")
-            : Text(extractUserInfo(thread!.posts.first.name)),
-        thread!.posts.first.boardTag == 's'
-            ? UserPlatformIcons(userName: thread!.posts.first.name)
+        thread.posts.first.boardTag != 's'
+            ? Text(thread.posts.first.name)
+            : Text(extractUserInfo(thread.posts.first.name)),
+        thread.posts.first.boardTag == 's'
+            ? UserPlatformIcons(userName: thread.posts.first.name)
             : const SizedBox.shrink(),
         const Spacer(),
         Text(dateTimeSerivce.getAdaptiveDate(),
@@ -129,7 +127,7 @@ class _CardFooter extends StatelessWidget {
     required this.thread,
   }) : super(key: key);
 
-  final Thread? thread;
+  final Thread thread;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +141,7 @@ class _CardFooter extends StatelessWidget {
           child: Row(
             children: [
               const Icon(Icons.question_answer, size: 20),
-              Text(thread?.posts.length.toString() ?? "count"),
+              Text(thread.postsCount.toString()),
               const Spacer(),
             ],
           ),

@@ -29,29 +29,28 @@ class AppEndDrawer extends StatelessWidget {
         BlocBuilder<ThreadBloc, ThreadState>(
           builder: (_, state) {
             if (state is ThreadLoadedState) {
-              final lastPosts = BlocProvider.of<ThreadBloc>(context)
-                  .threadRepository
-                  .getLastNodes;
+              final lastPosts =
+                  context.read<ThreadBloc>().threadRepository.getLastNodes;
               return Expanded(
                 child: ListView.builder(
                   padding: EdgeInsets.zero,
                   // key: const PageStorageKey<String>('endDrawer'),
-                  controller: BlocProvider.of<ThreadBloc>(context)
-                      .endDrawerScrollController,
+                  controller:
+                      context.read<ThreadBloc>().endDrawerScrollController,
                   itemCount: lastPosts.length,
                   itemBuilder: (_, index) {
                     final node = lastPosts[index];
                     return EndDrawerPostWidget(
-                        key: PageStorageKey(node.data.id),
-                        node: node,
-                        currentTab: currentTab);
+                      key: PageStorageKey(node.data.id),
+                      node: node,
+                      currentTab: currentTab,
+                      bloc: context.read<ThreadBloc>(),
+                    );
                   },
                 ),
               );
             } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
           },
         )
@@ -65,17 +64,18 @@ class EndDrawerPostWidget extends StatelessWidget {
     super.key,
     required this.node,
     required this.currentTab,
+    required this.bloc,
   });
 
   final TreeNode<Post> node;
   final DrawerTab currentTab;
-
+  final ThreadBloc bloc;
   @override
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
         onLongPress: () => openActionMenu(
-            context, currentTab, node, (function) {},
+            context, bloc, currentTab, node, (function) {},
             calledFromEndDrawer: true),
         child: Padding(
             padding: const EdgeInsets.all(4.0),
@@ -85,13 +85,11 @@ class EndDrawerPostWidget extends StatelessWidget {
                 _PostHeader(post: node.data),
                 MediaPreview(files: node.data.files, height: 60),
                 HtmlContainer(
+                  bloc: bloc,
                   post: node.data,
                   currentTab: currentTab,
                   treeNode: node,
-                  roots: currentTab
-                      .getBloc(context)
-                      .threadRepository
-                      .getRootsSynchronously,
+                  roots: bloc.threadRepository.getRootsSynchronously,
                   // bloc: BlocProvider.of<ThreadBloc>(context)
                 )
               ],
@@ -107,7 +105,7 @@ class _PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<ThreadBloc>(context).threadRepository.posts;
+    context.read<ThreadBloc>().threadRepository.posts;
     final DateTimeService dateTimeSerivce =
         DateTimeService(timestamp: post.timestamp);
     return Row(

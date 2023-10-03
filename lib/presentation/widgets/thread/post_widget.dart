@@ -4,6 +4,7 @@ import 'package:treechan/config/themes.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
+import 'package:treechan/presentation/bloc/thread_base.dart';
 import 'package:treechan/presentation/widgets/shared/user_platform_icons.dart';
 import 'package:treechan/utils/string.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
@@ -19,6 +20,7 @@ import '../shared/html_container_widget.dart';
 import 'action_menu_widget.dart';
 
 class PostWidget extends StatefulWidget {
+  final ThreadBase bloc;
   final TreeNode<Post> node;
   final List<TreeNode<Post>> roots;
   final DrawerTab currentTab;
@@ -26,6 +28,7 @@ class PostWidget extends StatefulWidget {
   final bool trackVisibility;
   const PostWidget({
     super.key,
+    required this.bloc,
     required this.node,
     required this.roots,
     required this.currentTab,
@@ -85,7 +88,8 @@ class _PostWidgetState extends State<PostWidget>
               // await Future.delayed(const Duration(milliseconds: 500));
             },
             onLongPress: () {
-              openActionMenu(context, widget.currentTab, widget.node, setState);
+              openActionMenu(context, widget.bloc, widget.currentTab,
+                  widget.node, setState);
             },
             child: Padding(
               padding: const EdgeInsets.all(4.0),
@@ -113,6 +117,7 @@ class _PostWidgetState extends State<PostWidget>
                                   ),
                             MediaPreview(files: post.files),
                             HtmlContainer(
+                              bloc: widget.bloc,
                               post: post,
                               treeNode: widget.node,
                               roots: widget.roots,
@@ -193,18 +198,19 @@ class _PostWidgetState extends State<PostWidget>
   }
 }
 
-Future<dynamic> openActionMenu(BuildContext context, DrawerTab currentTab,
-    TreeNode<Post> node, Function setStateCallback,
+Future<dynamic> openActionMenu(BuildContext context, ThreadBase bloc,
+    DrawerTab currentTab, TreeNode<Post> node, Function setStateCallback,
     {bool calledFromEndDrawer = false}) {
   return showDialog(
       context: context,
       builder: (BuildContext bcontext) {
         if (currentTab is ThreadTab) {
           return BlocProvider.value(
-            value: context.read<ThreadBloc>(),
+            value: bloc as ThreadBloc,
             child: AlertDialog(
                 contentPadding: const EdgeInsets.all(10),
                 content: ActionMenu(
+                  bloc: bloc,
                   currentTab: currentTab,
                   node: node,
                   setStateCallBack: setStateCallback,
@@ -213,10 +219,11 @@ Future<dynamic> openActionMenu(BuildContext context, DrawerTab currentTab,
           );
         } else if (currentTab is BranchTab) {
           return BlocProvider.value(
-            value: context.read<BranchBloc>(),
+            value: bloc as BranchBloc,
             child: AlertDialog(
                 contentPadding: const EdgeInsets.all(10),
                 content: ActionMenu(
+                  bloc: bloc,
                   currentTab: currentTab,
                   node: node,
                   setStateCallBack: setStateCallback,
