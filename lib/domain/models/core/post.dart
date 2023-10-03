@@ -1,4 +1,5 @@
 import 'package:treechan/domain/models/api/dvach/thread_dvach_api_model.dart';
+import 'package:treechan/utils/count_a_tags.dart';
 
 import '../api/dvach/post_dvach_api_model.dart';
 import 'file.dart';
@@ -59,7 +60,9 @@ class Post {
     this.tags,
     this.trip,
     required this.views,
-  });
+  }) {
+    aTagsCount = countATags(comment);
+  }
 
   Post.fromDvachApi(PostDvachApiModel post)
       : id = post.num,
@@ -77,7 +80,8 @@ class Post {
         sticky = post.sticky == 1 ? true : false,
         tags = post.tags,
         trip = post.trip ?? '',
-        views = post.views;
+        views = post.views,
+        aTagsCount = countATags(post.comment);
 
   Post.fromCatalogBoardDvachApi(ThreadDvachApiModel thread)
       : id = thread.num ?? -1,
@@ -96,5 +100,6 @@ class Post {
         sticky = thread.sticky == 1 ? true : false,
         tags = thread.tags,
         trip = thread.trip ?? '',
-        views = thread.views ?? -1;
+        views = thread.views ?? -1,
+        aTagsCount = countATags(thread.comment ?? '');
 }
