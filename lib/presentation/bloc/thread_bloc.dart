@@ -37,36 +37,35 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     this.key = key;
     scrollController = ScrollController();
     scrollService = ScrollService(scrollController);
-    on<LoadThreadEvent>(
-      (event, emit) async {
-        try {
-          final roots = await threadRepository.getRoots();
-          threadInfo = threadRepository.threadInfo;
-          emit(ThreadLoadedState(
-            roots: roots,
-            threadInfo: threadInfo,
-          ));
-        } on ThreadNotFoundException catch (e) {
-          emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
-        } on DioException catch (e) {
-          if (e.type == DioExceptionType.connectionError) {
-            emit(ThreadErrorState(
-                message: "Проверьте подключение к Интернету.", exception: e));
-          } else {
-            emit(ThreadErrorState(
-                message: "Неизвестная ошибка Dio", exception: e));
-          }
-        } on TreeBuilderTimeoutException catch (e) {
-          emit(ThreadErrorState(
-              message: "Построение дерева заняло слишком много времени."
-                  "Попробуйте открыть тред в классическом режиме.",
-              exception: e));
-        } on Exception catch (e) {
-          emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
-        }
-      },
-    );
+
+    on<LoadThreadEvent>(_load);
     on<RefreshThreadEvent>(_refresh);
+  }
+  FutureOr<void> _load(event, emit) async {
+    try {
+      final roots = await threadRepository.getRoots();
+      threadInfo = threadRepository.threadInfo;
+      emit(ThreadLoadedState(
+        roots: roots,
+        threadInfo: threadInfo,
+      ));
+    } on ThreadNotFoundException catch (e) {
+      emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError) {
+        emit(ThreadErrorState(
+            message: "Проверьте подключение к Интернету.", exception: e));
+      } else {
+        emit(ThreadErrorState(message: "Неизвестная ошибка Dio", exception: e));
+      }
+    } on TreeBuilderTimeoutException catch (e) {
+      emit(ThreadErrorState(
+          message: "Построение дерева заняло слишком много времени."
+              "Попробуйте открыть тред в классическом режиме.",
+          exception: e));
+    } on Exception catch (e) {
+      emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
+    }
   }
 
   FutureOr<void> _refresh(event, emit) async {
@@ -171,17 +170,22 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   }
 
   @override
-  void goToPost(TreeNode<Post> node, {required BuildContext? context}) {
+  void goToPost(TreeNode<Post> node, {required BuildContext context}) {
     final goToPostUseCase = GoToPostUseCase();
     goToPostUseCase(
       GoToPostParams(
         threadRepository: threadRepository,
         currentTab: tab,
+        animateToBrowserPage: provider.currentPageIndex == 0
+            ? () {
+                provider.setCurrentPageIndex(2);
+                FocusScope.of(context).unfocus();
+              }
+            : null,
         node: node,
         dialogStack: dialogStack,
-        popUntil: context != null
-            ? () => Navigator.of(context).popUntil(ModalRoute.withName('/'))
-            : () {},
+        popUntil: () =>
+            Navigator.of(context).popUntil(ModalRoute.withName('/')),
         addTab: (DrawerTab tab) => provider.addTab(tab),
         scrollService: scrollService,
         threadScrollService: scrollService,
