@@ -64,6 +64,8 @@ class BranchRepository implements Repository {
   /// these trees to a current tree.
   Future<void> refresh(RefreshSource source,
       {int? lastIndex, TrackerRepository? trackerRepo}) async {
+    assert(lastIndex != null || source != RefreshSource.thread,
+        'You must provide lastIndex when refreshing related branches from thread');
     List<Post> posts;
 
     /// If refresh has been called from thread page you don't need to call
@@ -86,7 +88,10 @@ class BranchRepository implements Repository {
 
     /// Trim posts to a new ones.
     List<Post> newPosts = posts.getRange(lastIndex! + 1, posts.length).toList();
-    // newPostsCount = newPosts.length;
+    if (newPosts.isEmpty) {
+      newPostsCount = 0;
+      return;
+    }
 
     /// Buila a tree from new posts.
     Tree treeService = Tree(
@@ -97,7 +102,10 @@ class BranchRepository implements Repository {
     final List<TreeNode<Post>> newRoots = record.$1;
 
     /// Attach obtained trees to the branch nodes.
-    if (newRoots.isEmpty) return;
+    if (newRoots.isEmpty) {
+      newPostsCount = 0;
+      return;
+    }
     for (var newRoot in newRoots) {
       for (var parentId in newRoot.data.parents) {
         if (parentId == threadRepository.threadInfo.opPostId) continue;
@@ -118,10 +126,13 @@ class BranchRepository implements Repository {
         }
       }
     }
-    // int postsCountAfterRefresh = 0;
+    Set<int> oldPostIds = _posts.map((post) => post.id).toSet();
     Set<int> newPostIds = {};
     Tree.performForEveryNode(_root, (node) {
-      bool isNew = newPostIds.add(node.data.id);
+      final id = node.data.id;
+      bool isNew = id > posts[lastIndex!].id &&
+          newPostIds.add(id) &&
+          !oldPostIds.contains(id);
       if (isNew) {
         _posts.add(node.data);
       }
