@@ -7,6 +7,7 @@ class Thread {
   final String boardTag;
   final int filesCount;
   final List<Post> posts;
+  final int postsCount;
 
   bool hidden = false;
   Thread({
@@ -14,18 +15,21 @@ class Thread {
     required this.boardTag,
     required this.filesCount,
     required this.posts,
+    required this.postsCount,
   });
 
   Thread.fromIndexBoardDvachApi(ThreadDvachApiModel thread, this.boardTag)
       : id = thread.thread_num ?? -1,
         filesCount = thread.files_count ?? -1,
-        posts = thread.posts!.map((post) => Post.fromDvachApi(post)).toList();
+        posts = thread.posts!.map((post) => Post.fromDvachApi(post)).toList(),
+        postsCount = thread.posts_count ?? 0;
 
   Thread.fromCatalogBoardDvachApi(ThreadDvachApiModel thread)
       : id = thread.num ?? -1,
         boardTag = thread.board ?? '',
         filesCount = thread.files_count ?? -1,
-        posts = [Post.fromCatalogBoardDvachApi(thread)];
+        posts = [Post.fromCatalogBoardDvachApi(thread)],
+        postsCount = thread.posts_count ?? 0;
 
   Thread.fromThreadDvachApi(ThreadResponseDvachApiModel threadResponse)
       : id = threadResponse.current_thread,
@@ -33,5 +37,6 @@ class Thread {
         filesCount = threadResponse.files_count,
         posts = threadResponse.threads.first.posts!
             .map((post) => Post.fromDvachApi(post))
-            .toList();
+            .toList(),
+        postsCount = threadResponse.posts_count;
 }
