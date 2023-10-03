@@ -76,7 +76,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
         add(LoadHistoryEvent());
         return;
       }
-      getIt<HistoryDatabase>().removeMultiple(selected);
+      await getIt<IHistoryDatabase>().removeMultiple(selected);
       _selected.clear();
       add(LoadHistoryEvent());
     });
