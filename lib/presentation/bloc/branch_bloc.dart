@@ -181,6 +181,9 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
       GoToPostParams(
         threadRepository: threadRepository,
         currentTab: tab,
+        animateToBrowserPage: provider.currentPageIndex == 0
+            ? () => provider.setCurrentPageIndex(2)
+            : null,
         node: node,
         dialogStack: dialogStack,
         popUntil: () =>
