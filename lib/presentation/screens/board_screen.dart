@@ -16,10 +16,7 @@ import '../widgets/board/thread_card.dart';
 import '../widgets/shared/no_connection_placeholder.dart';
 
 class BoardScreen extends StatefulWidget {
-  const BoardScreen({
-    super.key,
-    required this.currentTab,
-  });
+  const BoardScreen({super.key, required this.currentTab});
   final BoardTab currentTab;
   @override
   State<BoardScreen> createState() => _BoardScreenState();
@@ -31,15 +28,11 @@ class _BoardScreenState extends State<BoardScreen>
   bool get wantKeepAlive => true;
 
   bool needsRebuild = false;
+  void _markNeedsRebuild() => needsRebuild = true;
 
   EasyRefreshController controller =
       EasyRefreshController(controlFinishLoad: true);
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
-// List of threads
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -63,107 +56,25 @@ class _BoardScreenState extends State<BoardScreen>
             if (state.completeRefresh) {
               controller.finishLoad();
             } else {}
-            return Scaffold(
-              appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(56),
-                  child: NormalAppBar(
-                    currentTab: widget.currentTab,
-                  )),
-              body: EasyRefresh(
-                header: _getClassicRefreshHeader(),
-                footer: _getClassicRefreshFooter(),
-                controller: controller,
-                onRefresh: () {
-                  BlocProvider.of<BoardBloc>(context).add(ReloadBoardEvent());
-                },
-                onLoad: () {
-                  BlocProvider.of<BoardBloc>(context).add(RefreshBoardEvent());
-                },
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-                  child: ListView.builder(
-                    controller:
-                        BlocProvider.of<BoardBloc>(context).scrollController,
-                    itemCount: state.threads!.length,
-                    itemBuilder: (context, index) {
-                      final Thread thread = state.threads![index];
-                      thread.hidden = BlocProvider.of<BoardBloc>(context)
-                          .hiddenThreads
-                          .contains(thread.posts.first.id);
-                      return Dismissible(
-                        key: ValueKey(thread.posts.first.id),
-                        confirmDismiss: (direction) async {
-                          needsRebuild = true;
-                          hideOrRevealThread(thread, context);
-                          return false;
-                        },
-                        child: ThreadCard(
-                          // key: ValueKey(thread.posts.first.id),
-                          thread: thread,
-                          currentTab: widget.currentTab,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+            return BoardLoaded(
+              currentTab: widget.currentTab,
+              controller: controller,
+              state: state,
+              hideOrRevealThread: hideOrRevealThread,
+              markNeedsRebuild: () => _markNeedsRebuild(),
             );
           } else if (state is BoardSearchState) {
-            return Scaffold(
-              appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(56),
-                  child: SearchAppBar(
-                    state: state,
-                  )),
-              body: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-                child: ListView.builder(
-                  controller:
-                      BlocProvider.of<BoardBloc>(context).scrollController,
-                  itemCount: state.searchResult.length,
-                  itemBuilder: (context, index) {
-                    final Thread thread = state.searchResult[index];
-                    return ThreadCard(
-                      key: ValueKey(thread.posts.first.id),
-                      thread: thread,
-                      currentTab: widget.currentTab,
-                    );
-                  },
-                ),
-              ),
-            );
+            return BoardSearch(currentTab: widget.currentTab, state: state);
           } else if (state is BoardErrorState) {
             if (state.exception is DioException &&
                 (state.exception as DioException).type ==
                     DioExceptionType.connectionError) {
-              return Scaffold(
-                  appBar: PreferredSize(
-                      preferredSize: const Size.fromHeight(56),
-                      child: NormalAppBar(
-                        currentTab: widget.currentTab,
-                      )),
-                  body: const NoConnectionPlaceholder());
+              return NoConnection(currentTab: widget.currentTab);
             }
-            return Scaffold(
-              appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(56),
-                  child: NormalAppBar(
-                    currentTab: widget.currentTab,
-                  )),
-              body: Center(
-                  child: Text(
-                state.message.toString(),
-                textAlign: TextAlign.center,
-              )),
-            );
+            return UnknownBoardError(
+                currentTab: widget.currentTab, state: state);
           } else {
-            return Scaffold(
-                appBar: PreferredSize(
-                    preferredSize: const Size.fromHeight(56),
-                    child: NormalAppBar(
-                      currentTab: widget.currentTab,
-                    )),
-                body: const Center(child: CircularProgressIndicator()));
+            return BoardLoading(currentTab: widget.currentTab);
           }
         },
       ),
@@ -185,30 +96,196 @@ class _BoardScreenState extends State<BoardScreen>
       thread.hidden = !thread.hidden;
     });
   }
+}
 
-  ClassicFooter _getClassicRefreshFooter() {
-    return const ClassicFooter(
-      dragText: 'Потяните для загрузки',
-      armedText: 'Готово к загрузке',
-      readyText: 'Загрузка...',
-      processingText: 'Загрузка...',
-      processedText: 'Загружено',
-      noMoreText: 'Все прочитано',
-      failedText: 'Ошибка',
-      messageText: 'Последнее обновление - %T',
+class BoardLoading extends StatelessWidget {
+  const BoardLoading({super.key, required this.currentTab});
+
+  final BoardTab currentTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: NormalAppBar(
+            currentTab: currentTab,
+          )),
+      body: const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
+}
 
-  ClassicHeader _getClassicRefreshHeader() {
-    return const ClassicHeader(
-      dragText: 'Потяните для загрузки',
-      armedText: 'Готово к загрузке',
-      readyText: 'Загрузка...',
-      processingText: 'Загрузка...',
-      processedText: 'Загружено',
-      noMoreText: 'Все прочитано',
-      failedText: 'Ошибка',
-      messageText: 'Последнее обновление - %T',
+class BoardLoaded extends StatelessWidget {
+  const BoardLoaded({
+    super.key,
+    required this.currentTab,
+    required this.controller,
+    required this.state,
+    required this.hideOrRevealThread,
+    required this.markNeedsRebuild,
+  });
+  final BoardTab currentTab;
+  final EasyRefreshController controller;
+  final BoardLoadedState state;
+  final Function hideOrRevealThread;
+  final Function markNeedsRebuild;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: NormalAppBar(
+            currentTab: currentTab,
+          )),
+      body: EasyRefresh(
+        header: _getClassicRefreshHeader(),
+        footer: _getClassicRefreshFooter(),
+        controller: controller,
+        onRefresh: () {
+          context.read<BoardBloc>().add(ReloadBoardEvent());
+        },
+        onLoad: () {
+          context.read<BoardBloc>().add(RefreshBoardEvent());
+        },
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+          child: ListView.builder(
+            controller: context.read<BoardBloc>().scrollController,
+            itemCount: state.threads!.length,
+            itemBuilder: (context, index) {
+              final Thread thread = state.threads![index];
+              thread.hidden = BlocProvider.of<BoardBloc>(context)
+                  .hiddenThreads
+                  .contains(thread.posts.first.id);
+              return Dismissible(
+                key: ValueKey(thread.posts.first.id),
+                confirmDismiss: (direction) async {
+                  markNeedsRebuild();
+                  hideOrRevealThread(thread, context);
+                  return false;
+                },
+                child: ThreadCard(
+                  // key: ValueKey(thread.posts.first.id),
+                  thread: thread,
+                  currentTab: currentTab,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
+}
+
+class BoardSearch extends StatelessWidget {
+  const BoardSearch({
+    super.key,
+    required this.currentTab,
+    required this.state,
+  });
+
+  final BoardTab currentTab;
+  final BoardSearchState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: SearchAppBar(
+            state: state,
+          )),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+        child: ListView.builder(
+          controller: context.read<BoardBloc>().scrollController,
+          itemCount: state.searchResult.length,
+          itemBuilder: (context, index) {
+            final Thread thread = state.searchResult[index];
+            return ThreadCard(
+              key: ValueKey(thread.posts.first.id),
+              thread: thread,
+              currentTab: currentTab,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class NoConnection extends StatelessWidget {
+  const NoConnection({
+    super.key,
+    required this.currentTab,
+  });
+
+  final BoardTab currentTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: NormalAppBar(
+              currentTab: currentTab,
+            )),
+        body: const NoConnectionPlaceholder());
+  }
+}
+
+class UnknownBoardError extends StatelessWidget {
+  const UnknownBoardError({
+    super.key,
+    required this.currentTab,
+    required this.state,
+  });
+  final BoardTab currentTab;
+  final BoardErrorState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: NormalAppBar(
+            currentTab: currentTab,
+          )),
+      body: Center(
+          child: Text(
+        state.message.toString(),
+        textAlign: TextAlign.center,
+      )),
+    );
+  }
+}
+
+ClassicFooter _getClassicRefreshFooter() {
+  return const ClassicFooter(
+    dragText: 'Потяните для загрузки',
+    armedText: 'Готово к загрузке',
+    readyText: 'Загрузка...',
+    processingText: 'Загрузка...',
+    processedText: 'Загружено',
+    noMoreText: 'Все прочитано',
+    failedText: 'Ошибка',
+    messageText: 'Последнее обновление - %T',
+  );
+}
+
+ClassicHeader _getClassicRefreshHeader() {
+  return const ClassicHeader(
+    dragText: 'Потяните для загрузки',
+    armedText: 'Готово к загрузке',
+    readyText: 'Загрузка...',
+    processingText: 'Загрузка...',
+    processedText: 'Загружено',
+    noMoreText: 'Все прочитано',
+    failedText: 'Ошибка',
+    messageText: 'Последнее обновление - %T',
+  );
 }
