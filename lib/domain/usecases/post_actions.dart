@@ -25,6 +25,11 @@ class GoToPostUseCase implements BaseUseCaseWithParams<GoToPostParams, void> {
 
     int tabId = tab.id;
 
+    if (params.animateToBrowserPage != null) {
+      params.animateToBrowserPage!();
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
     /// Check if this action was called in post preview dialog
     if (dialogStack.isNotEmpty) {
       final TreeNode<Post> visibleNode = dialogStack.first;
@@ -121,6 +126,7 @@ class GoToPostParams {
     required this.node,
     required this.dialogStack,
     required this.popUntil,
+    required this.animateToBrowserPage,
     required this.addTab,
     required this.scrollService,
     required this.threadScrollService,
@@ -131,6 +137,7 @@ class GoToPostParams {
   final TreeNode<Post> node;
   final List<TreeNode<Post>> dialogStack;
   final Function popUntil;
+  final Function? animateToBrowserPage;
   final Function addTab;
   final ScrollService scrollService;
   final ScrollService? threadScrollService;
