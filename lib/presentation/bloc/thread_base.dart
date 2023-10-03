@@ -28,5 +28,5 @@ mixin ThreadBase {
 
   ThreadInfo get threadInfo;
 
-  void goToPost(TreeNode<Post> node, {required BuildContext? context});
+  void goToPost(TreeNode<Post> node, {required BuildContext context});
 }
