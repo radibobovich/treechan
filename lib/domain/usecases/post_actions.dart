@@ -39,7 +39,8 @@ class GoToPostUseCase implements BaseUseCaseWithParams<GoToPostParams, void> {
       final TreeNode<Post> currentRoot = Tree.findRootNode(visibleNode);
 
       /// Check if desirable post is in the same tree as visible post.
-      if (node == Tree.findNode([currentRoot], node.data.id)) {
+      if (params.animateToBrowserPage != null &&
+          node == Tree.findNode([currentRoot], node.data.id)) {
         scrollService.scrollToParent(node, tab.id);
       } else {
         if (tab is BranchTab) {
