@@ -20,7 +20,7 @@ class PopupMenuThread extends StatelessWidget {
           return <PopupMenuEntry>[
             _getShareMenuButton(BlocProvider.of<ThreadBloc>(context)),
             _getHiddenPostsMenuItem(
-                context, BlocProvider.of<ThreadBloc>(context))
+                context, BlocProvider.of<ThreadBloc>(context)),
           ];
         });
   }
@@ -31,7 +31,7 @@ void showPopupMenuThread(
     BuildContext context, ThreadBase bloc, PageProvider provider) async {
   final RelativeRect rect = RelativeRect.fromLTRB(
       MediaQuery.of(context).size.width - 136, // width of popup menu
-      MediaQuery.of(context).size.height - 3 * 48 - 60,
+      MediaQuery.of(context).size.height - 4 * 48 - 60,
       // 48 is the height of one tile, 60 is approx. height of bottom bars
       0,
       0);
@@ -43,6 +43,7 @@ void showPopupMenuThread(
       // ignore: use_build_context_synchronously
       _getHiddenPostsMenuItem(context, bloc),
       await _getTrackMenuButton(provider),
+      _getScrollToTopMenuButton(bloc),
     ],
     elevation: 8.0,
   );
@@ -95,6 +96,20 @@ PopupMenuItem<dynamic> _getHiddenPostsMenuItem(
                 'tag': threadInfo.boardTag,
                 'threadId': threadInfo.opPostId
               }));
+    },
+  );
+}
+
+PopupMenuItem<dynamic> _getScrollToTopMenuButton(ThreadBase bloc) {
+  return PopupMenuItem(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: const Text('В начало'),
+    onTap: () {
+      bloc.scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
     },
   );
 }
