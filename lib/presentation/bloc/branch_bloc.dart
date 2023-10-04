@@ -66,7 +66,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError) {
         emit(BranchErrorState(
-            message: "Проверьте подключение к Интернету.", exception: e));
+            message: "Проверьте подключение к Интернету.",
+            exception: NoConnectionException('')));
       } else {
         emit(BranchErrorState(message: "Неизвестная ошибка Dio", exception: e));
       }

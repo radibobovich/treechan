@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/services/board_list_search_service.dart';
+import 'package:treechan/exceptions.dart';
 import '../../utils/constants/enums.dart';
 import '../../domain/repositories/board_list_repository.dart';
 import '../../domain/models/category.dart';
@@ -37,7 +38,8 @@ class BoardListBloc extends Bloc<BoardListEvent, BoardListState> {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError) {
         emit(BoardListErrorState(
-            message: "Проверьте подключение к Интернету.", exception: e));
+            message: "Проверьте подключение к Интернету.",
+            exception: NoConnectionException('')));
       } else {
         emit(BoardListErrorState(
             message: "Неизвестная ошибка Dio", exception: e));

@@ -56,7 +56,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError) {
         emit(ThreadErrorState(
-            message: "Проверьте подключение к Интернету.", exception: e));
+            message: "Проверьте подключение к Интернету.",
+            exception: NoConnectionException('')));
       } else {
         emit(ThreadErrorState(message: "Неизвестная ошибка Dio", exception: e));
       }
