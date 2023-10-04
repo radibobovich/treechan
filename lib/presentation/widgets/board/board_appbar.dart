@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 
@@ -23,39 +24,45 @@ class NormalAppBar extends StatefulWidget {
 class _NormalAppBarState extends State<NormalAppBar> {
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: Text(
-        widget.currentTab.name ?? "Загрузка...",
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+    return Hidable(
+      controller: context.read<BoardBloc>().scrollController,
+      preferredWidgetSize: const Size.fromHeight(96),
+      child: AppBar(
+        title: Text(
+          widget.currentTab.name ?? "Загрузка...",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        leading: _getLeading(context),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              if (BlocProvider.of<BoardBloc>(context)
+                      .boardRepository
+                      .sortType ==
+                  SortBy.page) {
+                BlocProvider.of<BoardBloc>(context)
+                    .add(ChangeViewBoardEvent(null, query: ""));
+              } else {
+                BlocProvider.of<BoardBloc>(context)
+                    .add(SearchQueryChangedEvent(""));
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              // widget.onMarkNeedsRebuild();
+              BlocProvider.of<BoardBloc>(context).add(ReloadBoardEvent());
+            },
+          ),
+          PopupMenuBoard(
+              currentTab: widget.currentTab,
+              onOpen: (ThreadTab tab) =>
+                  Provider.of<PageProvider>(context, listen: false).addTab(tab))
+        ],
       ),
-      leading: _getLeading(context),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {
-            if (BlocProvider.of<BoardBloc>(context).boardRepository.sortType ==
-                SortBy.page) {
-              BlocProvider.of<BoardBloc>(context)
-                  .add(ChangeViewBoardEvent(null, query: ""));
-            } else {
-              BlocProvider.of<BoardBloc>(context)
-                  .add(SearchQueryChangedEvent(""));
-            }
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: () {
-            // widget.onMarkNeedsRebuild();
-            BlocProvider.of<BoardBloc>(context).add(ReloadBoardEvent());
-          },
-        ),
-        PopupMenuBoard(
-            currentTab: widget.currentTab,
-            onOpen: (ThreadTab tab) =>
-                Provider.of<PageProvider>(context, listen: false).addTab(tab))
-      ],
     );
   }
 
