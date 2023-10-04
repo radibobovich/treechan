@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 SettingsTile.switchTile(
-                  leading: const Icon(Icons.swap_horiz),
+                  leading: const Icon(Icons.texture),
                   title: const Text('Спойлеры'),
                   description: const Text(
                       'Настройка вступит в силу после того, как пост окажется вне экрана.'),
@@ -88,6 +88,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onToggle: (value) {
                     setState(() {
                       prefs.setBool('spoilers', value);
+                    });
+                  },
+                ),
+
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.view_list),
+                  title: const Text(
+                      'Отображать список открытых вкладок в нижней части шторки'),
+                  description: const Text(
+                      'Облегчает доступ к вкладкам при управлении одной рукой. Настройка вступит в силу при следующем открытии шторки.'),
+                  initialValue: prefs.getBool('bottomDrawerTabs')!,
+                  onToggle: (value) {
+                    setState(() {
+                      prefs.setBool('bottomDrawerTabs', value);
                     });
                   },
                 ),

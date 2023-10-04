@@ -27,6 +27,7 @@ void main() async {
       'keepHistory': true,
       'trackerAutoRefresh': true,
       'refreshInterval': 60,
+      'bottomDrawerTabs': false,
       'showSnackBarActionOnThreadRefresh': true,
       'getAllUpdates': false,
       'test': true

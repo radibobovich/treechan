@@ -42,9 +42,11 @@ Future<void> initializePreferences() async {
   if (prefs.getBool('keepHistory') == null) {
     await prefs.setBool('keepHistory', true);
   }
-
   if (prefs.getBool('getAllUpdates') == null) {
     await prefs.setBool('getAllUpdates', false);
+  }
+  if (prefs.getBool('bottomDrawerTabs') == null) {
+    await prefs.setBool('bottomDrawerTabs', false);
   }
   return;
 }

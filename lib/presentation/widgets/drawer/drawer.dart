@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide SearchBar;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/config/themes.dart';
 
 import '../../provider/page_provider.dart';
@@ -83,32 +84,48 @@ class HistoryButton extends StatelessWidget {
 }
 
 /// A list of opened tabs. Placed in the drawer.
-class TabsList extends StatelessWidget {
+class TabsList extends StatefulWidget {
   const TabsList({super.key, required this.scaffoldKey});
 
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
+  State<TabsList> createState() => _TabsListState();
+}
+
+class _TabsListState extends State<TabsList> {
+  final prefs = SharedPreferences.getInstance();
+  @override
   Widget build(BuildContext context) {
     List<DrawerTab> tabs =
         context.watch<PageProvider>().tabManager.tabs.keys.toList();
-    return Expanded(
-      child: MediaQuery.removePadding(
-        context: context,
-        removeTop: true,
-        child: ListView.builder(
-          itemCount: tabs.length,
-          itemBuilder: (bcontext, index) {
-            DrawerTab item = tabs[index];
-            return TabTile(
-                // tabController: tabController,
-                item: item,
-                scaffoldKey: scaffoldKey,
-                index: index);
-          },
-        ),
-      ),
-    );
+    return FutureBuilder<SharedPreferences>(
+        future: prefs,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const SizedBox.shrink();
+          final bool reverseDrawerTabs =
+              snapshot.data!.getBool('reverseDrawerTabs') ?? false;
+          return Expanded(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: ListView.builder(
+                reverse: reverseDrawerTabs,
+                itemCount: tabs.length,
+                itemBuilder: (bcontext, index) {
+                  final int actualIndex =
+                      reverseDrawerTabs ? tabs.length - 1 - index : index;
+                  DrawerTab item = tabs[actualIndex];
+                  return TabTile(
+                      // tabController: tabController,
+                      item: item,
+                      scaffoldKey: widget.scaffoldKey,
+                      index: actualIndex);
+                },
+              ),
+            ),
+          );
+        });
   }
 }
 
