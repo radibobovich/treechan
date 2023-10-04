@@ -29,7 +29,7 @@ void main() async {
   ///
   /// Don't forget to set it back to [Env.prod] before release build, otherwise
   /// an exception will be thrown.
-  env = Env.dev;
+  env = Env.prod;
 
   configureInjection(getIt, env);
 
@@ -59,7 +59,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final PageProvider provider = PageProvider(tabManager: TabManager());
-
     return StreamBuilder<String>(
       initialData: prefs.getString('theme'),
       stream: theme.stream,
