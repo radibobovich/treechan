@@ -5,8 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/config/local_notifications.dart';
 import 'package:treechan/domain/models/catalog.dart';
 import 'package:treechan/domain/repositories/tracker_repository.dart';
+import 'package:treechan/presentation/bloc/thread_bloc.dart';
+import 'package:treechan/presentation/bloc/thread_search_cubit.dart';
 import 'package:treechan/presentation/bloc/tracker_cubit.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
+import 'package:treechan/presentation/screens/thread_search_screen.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 import 'package:treechan/presentation/widgets/tracker/popup_menu_tracker.dart';
@@ -57,6 +60,7 @@ class PageProvider with ChangeNotifier {
     pageController =
         TabController(length: pages.length, vsync: gotState, initialIndex: 2);
     _initTrackerCubit();
+    _initThreadSearchCubit();
     pushNotificationStreamController.stream.listen((notification) {
       addTab(DrawerTab.fromPush(notification));
     });
@@ -70,6 +74,25 @@ class PageProvider with ChangeNotifier {
         BlocProvider.value(value: trackerCubit, child: const TrackerScreen());
   }
 
+  late ThreadSearchCubit threadSearchCubit;
+  void _initThreadSearchCubit() {
+    threadSearchCubit = ThreadSearchCubit(tab: null, threadBloc: null);
+    pages[0] = BlocProvider.value(
+      value: threadSearchCubit,
+      child: const ThreadSearchScreen(),
+    );
+  }
+
+  void _configureThreadSearch({
+    required IdMixin tab,
+    required ThreadBloc bloc,
+    // required Function goToPost,
+  }) {
+    threadSearchCubit
+      ..configure(tab, bloc)
+      ..searchQueryChanged('');
+  }
+
   void _notifyListeners() {
     notifyListeners();
   }
@@ -81,18 +104,24 @@ class PageProvider with ChangeNotifier {
       currentBloc.add(board_list.SearchQueryChangedEvent(''));
     } else if (currentBloc is BoardBloc) {
       currentBloc.add(SearchQueryChangedEvent(''));
-    } else {
-      // search for thread and branch
+    } else if (currentBloc is ThreadBloc) {
+      if (threadSearchCubit.tab != currentBloc.tab) {
+        _configureThreadSearch(
+          tab: currentBloc.tab,
+          bloc: currentBloc,
+        );
+      }
     }
+    currentPageIndex = 0;
+    pageController.animateTo(0);
   }
 
   /// 0 - search, 1 - tracker, 2 - browser, 3 - refresh, 4 - actions
   void setCurrentPageIndex(int index, {BuildContext? context}) {
     /// When open search from [BrowserScreen]
     if (currentPageIndex == 2 && index == 0) {
-      currentPageIndex = index;
-      notifyListeners();
       openSearch();
+      notifyListeners();
       return;
     }
 
@@ -136,7 +165,11 @@ class PageProvider with ChangeNotifier {
       } else if (bloc is BoardBloc) {
         bloc.add(LoadBoardEvent());
       } else {
-        // coming soon
+        if (index == 2) {
+          currentPageIndex = index;
+          notifyListeners();
+          pageController.animateTo(2);
+        }
       }
     }
 
