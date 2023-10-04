@@ -21,6 +21,11 @@ mixin ThreadBase {
   late final ScrollController scrollController;
   late final ScrollService scrollService;
 
+  /// Sets to true during bloc loading or refreshing.
+  ///
+  /// Prevents starting new refresh until current one is completed.
+  bool isBusy = false;
+
   /// Every time new post preview dialog opens the node from which it
   /// has been opened adds here.
   /// Used to check if some post is actually in the current visible tree.
