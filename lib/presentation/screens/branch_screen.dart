@@ -122,6 +122,13 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: const Icon(Icons.refresh)),
           // const PopupMenuBranch()
         ],
+        bottom:
+            context.select<BranchBloc, bool>((BranchBloc bloc) => bloc.isBusy)
+                ? const PreferredSize(
+                    preferredSize: Size.fromHeight(4),
+                    child: LinearProgressIndicator(),
+                  )
+                : null,
       ),
     );
   }
