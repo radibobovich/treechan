@@ -104,7 +104,7 @@ class _TabsListState extends State<TabsList> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const SizedBox.shrink();
           final bool reverseDrawerTabs =
-              snapshot.data!.getBool('reverseDrawerTabs') ?? false;
+              snapshot.data!.getBool('bottomDrawerTabs') ?? false;
           return Expanded(
             child: MediaQuery.removePadding(
               context: context,
