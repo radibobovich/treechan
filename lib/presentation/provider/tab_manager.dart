@@ -227,7 +227,7 @@ class TabManager {
     if (bloc is board_list.BoardListBloc) {
       bloc.add(board_list.RefreshBoardListEvent());
     } else if (bloc is BoardBloc) {
-      bloc.add(RefreshBoardEvent());
+      bloc.add(ReloadBoardEvent());
     } else if (bloc is ThreadBloc) {
       /// we don't want to auto refresh tab if it is currently opened
       /// (bad UX)
