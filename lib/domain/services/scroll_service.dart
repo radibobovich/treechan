@@ -151,7 +151,8 @@ class ScrollService {
     /// TODO: find out if post frame callback is needed at all
     if (_scrollController.offset !=
         _scrollController.position.maxScrollExtent) {
-      debugPrint('not max scroll extent');
+      debugPrint(
+          'scrollToNodeInDirection() offset is ${_scrollController.offset}');
       Completer<void> offsetCompleter = Completer();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         currentOffset = _getPostOffset(key);
@@ -167,6 +168,8 @@ class ScrollService {
             (direction == AxisDirection.down &&
                 _scrollController.offset ==
                     _scrollController.position.maxScrollExtent)) {
+          debugPrint(
+              'scrollToNodeInDirection() has reached max scroll extent, direction was ${direction.toString()}');
           timer.cancel();
           scrollCompleter.complete(false);
           return;
@@ -174,6 +177,8 @@ class ScrollService {
         _scrollController.animateTo(_scrollController.offset + offsetModifier,
             duration: const Duration(milliseconds: 20), curve: Curves.easeOut);
       } else {
+        debugPrint(
+            'scrollToNodeInDirection() found the node, performing ensureVisible()...');
         timer.cancel();
         Scrollable.ensureVisible(key.currentContext!,
             duration: const Duration(milliseconds: 30), curve: Curves.easeOut);
@@ -233,11 +238,11 @@ class ScrollService {
 
     if (rootNode.data.id > getFirstVisiblePost().node.data.id) {
       forcedDirection = AxisDirection.down;
-      debugPrint('force down');
+      debugPrint('scrollToNodeByPost() selected force down');
     } else {
       /// if equals then go up too
       forcedDirection = AxisDirection.up;
-      debugPrint('force up');
+      debugPrint('scrollToNodeByPost() selected force up');
     }
 
     final GlobalKey key = node.getGlobalKey(tabId);
@@ -261,11 +266,14 @@ class ScrollService {
     if (forcedDirection == null &&
         rootNode.data.id > getFirstVisiblePost().node.data.id) {
       forcedDirection = AxisDirection.down;
-      debugPrint('force down');
-    } else {
+      debugPrint('scrollToNode() selected force down');
+    } else if (forcedDirection == null) {
       // TODO: if in the same root, scroll till root post then scroll down if not found
       forcedDirection = AxisDirection.up;
-      debugPrint('force up');
+      debugPrint('scrollToNode() selected force up');
+    } else {
+      debugPrint(
+          'scrollToNode() is using pre-defined scroll direction: ${forcedDirection.toString()}');
     }
 
     /// Expanding trees leads to visible posts offset.
@@ -283,16 +291,24 @@ class ScrollService {
     final double initialScrollPosition = _scrollController.offset;
     if (await scrollToNodeInDirection(key,
         direction: forcedDirection ?? AxisDirection.up)) {
+      debugPrint(
+          '_scrollToNode() scrolled ${forcedDirection?.toString() ?? 'up'} and found the node.');
       return;
     } else {
+      debugPrint('''
+_scrollToNode() scrolled ${forcedDirection?.toString() ?? 'up'} but did not succeed.
+Jumping to initial scroll position and trying to scroll in the opposite direction.''');
       Completer<void> jumpCompleter = Completer();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollController.jumpTo(initialScrollPosition);
         jumpCompleter.complete();
       });
       await jumpCompleter.future;
-
-      await scrollToNodeInDirection(key, direction: AxisDirection.down);
+      final newDirection =
+          forcedDirection == AxisDirection.up || forcedDirection == null
+              ? AxisDirection.down
+              : AxisDirection.up;
+      await scrollToNodeInDirection(key, direction: newDirection);
       return;
     }
   }
