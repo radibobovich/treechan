@@ -4,7 +4,7 @@ Future<void> initializePreferences() async {
   bool hasInitialized = prefs.getBool('initialized') ?? false;
 
   if (!hasInitialized) {
-    theme.add("Makaba Classic");
+    theme.add("Dark");
     await prefs.setBool('initialized', true);
   }
 
@@ -13,7 +13,7 @@ Future<void> initializePreferences() async {
         'themes', ['Makaba Classic', 'Makaba Night', 'Dark', 'Amoled']);
   }
   if (prefs.getString('theme') == null) {
-    await prefs.setString('theme', 'Makaba Classic');
+    await prefs.setString('theme', 'Dark');
   }
   if (prefs.getBool('postsCollapsed') == null) {
     await prefs.setBool('postsCollapsed', false);
