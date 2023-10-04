@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hidable/hidable.dart';
 import 'package:should_rebuild/should_rebuild.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/utils/constants/enums.dart';
@@ -88,7 +89,7 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final BranchTab currentTab;
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => const Size.fromHeight(86);
 
   @override
   Widget build(BuildContext context) {
@@ -99,36 +100,40 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
           context.read<BranchBloc>().resetNewPostsCount();
         }
       },
-      child: AppBar(
-        title: Text(
-          currentTab.name ?? "Загрузка...",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        leading: !Platform.isWindows
-            ? GoBackButton(currentTab: currentTab)
-            : IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
+      child: Hidable(
+        controller: context.read<BranchBloc>().scrollController,
+        preferredWidgetSize: const Size.fromHeight(86),
+        child: AppBar(
+          title: Text(
+            currentTab.name ?? "Загрузка...",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          leading: !Platform.isWindows
+              ? GoBackButton(currentTab: currentTab)
+              : IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+          actions: <Widget>[
+            IconButton(
+                onPressed: () async {
+                  BlocProvider.of<BranchBloc>(context)
+                      .add(RefreshBranchEvent(RefreshSource.branch));
                 },
-              ),
-        actions: <Widget>[
-          IconButton(
-              onPressed: () async {
-                BlocProvider.of<BranchBloc>(context)
-                    .add(RefreshBranchEvent(RefreshSource.branch));
-              },
-              icon: const Icon(Icons.refresh)),
-          // const PopupMenuBranch()
-        ],
-        bottom:
-            context.select<BranchBloc, bool>((BranchBloc bloc) => bloc.isBusy)
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(4),
-                    child: LinearProgressIndicator(),
-                  )
-                : null,
+                icon: const Icon(Icons.refresh)),
+            // const PopupMenuBranch()
+          ],
+          bottom:
+              context.select<BranchBloc, bool>((BranchBloc bloc) => bloc.isBusy)
+                  ? const PreferredSize(
+                      preferredSize: Size.fromHeight(4),
+                      child: LinearProgressIndicator(),
+                    )
+                  : null,
+        ),
       ),
     );
   }
