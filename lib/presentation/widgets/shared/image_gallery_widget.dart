@@ -112,19 +112,9 @@ class _SwipeGalleryState extends State<SwipeGallery>
                   alignment: AlignmentDirectional.center,
                   fit: StackFit.expand,
                   children: [
-                    ExtendedImage.network(
-                      mode: ExtendedImageMode.none,
+                    Image.network(
                       widget.previewLinks[index],
                       fit: BoxFit.contain,
-                      loadStateChanged: (state) {
-                        if (state.extendedImageLoadState ==
-                            LoadState.completed) {
-                          return null;
-                        }
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      },
                     ),
                     Center(child: CircularProgressIndicator(value: progress)),
                   ],
