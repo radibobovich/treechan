@@ -111,9 +111,9 @@ class PageProvider with ChangeNotifier {
           bloc: currentBloc,
         );
       }
+      currentPageIndex = 0;
+      pageController.animateTo(0);
     }
-    currentPageIndex = 0;
-    pageController.animateTo(0);
   }
 
   /// 0 - search, 1 - tracker, 2 - browser, 3 - refresh, 4 - actions
