@@ -82,6 +82,7 @@ List<Widget> _getImages(List<File> files, BuildContext context,
   for (var file in files) {
     media.add(_MediaItemPreview(
       imageLinks: fullResLinks,
+      videoLinks: videoLinks,
       previewLinks: previewLinks,
       file: file,
       type: file.type,
@@ -96,6 +97,7 @@ class _MediaItemPreview extends StatefulWidget {
   const _MediaItemPreview({
     Key? key,
     required this.imageLinks,
+    required this.videoLinks,
     required this.previewLinks,
     required this.file,
     required this.type,
@@ -103,6 +105,7 @@ class _MediaItemPreview extends StatefulWidget {
   }) : super(key: key);
 
   final List<String> imageLinks;
+  final List<String> videoLinks;
   final List<String> previewLinks;
   final File file;
   final int type;
@@ -124,13 +127,19 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = widget.imageLinks.indexOf(widget.file.path);
+    int currentIndex = widget.imageLinks.indexOf(widget.file.path);
+    bool isVideo = false;
+    if (currentIndex == -1) {
+      currentIndex = widget.videoLinks.indexOf(widget.file.path);
+      isVideo = true;
+    }
     final pageController = ExtendedPageController(initialPage: currentIndex);
 
     return GestureDetector(
       key: ObjectKey(thumbnail),
-      onTap: () =>
-          isLoaded ? openGallery(context, pageController) : reloadThumbnail(),
+      onTap: () => isLoaded
+          ? openGallery(context, pageController, currentIndex, isVideo)
+          : reloadThumbnail(),
       child: thumbnail,
     );
   }
@@ -143,8 +152,8 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
     setState(() {});
   }
 
-  Future<dynamic> openGallery(
-      BuildContext context, ExtendedPageController pageController) {
+  Future<dynamic> openGallery(BuildContext context,
+      ExtendedPageController pageController, int index, bool isVideo) {
     return Navigator.push(
       context,
       PageRouteBuilder(
@@ -169,8 +178,11 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
                 IconButton(
                   icon: const Icon(Icons.save),
                   onPressed: () {
-                    downloadImage(
-                        widget.imageLinks[pageController.page?.toInt() ?? 0]);
+                    isVideo
+                        ? downloadVideo(widget.videoLinks[index])
+                        : downloadImage(
+                            widget.imageLinks[index],
+                          );
                   },
                   // add a notification here to show that the image is downloaded
                 )
