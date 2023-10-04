@@ -14,7 +14,6 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
-  http: ^1.1.0
   flutter_html: ^2.2.1
   html: ^0.15.4
   swipe_image_gallery: ^0.8.0
@@ -54,12 +53,16 @@ dependencies:
   mockito: ^5.4.2
   injectable: ^2.3.0
   get_it: ^7.6.4
+  gallery_saver_updated:
+    git:
+      url: https://github.com/ARTISAN-inc/gallery_saver_updated.git
   image_gallery_saver: ^2.0.3
   dio: ^5.3.3
   flutter_svg: ^2.0.7
   flutter_fgbg: ^0.3.0
   json_annotation: ^4.8.1
   retrofit: ^4.0.1
+  hidable: ^1.0.5
 
 dev_dependencies:
   flutter_test:
