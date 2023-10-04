@@ -2,7 +2,7 @@
 import 'package:gallery_saver_updated/gallery_saver.dart';
 
 downloadImage(String url) async {
-  await GallerySaver.saveImage(url, toDcim: true);
+  await GallerySaver.saveImage(url, toDcim: false);
   // var response =
   //     await Dio().get(url, options: Options(responseType: ResponseType.bytes));
   // await ImageGallerySaver.saveImage(Uint8List.fromList(response.data),
@@ -10,7 +10,7 @@ downloadImage(String url) async {
 }
 
 downloadVideo(String url) async {
-  await GallerySaver.saveVideo(url, toDcim: true);
+  await GallerySaver.saveVideo(url, toDcim: false);
 }
 
 // import 'dart:io';
