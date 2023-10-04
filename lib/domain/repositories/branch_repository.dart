@@ -48,10 +48,10 @@ class BranchRepository implements Repository {
       posts = threadRepository.posts;
     }
     Post post = posts.firstWhere((element) => element.id == postId);
-    _root = TreeNode(data: post);
+    _root = TreeNode(data: post)..expanded = true;
     final int postIndex = posts.indexOf(post);
-    _root!.addNodes(await compute(
-        _attachChildren, {post, postIndex, posts.sublist(postIndex), prefs}));
+    _root!.addNodes(await compute(_attachChildren,
+        {post, postIndex, posts.sublist(postIndex), prefs, true}));
 
     Set<int> postIds = {};
     Tree.performForEveryNode(_root, (node) {
@@ -98,7 +98,8 @@ class BranchRepository implements Repository {
         posts: newPosts,
         opPostId: threadRepository.threadInfo.opPostId,
         oldPostsCount: lastIndex + 1);
-    final record = await treeService.getTree(skipPostsModify: true);
+    final record = await treeService.getTree(
+        skipPostsModify: true, forceExpandNodes: true);
     final List<TreeNode<Post>> newRoots = record.$1;
 
     /// Attach obtained trees to the branch nodes.
@@ -149,6 +150,7 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
   int postIndex = data.elementAt(1);
   List<Post> posts = data.elementAt(2);
   SharedPreferences prefs = data.elementAt(3);
+  bool? forceExpandNodes = data.elementAt(4);
   // int depth = data.elementAt(4);
 
   var childrenToAdd = <TreeNode<Post>>[];
@@ -165,8 +167,9 @@ Future<List<TreeNode<Post>>> _attachChildren(Set data) async {
         /// attached in multiple places in the tree.
         key: UniqueKey().toString(),
         data: child,
-        children: await _attachChildren({child, postIndex, posts, prefs}),
-        expanded: !prefs.getBool("postsCollapsed")!));
+        children: await _attachChildren(
+            {child, postIndex, posts, prefs, forceExpandNodes}),
+        expanded: forceExpandNodes ?? !prefs.getBool("postsCollapsed")!));
   }
   return childrenToAdd;
 }

@@ -36,16 +36,19 @@ class Tree {
   List<TreeNode<Post>>? get getRoots => _roots;
 
   Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> getTree(
-      {bool skipPostsModify = false}) async {
+      {bool skipPostsModify = false, bool? forceExpandNodes}) async {
     final prefs = await SharedPreferences.getInstance();
     if (!skipPostsModify) {
       _findPostParents();
       findChildren(posts, oldPostsCount);
     }
-    var record =
-        await compute(_createTreeModel, (posts, opPostId, prefs, oldPostsCount))
-            .timeout(const Duration(seconds: 90))
-            .onError((error, stackTrace) {
+    var record = await compute(_createTreeModel, (
+      posts,
+      opPostId,
+      prefs,
+      oldPostsCount,
+      forceExpandNodes
+    )).timeout(const Duration(seconds: 90)).onError((error, stackTrace) {
       debugPrint('TimeoutException:');
       throw TreeBuilderTimeoutException('Building tree took too long.');
     });
@@ -284,13 +287,13 @@ class Tree {
 /// Creates list of comment roots and map all nodes by post id.
 /// This is a heavy function and defined outside the class to use in an isolate.
 Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
-    (List<Post>, int, SharedPreferences, int) record) async {
+    (List<Post>, int, SharedPreferences, int, bool?) record) async {
   List<Post> posts = record.$1;
   // Root threadInfo = record.$2;
   int opPostId = record.$2;
   SharedPreferences prefs = record.$3;
   int lastPostIndex = record.$4;
-
+  bool? forceExpand = record.$5;
   final Map<int, List<TreeNode<Post>>> plainNodes = {};
 
   final Set<int> postsWithId = posts.map((post) => post.id).toSet();
@@ -309,11 +312,11 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
         _isExternalReference(postsWithId, post.parents)) {
       // find posts which are replies to the OP-post
       TreeNode<Post> node = TreeNode<Post>(
-        expanded: !prefs.getBool("postsCollapsed")!,
+        expanded: forceExpand ?? !prefs.getBool("postsCollapsed")!,
         data: post,
         children: post.id != opPostId
-            ? _attachChildren(
-                    post, posts, prefs, plainNodes, lastPostIndex, stopwatch, 1)
+            ? _attachChildren(post, posts, prefs, plainNodes, lastPostIndex,
+                    stopwatch, 1, forceExpand)
                 .$1
             : [],
       );
@@ -334,13 +337,15 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
 
 /// Called recursively to attach post children.
 (List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>) _attachChildren(
-    Post post,
-    List<Post> posts,
-    SharedPreferences prefs,
-    Map<int, List<TreeNode<Post>>> plainNodes,
-    int lastPostIndex,
-    Stopwatch stopwatch,
-    int depth) {
+  Post post,
+  List<Post> posts,
+  SharedPreferences prefs,
+  Map<int, List<TreeNode<Post>>> plainNodes,
+  int lastPostIndex,
+  Stopwatch stopwatch,
+  int depth,
+  bool? forceExpand,
+) {
   /// Kills isolate if it takes too long
   if (stopwatch.elapsedMilliseconds > 91 * 1000) {
     return (<TreeNode<Post>>[], <int, List<TreeNode<Post>>>{});
@@ -361,9 +366,9 @@ Future<(List<TreeNode<Post>>, Map<int, List<TreeNode<Post>>>)> _createTreeModel(
         key: UniqueKey().toString(),
         data: child,
         children: _attachChildren(child, posts, prefs, plainNodes,
-                lastPostIndex, stopwatch, depth + 1)
+                lastPostIndex, stopwatch, depth + 1, forceExpand)
             .$1,
-        expanded: !prefs.getBool("postsCollapsed")!);
+        expanded: forceExpand ?? !prefs.getBool("postsCollapsed")!);
     childrenToAdd.add(node);
 
     /// add to plainNodes too
