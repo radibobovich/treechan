@@ -57,6 +57,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
     on<RefreshBranchEvent>(_refresh);
   }
   FutureOr<void> _load(event, emit) async {
+    if (isBusy) return;
+    isBusy = true;
     try {
       branch = await branchRepository.getBranch();
       emit(BranchLoadedState(
@@ -70,10 +72,26 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
       }
     } on Exception catch (e) {
       emit(BranchErrorState(message: e.toString(), exception: e));
+    } finally {
+      isBusy = false;
     }
   }
 
   FutureOr<void> _refresh(event, emit) async {
+    if (isBusy) return;
+    isBusy = true;
+
+    /// Trigger appbar refresh indicator
+    final currentState = state;
+    if (currentState is BranchLoadedState) {
+      emit(
+        BranchRefreshingState(
+          branch: (state as BranchLoadedState).branch,
+          threadInfo: (state as BranchLoadedState).threadInfo,
+        ),
+      );
+    }
+
     try {
       if (event.source == RefreshSource.branch) {
         await _refreshFromBranch(event);
@@ -88,13 +106,17 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
       }
       provider.trackerRepository.markAsDead(tab);
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionError) {
-        provider.showSnackBar('Проверьте подключение к Интернету.');
-      } else {
-        provider.showSnackBar('Неизвестная ошибка Dio');
+      if (event.source == RefreshSource.branch) {
+        if (e.type == DioExceptionType.connectionError) {
+          provider.showSnackBar('Проверьте подключение к Интернету.');
+        } else {
+          provider.showSnackBar('Неизвестная ошибка Dio');
+        }
       }
     } on Exception {
-      provider.showSnackBar('Неизвестная ошибка');
+      if (event.source == RefreshSource.branch) {
+        provider.showSnackBar('Неизвестная ошибка');
+      }
     }
   }
 
@@ -108,6 +130,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
     /// tracker repo about its new posts
     await branchRepository.refresh(event.source,
         lastIndex: event.lastIndex, trackerRepo: trackerRepoForThreadRepo);
+
+    isBusy = false;
     add(LoadBranchEvent());
 
     /// Update related thread screen
@@ -132,12 +156,17 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
       forceNewReplies: true,
     );
     provider.trackerCubit.loadTracker();
+    provider.showSnackBar(branchRepository.newPostsCount > 0
+        ? 'Новых постов: ${branchRepository.newPostsCount}'
+        : 'Нет новых постов');
   }
 
   /// Called when [ThreadBloc.refresh] calls [refreshRelatedBranches()]
   Future<void> _refreshFromThread(event) async {
     await branchRepository.refresh(event.source,
         lastIndex: event.lastIndex, trackerRepo: null);
+
+    isBusy = false;
     add(LoadBranchEvent());
 
     await _notifyTracker();
@@ -150,6 +179,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
     TrackerRepository? trackerRepoForThreadRepo = provider.trackerRepository;
     await branchRepository.refresh(event.source,
         lastIndex: event.lastIndex, trackerRepo: trackerRepoForThreadRepo);
+
+    isBusy = false;
     add(LoadBranchEvent());
 
     await _notifyTracker();
@@ -197,7 +228,7 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
           final scrollService = provider.tabManager.getThreadScrollService(
               boardTag: (tab as TagMixin).tag,
               threadId: (tab as BranchTab).threadId);
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 1));
           return scrollService;
         },
       ),
@@ -261,6 +292,10 @@ class BranchLoadedState extends BranchState {
   TreeNode<Post> branch;
   ThreadInfo threadInfo;
   BranchLoadedState({required this.branch, required this.threadInfo});
+}
+
+class BranchRefreshingState extends BranchLoadedState {
+  BranchRefreshingState({required super.branch, required super.threadInfo});
 }
 
 class BranchErrorState extends BranchState {
