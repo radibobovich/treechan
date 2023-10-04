@@ -131,6 +131,7 @@ class ItemTitle extends StatelessWidget {
           style: widget.item.isDead
               ? const TextStyle(
                   decoration: TextDecoration.lineThrough,
+                  decorationThickness: 2,
                   fontSize: 15,
                   fontWeight: FontWeight.w600)
               : const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
