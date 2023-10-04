@@ -42,6 +42,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     on<RefreshThreadEvent>(_refresh);
   }
   FutureOr<void> _load(event, emit) async {
+    if (isBusy) return;
+    isBusy = true;
     try {
       final roots = await threadRepository.getRoots();
       threadInfo = threadRepository.threadInfo;
@@ -65,10 +67,25 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
           exception: e));
     } on Exception catch (e) {
       emit(ThreadErrorState(message: "Неизвестная ошибка", exception: e));
+    } finally {
+      isBusy = false;
     }
   }
 
   FutureOr<void> _refresh(event, emit) async {
+    if (isBusy) return;
+    isBusy = true;
+
+    /// Trigger appbar refresh indicator
+    final currentState = state;
+    if (currentState is ThreadLoadedState) {
+      emit(
+        ThreadRefreshingState(
+            roots: (state as ThreadLoadedState).roots,
+            threadInfo: (state as ThreadLoadedState).threadInfo),
+      );
+    }
+
     try {
       if (event.source == RefreshSource.thread) {
         await _refreshFromThread();
@@ -79,7 +96,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
             ' refreshing from branch');
       }
     } on ThreadNotFoundException {
-      if (event.source != RefreshSource.tracker) {
+      if (event.source == RefreshSource.thread) {
         provider.showSnackBar('Тред умер');
       }
       provider.trackerRepository.markAsDead(tab);
@@ -99,6 +116,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
       if (event.source == RefreshSource.thread) {
         provider.showSnackBar('Неизвестная ошибка');
       }
+    } finally {
+      isBusy = false;
     }
   }
 
@@ -111,6 +130,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
 
     final int lastIndex = threadRepository.posts.length - 1;
     await threadRepository.refresh();
+
+    isBusy = false;
     add(LoadThreadEvent());
 
     provider.tabManager.refreshRelatedBranches(tab as ThreadTab, lastIndex);
@@ -148,6 +169,8 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   FutureOr<void> _refreshFromTracker() async {
     final int lastIndex = threadRepository.posts.length - 1;
     await threadRepository.refresh();
+
+    isBusy = false;
     add(LoadThreadEvent());
 
     provider.tabManager.refreshRelatedBranches(tab as ThreadTab, lastIndex);
@@ -279,6 +302,10 @@ class ThreadLoadedState extends ThreadState {
   late final List<TreeNode<Post>>? roots;
   late final ThreadInfo threadInfo;
   ThreadLoadedState({required this.roots, required this.threadInfo});
+}
+
+class ThreadRefreshingState extends ThreadLoadedState {
+  ThreadRefreshingState({required super.roots, required super.threadInfo});
 }
 
 class ThreadErrorState extends ThreadState {
