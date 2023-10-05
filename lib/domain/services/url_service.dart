@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/tab.dart';
 
 // TODO: write tests
-class SearchService {
-  SearchService({this.currentTab});
+class UrlService {
+  UrlService({this.currentTab});
 
   late String url;
   late Uri parsedUrl;

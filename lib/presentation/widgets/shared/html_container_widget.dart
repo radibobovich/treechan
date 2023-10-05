@@ -4,7 +4,7 @@ import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
-import 'package:treechan/domain/services/search_service.dart';
+import 'package:treechan/domain/services/url_service.dart';
 import 'package:treechan/presentation/bloc/thread_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -169,7 +169,7 @@ class HtmlContainer extends StatelessWidget {
 
       // check if link is external relative to this thread
     } else {
-      SearchService searchBarService = SearchService(currentTab: currentTab);
+      UrlService searchBarService = UrlService(currentTab: currentTab);
       try {
         final newTab = searchBarService.parseInput(url, searchTag: searchTag);
         if (newTab is BoardTab && newTab.isCatalog == true) {
