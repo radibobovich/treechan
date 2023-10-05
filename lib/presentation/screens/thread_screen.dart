@@ -7,6 +7,7 @@ import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -131,7 +132,9 @@ class ThreadAppBar extends StatelessWidget implements PreferredSizeWidget {
         }
       },
       child: Hidable(
-        controller: context.read<ThreadBloc>().scrollController,
+        controller: !Platform.isWindows
+            ? context.read<ThreadBloc>().scrollController
+            : ScrollController(),
         preferredWidgetSize: const Size.fromHeight(86),
         child: AppBar(
           title: Text(
@@ -144,7 +147,7 @@ class ThreadAppBar extends StatelessWidget implements PreferredSizeWidget {
               : IconButton(
                   icon: const Icon(Icons.menu),
                   onPressed: () {
-                    Scaffold.of(context).openDrawer();
+                    openDrawer();
                   },
                 ),
           actions: <Widget>[

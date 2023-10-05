@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hidable/hidable.dart';
 import 'package:should_rebuild/should_rebuild.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/utils/constants/enums.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -101,7 +102,9 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
         }
       },
       child: Hidable(
-        controller: context.read<BranchBloc>().scrollController,
+        controller: !Platform.isWindows
+            ? context.read<BranchBloc>().scrollController
+            : ScrollController(),
         preferredWidgetSize: const Size.fromHeight(86),
         child: AppBar(
           title: Text(
@@ -114,7 +117,7 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
               : IconButton(
                   icon: const Icon(Icons.menu),
                   onPressed: () {
-                    Scaffold.of(context).openDrawer();
+                    openDrawer();
                   },
                 ),
           actions: <Widget>[

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 
 import '../../../domain/models/tab.dart';
@@ -25,7 +26,9 @@ class _NormalAppBarState extends State<NormalAppBar> {
   @override
   Widget build(BuildContext context) {
     return Hidable(
-      controller: context.read<BoardBloc>().scrollController,
+      controller: !Platform.isWindows
+          ? context.read<BoardBloc>().scrollController
+          : ScrollController(),
       preferredWidgetSize: const Size.fromHeight(96),
       child: AppBar(
         title: Text(
@@ -72,7 +75,7 @@ class _NormalAppBarState extends State<NormalAppBar> {
         : IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
-              Scaffold.of(context).openDrawer();
+              openDrawer();
             },
           );
   }
