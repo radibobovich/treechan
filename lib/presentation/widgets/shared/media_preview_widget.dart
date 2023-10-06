@@ -18,7 +18,7 @@ class MediaPreview extends StatelessWidget {
   final double height;
   @override
   Widget build(BuildContext context) {
-    if (files == null) return const SizedBox.shrink();
+    if (files == null || files!.isEmpty) return const SizedBox.shrink();
     _fixLinks(files!);
     if (env == Env.test || env == Env.dev) {
       _mockLinks(files!);
