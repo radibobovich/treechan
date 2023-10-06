@@ -32,4 +32,15 @@ enum Browser {
   internetExplorer
 }
 
-enum Imageboard { dvach }
+enum Imageboard { dvach, dvachArchive, unknown }
+
+Map<Imageboard, Imageboard> archivesMap = {
+  Imageboard.dvach: Imageboard.dvachArchive
+};
+
+Imageboard imageboardFromString(String str) {
+  for (Imageboard value in Imageboard.values) {
+    if (value.name == str) return value;
+  }
+  throw Exception('Unknown imageboard');
+}

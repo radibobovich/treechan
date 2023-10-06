@@ -13,6 +13,7 @@ import 'package:treechan/presentation/screens/thread_search_screen.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 import 'package:treechan/presentation/widgets/tracker/popup_menu_tracker.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
 import '../bloc/board_bloc.dart';
@@ -32,8 +33,12 @@ class PageProvider with ChangeNotifier {
   void removeTab(DrawerTab tab) => tabManager.removeTab(tab);
   void goBack() => tabManager.goBack();
   void setName(DrawerTab tab, String name) => tabManager.setName(tab, name);
-  void openCatalog({required String boardTag, required String query}) =>
-      tabManager.openCatalog(boardTag: boardTag, query: query);
+  void openCatalog(
+          {required Imageboard imageboard,
+          required String boardTag,
+          required String query}) =>
+      tabManager.openCatalog(
+          imageboard: imageboard, boardTag: boardTag, query: query);
 
   /// The stream is listened by new [BoardBloc] to check if you need to switch
   /// the board screen to a catalog mode.

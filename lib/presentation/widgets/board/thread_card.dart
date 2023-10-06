@@ -83,6 +83,7 @@ class _ThreadCardState extends State<ThreadCard> {
   void openThread(BuildContext context) {
     FocusManager.instance.primaryFocus?.unfocus();
     context.read<PageProvider>().addTab(ThreadTab(
+        imageboard: widget.thread.imageboard,
         id: env == Env.prod ? widget.thread.posts.first.id : debugThreadId,
         tag: env == Env.prod
             ? widget.thread.posts.first.boardTag

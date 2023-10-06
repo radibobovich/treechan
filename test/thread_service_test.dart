@@ -42,6 +42,7 @@ void main() async {
 
   test('ThreadRepository', () async {
     final threadRepository = ThreadRepository(
+      imageboard: Imageboard.dvach,
       boardTag: 'abu',
       threadId: 50074,
 
@@ -90,6 +91,7 @@ void main() async {
 
   test('Thread refresh', () async {
     final threadRepository = ThreadRepository(
+      imageboard: Imageboard.dvach,
       boardTag: 'b',
       threadId: 282647314,
       threadLoader: getIt.get<IThreadRemoteLoader>(
@@ -148,6 +150,7 @@ void main() async {
   group('Search in tree', () {
     test('Search for one occurency', () async {
       final ThreadRepository repo = ThreadRepository(
+        imageboard: Imageboard.dvach,
         boardTag: 'b',
         threadId: 282647314,
         threadLoader: getIt.get<IThreadRemoteLoader>(
@@ -164,6 +167,7 @@ void main() async {
     });
     test('Search for multiple occurencies', () async {
       final ThreadRepository repo = ThreadRepository(
+          imageboard: Imageboard.dvach,
           boardTag: 'b',
           threadId: 282647314,
           threadLoader: getIt.get<IThreadRemoteLoader>(

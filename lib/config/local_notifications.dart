@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -89,6 +90,7 @@ NotificationDetails personalGroupNotificationDetails =
 
 class PushUpdateNotification {
   final String type;
+  final Imageboard imageboard;
   final String boardTag;
   final int id;
   final int? threadId;
@@ -96,6 +98,7 @@ class PushUpdateNotification {
 
   PushUpdateNotification(
       {required this.type,
+      required this.imageboard,
       required this.boardTag,
       required this.id,
       required this.name,
@@ -104,6 +107,7 @@ class PushUpdateNotification {
   factory PushUpdateNotification.fromJson(Map<String, dynamic> json) {
     return PushUpdateNotification(
       type: json['type'],
+      imageboard: imageboardFromString(json['imageboard']),
       boardTag: json['board_tag'],
       id: json['id'],
       threadId: json['thread_id'],
@@ -114,6 +118,7 @@ class PushUpdateNotification {
   Map<String, dynamic> toJson() {
     return {
       'type': type,
+      'imageboard': imageboard.toString(),
       'board_tag': boardTag,
       'id': id,
       'thread_id': threadId,

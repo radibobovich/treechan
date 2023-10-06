@@ -7,6 +7,7 @@ import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/models/tab.dart';
 import 'package:treechan/domain/repositories/tracker_repository.dart';
 import 'package:treechan/main.dart';
+import 'package:treechan/utils/constants/enums.dart';
 import 'package:treechan/utils/fix_html_video.dart';
 
 import '../models/thread_info.dart';
@@ -19,8 +20,10 @@ import 'repository.dart';
 
 class ThreadRepository implements Repository {
   ThreadRepository(
-      {required this.boardTag,
+      {required this.imageboard,
+      required this.boardTag,
       required this.threadId,
+      this.archiveDate,
       required IThreadLoader threadLoader,
       required IThreadRefresher threadRefresher})
       : _threadLoader = threadLoader,
@@ -28,8 +31,10 @@ class ThreadRepository implements Repository {
 
   final IThreadLoader _threadLoader;
   final IThreadRefresher _threadRefresher;
+  final Imageboard imageboard;
   final String boardTag;
   final int threadId;
+  final String? archiveDate;
 
   /// Contains all comment tree roots.
   ///
@@ -88,8 +93,8 @@ class ThreadRepository implements Repository {
     // final ThreadFetcherDeprecated fetcher =
     //     ThreadFetcherDeprecated(boardTag: boardTag, threadId: threadId);
 
-    _posts =
-        await _threadLoader.getPosts(boardTag: boardTag, threadId: threadId);
+    _posts = await _threadLoader.getPosts(
+        boardTag: boardTag, threadId: threadId, date: archiveDate);
 
     _threadInfo = ThreadInfo(
       boardTag: boardTag,
@@ -173,7 +178,11 @@ class ThreadRepository implements Repository {
 
     trackerRepo?.updateThreadByTab(
       tab: ThreadTab(
-          name: null, tag: boardTag, prevTab: boardListTab, id: threadId),
+          name: null,
+          imageboard: imageboard,
+          tag: boardTag,
+          prevTab: boardListTab,
+          id: threadId),
       posts: postsCount,
       newPosts: newPostsCount,
       newReplies: newReplies,

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/config/local_notifications.dart';
@@ -75,6 +76,7 @@ class TrackerRepository {
       if (tabManager!.currentTab is IdMixin && tabManager!.isAppInForeground) {
         if (tabManager!.currentTab as IdMixin ==
             tabManager!.findTab(
+                imageboard: item.imageboard,
                 tag: item.tag,
                 threadId: item is TrackedThread ? item.id : null,
                 branchId: item is TrackedBranch ? item.branchId : null)) {
@@ -99,6 +101,7 @@ class TrackerRepository {
 
       final notification = PushUpdateNotification(
         type: item is TrackedThread ? 'thread' : 'branch',
+        imageboard: item.imageboard,
         boardTag: item.tag,
         id: item.id,
         threadId: item is TrackedBranch ? item.threadId : null,
@@ -148,6 +151,7 @@ class TrackerRepository {
   Future<void> addThreadByTab(
       {required ThreadTab tab, required int posts}) async {
     await db.addThread(
+      tab.imageboard,
       tab.tag,
       tab.id,
       tab.name ?? "Тред",
@@ -156,17 +160,19 @@ class TrackerRepository {
   }
 
   Future<void> removeThreadByTab(ThreadTab tab) async {
-    await db.removeThread(tab.tag, tab.id);
+    await db.removeThread(tab.imageboard, tab.tag, tab.id);
   }
 
-  Future<void> removeThread(String tag, int threadId) async {
-    await db.removeThread(tag, threadId);
+  Future<void> removeThread(
+      Imageboard imageboard, String tag, int threadId) async {
+    await db.removeThread(imageboard, tag, threadId);
   }
 
   /// Adds branch to the tracker database.
   Future<void> addBranchByTab(
       {required BranchTab tab, required int posts}) async {
     await db.addBranch(
+      tab.imageboard,
       tab.tag,
       tab.threadId,
       tab.id,
@@ -176,11 +182,12 @@ class TrackerRepository {
   }
 
   Future<void> removeBranchByTab(BranchTab tab) async {
-    await db.removeBranch(tab.tag, tab.id);
+    await db.removeBranch(tab.imageboard, tab.tag, tab.id);
   }
 
-  Future<void> removeBranch(String tag, int branchId) async {
-    await db.removeBranch(tag, branchId);
+  Future<void> removeBranch(
+      Imageboard imageboard, String tag, int branchId) async {
+    await db.removeBranch(imageboard, tag, branchId);
   }
 
   /// Updates thread in the tracker database with new [posts], [newPosts]
@@ -194,6 +201,7 @@ class TrackerRepository {
       bool forceNewReplies = false,
       bool isDead = false}) async {
     await db.updateThread(
+        imageboard: tab.imageboard,
         tag: tab.tag,
         threadId: tab.id,
         posts: posts,
@@ -216,6 +224,7 @@ class TrackerRepository {
       bool forceNewReplies = false,
       bool isDead = false}) async {
     await db.updateBranch(
+        imageboard: tab.imageboard,
         tag: tab.tag,
         branchId: tab.id,
         posts: posts,
@@ -255,13 +264,15 @@ class TrackerRepository {
     }
   }
 
-  Future<TrackedThread> getTrackedThread(String tag, int threadId) async {
-    final map = await db.getTrackedThread(tag, threadId);
+  Future<TrackedThread> getTrackedThread(
+      Imageboard imageboard, String tag, int threadId) async {
+    final map = await db.getTrackedThread(imageboard, tag, threadId);
 
     return TrackedThread(
       tag: map['tag'],
       threadId: map['threadId'],
       name: map['name'],
+      imageboard: map['imageboard'],
       posts: map['posts'],
       newPosts: map['newPosts'],
       newPostsDiff: map['newPostsDiff'],
@@ -285,6 +296,7 @@ class TrackerRepository {
         tag: map['tag'],
         threadId: map['threadId'],
         name: map['name'],
+        imageboard: map['imageboard'],
         posts: map['posts'],
         newPosts: map['newPosts'],
         newPostsDiff: map['newPostsDiff'],
@@ -299,14 +311,16 @@ class TrackerRepository {
     return threads;
   }
 
-  Future<TrackedBranch> getTrackedBranch(String tag, int branchId) async {
-    final map = await db.getTrackedBranch(tag, branchId);
+  Future<TrackedBranch> getTrackedBranch(
+      Imageboard imageboard, String tag, int branchId) async {
+    final map = await db.getTrackedBranch(imageboard, tag, branchId);
 
     return TrackedBranch(
       tag: map['tag'],
       branchId: map['branchId'],
       threadId: map['threadId'],
       name: map['name'],
+      imageboard: map['imageboard'],
       posts: map['posts'],
       newPosts: map['newPosts'],
       newPostsDiff: map['newPostsDiff'],
@@ -331,6 +345,7 @@ class TrackerRepository {
         branchId: map['branchId'],
         threadId: map['threadId'],
         name: map['name'],
+        imageboard: map['imageboard'],
         posts: map['posts'],
         newPosts: map['newPosts'],
         newPostsDiff: map['newPostsDiff'],
@@ -358,6 +373,7 @@ class TrackerRepository {
   /// Await this method to get notified when the thread is refreshed.
   Future<void> refreshItem(TrackedItem item) async {
     final IdMixin tab = tabManager!.findTab(
+      imageboard: item.imageboard,
       tag: item.tag,
       threadId: item is TrackedThread ? item.id : null,
       branchId: item is TrackedBranch ? item.branchId : null,
@@ -406,8 +422,8 @@ class TrackerRepository {
 
   Future<void> _refreshClosedThread(TrackedThread thread) async {
     try {
-      final ThreadRepository repo =
-          ThreadRepositoryManager().get(thread.tag, thread.threadId);
+      final ThreadRepository repo = ThreadRepositoryManager()
+          .get(thread.imageboard, thread.tag, thread.threadId);
       bool firstLoading = false;
       if (repo.postsCount == 0) {
         await repo.load();
@@ -419,6 +435,7 @@ class TrackerRepository {
         tag: thread.tag,
         id: thread.threadId,
         name: null,
+        imageboard: thread.imageboard,
         prevTab: boardListTab,
       );
       updateThreadByTab(
@@ -433,6 +450,7 @@ class TrackerRepository {
         tag: thread.tag,
         id: thread.threadId,
         name: null,
+        imageboard: thread.imageboard,
         prevTab: boardListTab,
       );
       markAsDead(mockTab);
@@ -452,12 +470,12 @@ class TrackerRepository {
 
   Future<void> _refreshClosedBranch(TrackedBranch branch) async {
     try {
-      BranchRepository? branchRepo =
-          BranchRepositoryManager().get(branch.tag, branch.branchId);
+      BranchRepository? branchRepo = BranchRepositoryManager()
+          .get(branch.imageboard, branch.tag, branch.branchId);
       bool firstLoading = false;
       if (branchRepo == null) {
-        final threadRepo =
-            ThreadRepositoryManager().get(branch.tag, branch.threadId);
+        final threadRepo = ThreadRepositoryManager()
+            .get(branch.imageboard, branch.tag, branch.threadId);
         if (threadRepo.postsCount == 0) {
           await threadRepo.load();
         }
@@ -475,6 +493,7 @@ class TrackerRepository {
           threadId: branch.threadId,
           tag: branch.tag,
           name: '',
+          imageboard: branch.imageboard,
           prevTab: boardListTab);
       updateBranchByTab(
           tab: mockTab,
@@ -489,6 +508,7 @@ class TrackerRepository {
           threadId: branch.threadId,
           tag: branch.tag,
           name: '',
+          imageboard: branch.imageboard,
           prevTab: boardListTab);
       await markAsDead(mockTab);
     } on DioException catch (e) {
@@ -511,6 +531,7 @@ class TrackerRepository {
         tag: item.tag,
         id: item.threadId,
         name: null,
+        imageboard: item.imageboard,
         prevTab: boardListTab,
       );
       await updateThreadByTab(
@@ -527,6 +548,7 @@ class TrackerRepository {
         id: item.branchId,
         threadId: item.threadId,
         name: '',
+        imageboard: item.imageboard,
         prevTab: boardListTab,
       );
       await updateBranchByTab(
@@ -546,20 +568,32 @@ class TrackerRepository {
 
   Future<void> removeItem(TrackedItem item) async {
     if (item is TrackedThread) {
-      await removeThread(item.tag, item.threadId);
+      await removeThread(item.imageboard, item.tag, item.threadId);
 
       /// If thread is not opened in any tab, remove it from the thread repository.
-      if (tabManager!.findTab(tag: item.tag, threadId: item.threadId).id ==
+      if (tabManager!
+              .findTab(
+                  imageboard: item.imageboard,
+                  tag: item.tag,
+                  threadId: item.threadId)
+              .id ==
           -1) {
-        await ThreadRepositoryManager().remove(item.tag, item.threadId);
+        await ThreadRepositoryManager()
+            .remove(item.imageboard, item.tag, item.threadId);
       }
     } else if (item is TrackedBranch) {
-      await removeBranch(item.tag, item.branchId);
+      await removeBranch(item.imageboard, item.tag, item.branchId);
 
       /// If branch is not opened in any tab, remove it from the branch repository.
-      if (tabManager!.findTab(tag: item.tag, branchId: item.branchId).id ==
+      if (tabManager!
+              .findTab(
+                  imageboard: item.imageboard,
+                  tag: item.tag,
+                  branchId: item.branchId)
+              .id ==
           -1) {
-        await BranchRepositoryManager().remove(item.tag, item.branchId);
+        await BranchRepositoryManager()
+            .remove(item.imageboard, item.tag, item.branchId);
       }
     }
   }

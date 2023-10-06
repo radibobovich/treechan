@@ -79,6 +79,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
   }
 
   FutureOr<void> _refresh(event, emit) async {
+    if ((tab as BranchTab).imageboard == Imageboard.dvachArchive) return;
+
     if (isBusy) return;
     isBusy = true;
 
@@ -227,7 +229,8 @@ class BranchBloc extends Bloc<BranchEvent, BranchState> with ThreadBase {
             : null,
         getThreadScrollService: () async {
           final scrollService = provider.tabManager.getThreadScrollService(
-              boardTag: (tab as TagMixin).tag,
+              imageboard: (tab as BranchTab).imageboard,
+              boardTag: (tab as BranchTab).tag,
               threadId: (tab as BranchTab).threadId);
           await Future.delayed(const Duration(seconds: 1));
           return scrollService;

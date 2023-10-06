@@ -106,10 +106,12 @@ class TabManager {
         /// Dont remove thread repo if there are related branches
         if (!_tabs.keys
             .any((tab) => tab is BranchTab && tab.threadId == tab.id)) {
-          ThreadRepositoryManager().remove(tab.tag, tab.id);
+          ThreadRepositoryManager().remove(tab.imageboard, tab.tag, tab.id);
         }
       }
-      if (tab is BranchTab) BranchRepositoryManager().remove(tab.tag, tab.id);
+      if (tab is BranchTab) {
+        BranchRepositoryManager().remove(tab.imageboard, tab.tag, tab.id);
+      }
     }
     _refreshController();
     if (currentIndex == removingTabIndex) {
@@ -174,7 +176,10 @@ class TabManager {
     });
   }
 
-  void openCatalog({required String boardTag, required String query}) {
+  void openCatalog(
+      {required Imageboard imageboard,
+      required String boardTag,
+      required String query}) {
     provider.catalog.add(Catalog(boardTag: boardTag, searchTag: query));
     final int index = _tabs.keys
         .toList()
@@ -183,6 +188,7 @@ class TabManager {
       animateTo(index);
     } else {
       addTab(BoardTab(
+        imageboard: imageboard,
         tag: boardTag,
         prevTab: _tabs.keys.toList()[_currentTabIndex],
         isCatalog: true,
@@ -196,13 +202,18 @@ class TabManager {
   /// Returns tab with id = -1 if tab was not found.
   ///
   /// Do not use this method to search for board tabs.
-  IdMixin findTab({required String tag, int? threadId, int? branchId}) {
+  IdMixin findTab(
+      {required Imageboard imageboard,
+      required String tag,
+      int? threadId,
+      int? branchId}) {
     assert(threadId != null || branchId != null,
         'you must specify threadId or branchId');
     if (threadId != null) {
       return _tabs.keys.firstWhere(
           (tab) => tab is ThreadTab && tab.tag == tag && tab.id == threadId,
           orElse: () => ThreadTab(
+              imageboard: imageboard,
               name: null,
               tag: 'error',
               prevTab: boardListTab,
@@ -211,6 +222,7 @@ class TabManager {
       return _tabs.keys.firstWhere(
           (tab) => tab is BranchTab && tab.tag == tag && tab.id == branchId,
           orElse: () => BranchTab(
+              imageboard: imageboard,
               name: '',
               tag: 'error',
               prevTab: boardListTab,
@@ -262,8 +274,11 @@ class TabManager {
   }
 
   ScrollService? getThreadScrollService(
-      {required String boardTag, required int threadId}) {
-    final tab = findTab(tag: boardTag, threadId: threadId);
+      {required Imageboard imageboard,
+      required String boardTag,
+      required int threadId}) {
+    final tab =
+        findTab(imageboard: imageboard, tag: boardTag, threadId: threadId);
     if (tab.id == -1) {
       return null;
     }

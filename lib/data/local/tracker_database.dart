@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/domain/models/tab.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 class TrackerDatabase {
   static final TrackerDatabase _instance = TrackerDatabase._internal();
@@ -19,9 +20,9 @@ class TrackerDatabase {
 
   Future<Database> _createDatabase() async {
     const String sql1 =
-        'CREATE TABLE thread_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
+        'CREATE TABLE thread_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, tag TEXT, threadId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
     const String sql2 =
-        'CREATE TABLE branch_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, branchId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
+        'CREATE TABLE branch_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, tag TEXT, threadId INTEGER, branchId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
     if (Platform.isWindows || Platform.isLinux) {
       databaseFactory = databaseFactoryFfi;
       return databaseFactory.openDatabase(
@@ -49,8 +50,8 @@ class TrackerDatabase {
     }
   }
 
-  Future<void> addThread(
-      String tag, int threadId, String name, int posts) async {
+  Future<void> addThread(Imageboard imageboard, String tag, int threadId,
+      String name, int posts) async {
     final Database db = await _database;
 
     final occurence = await db.query('thread_tracker',
@@ -58,6 +59,7 @@ class TrackerDatabase {
     if (occurence.isNotEmpty) return;
 
     await db.insert('thread_tracker', {
+      'imageboard': imageboard.name,
       'tag': tag,
       'threadId': threadId,
       'name': name,
@@ -72,15 +74,18 @@ class TrackerDatabase {
     });
   }
 
-  Future<void> removeThread(String tag, int threadId) async {
+  Future<void> removeThread(
+      Imageboard imageboard, String tag, int threadId) async {
     final Database db = await _database;
 
     await db.delete('thread_tracker',
-        where: 'threadId = ? AND tag = ?', whereArgs: [threadId, tag]);
+        where: 'imageboard = ? AND threadId = ? AND tag = ?',
+        whereArgs: [imageboard.name, threadId, tag]);
   }
 
   Future<void> updateThread(
-      {required String tag,
+      {required Imageboard imageboard,
+      required String tag,
       required int threadId,
       required int? posts,
       required int newPosts,
@@ -92,8 +97,8 @@ class TrackerDatabase {
 
     final List<Map<String, dynamic>> currentValuesResponse = (await db.query(
         'thread_tracker',
-        where: 'threadId = ? AND tag = ?',
-        whereArgs: [threadId, tag],
+        where: 'imageboard = ? AND threadId = ? AND tag = ?',
+        whereArgs: [imageboard.name, threadId, tag],
         limit: 1));
 
     if (currentValuesResponse.isEmpty) return;
@@ -113,18 +118,22 @@ class TrackerDatabase {
     };
 
     await db.update('thread_tracker', updateValues,
-        where: 'threadId = ? AND tag = ?', whereArgs: [threadId, tag]);
+        where: 'imageboard = ? AND threadId = ? AND tag = ?',
+        whereArgs: [imageboard.name, threadId, tag]);
   }
 
-  Future<void> addBranch(
-      String tag, int threadId, int branchId, String name, int posts) async {
+  Future<void> addBranch(Imageboard imageboard, String tag, int threadId,
+      int branchId, String name, int posts) async {
     final Database db = await _database;
 
     final occurence = await db.query('branch_tracker',
-        where: 'branchId = ?', whereArgs: [branchId], limit: 1);
+        where: 'imageboard = ? AND tag = ? AND branchId = ?',
+        whereArgs: [imageboard.name, tag, branchId],
+        limit: 1);
     if (occurence.isNotEmpty) return;
 
     await db.insert('branch_tracker', {
+      'imageboard': imageboard.name,
       'tag': tag,
       'branchId': branchId,
       'threadId': threadId,
@@ -140,15 +149,18 @@ class TrackerDatabase {
     });
   }
 
-  Future<void> removeBranch(String tag, int branchId) async {
+  Future<void> removeBranch(
+      Imageboard imageboard, String tag, int branchId) async {
     final Database db = await _database;
 
     await db.delete('branch_tracker',
-        where: 'branchId = ? AND tag = ?', whereArgs: [branchId, tag]);
+        where: 'imageboard = ? AND branchId = ? AND tag = ?',
+        whereArgs: [imageboard.name, branchId, tag]);
   }
 
   Future<void> updateBranch(
-      {required String tag,
+      {required Imageboard imageboard,
+      required String tag,
       required int branchId,
       int? posts,
       required int newPosts,
@@ -161,8 +173,8 @@ class TrackerDatabase {
 
     final List<Map<String, dynamic>> currentValuesResponse = (await db.query(
         'branch_tracker',
-        where: 'branchId = ? AND tag = ?',
-        whereArgs: [branchId, tag],
+        where: 'imageboard = ? AND branchId = ? AND tag = ?',
+        whereArgs: [imageboard.name, branchId, tag],
         limit: 1));
 
     if (currentValuesResponse.isEmpty) return;
@@ -182,10 +194,12 @@ class TrackerDatabase {
     };
 
     await db.update('branch_tracker', updateValues,
-        where: 'branchId = ? AND tag = ?', whereArgs: [branchId, tag]);
+        where: 'imageboard = ? AND branchId = ? AND tag = ?',
+        whereArgs: [imageboard.name, branchId, tag]);
   }
 
-  Future<void> markThreadAsRead(String tag, int threadId) async {
+  Future<void> markThreadAsRead(
+      Imageboard imageboard, String tag, int threadId) async {
     final Database db = await _database;
 
     final updateValues = {
@@ -196,10 +210,12 @@ class TrackerDatabase {
     };
 
     await db.update('thread_tracker', updateValues,
-        where: 'threadId = ? AND tag = ?', whereArgs: [threadId, tag]);
+        where: 'imageboard = ? AND threadId = ? AND tag = ?',
+        whereArgs: [imageboard.name, threadId, tag]);
   }
 
-  Future<void> markBranchAsRead(String tag, int branchId, int threadId) async {
+  Future<void> markBranchAsRead(
+      Imageboard imageboard, String tag, int branchId, int threadId) async {
     final Database db = await _database;
 
     final updateValues = {
@@ -210,17 +226,17 @@ class TrackerDatabase {
     };
 
     await db.update('branch_tracker', updateValues,
-        where: 'branchId = ? AND tag = ? AND threadId = ?',
-        whereArgs: [branchId, tag, threadId]);
+        where: 'imageboard = ? AND branchId = ? AND tag = ? AND threadId = ?',
+        whereArgs: [imageboard.name, branchId, tag, threadId]);
   }
 
   Future<Map<String, dynamic>> getTrackedThread(
-      String tag, int threadId) async {
+      Imageboard imageboard, String tag, int threadId) async {
     final Database db = await _database;
 
     final List<Map<String, dynamic>> maps = await db.query('thread_tracker',
-        where: 'threadId = ? AND tag = ?',
-        whereArgs: [threadId, tag],
+        where: 'imageboard = ? AND threadId = ? AND tag = ?',
+        whereArgs: [imageboard.name, threadId, tag],
         limit: 1);
 
     return maps.first;
@@ -236,12 +252,12 @@ class TrackerDatabase {
   }
 
   Future<Map<String, dynamic>> getTrackedBranch(
-      String boardTag, int branchId) async {
+      Imageboard imageboard, String boardTag, int branchId) async {
     final Database db = await _database;
 
     final List<Map<String, dynamic>> maps = await db.query('branch_tracker',
-        where: 'branchId = ? AND tag = ?',
-        whereArgs: [branchId, boardTag],
+        where: 'imageboard = ? AND branchId = ? AND tag = ?',
+        whereArgs: [imageboard.name, branchId, boardTag],
         limit: 1);
 
     return maps.first;
@@ -268,13 +284,13 @@ class TrackerDatabase {
     List<Map<String, Object?>> occurence = [];
     if (tab is ThreadTab) {
       occurence = await db.query('thread_tracker',
-          where: 'threadId = ? AND tag = ?',
-          whereArgs: [tab.id, tab.tag],
+          where: 'imageboard = ? AND threadId = ? AND tag = ?',
+          whereArgs: [tab.imageboard.name, tab.id, tab.tag],
           limit: 1);
     } else if (tab is BranchTab) {
       occurence = await db.query('branch_tracker',
-          where: 'branchId = ? AND tag = ?',
-          whereArgs: [tab.id, tab.tag],
+          where: 'imageboard = ? AND branchId = ? AND tag = ?',
+          whereArgs: [tab.imageboard.name, tab.id, tab.tag],
           limit: 1);
     } else {
       throw Exception("Unsupported tab type");

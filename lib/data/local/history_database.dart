@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/tab.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 abstract class IHistoryDatabase {
   Future<void> add(DrawerTab tab);
@@ -17,15 +18,7 @@ abstract class IHistoryDatabase {
 
 @LazySingleton(as: IHistoryDatabase, env: [Env.test, Env.dev, Env.prod])
 class HistoryDatabase implements IHistoryDatabase {
-  // static final HistoryDatabase _instance = HistoryDatabase._internal();
-  // factory HistoryDatabase() {
-  //   return _instance;
-  // }
-
   late Future<Database> _database;
-  // HistoryDatabase._internal() {
-  //   _database = _createDatabase();
-  // }
 
   HistoryDatabase() {
     _database = _createDatabase();
@@ -33,7 +26,7 @@ class HistoryDatabase implements IHistoryDatabase {
 
   Future<Database> _createDatabase() async {
     const String sql =
-        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)';
+        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, archiveDate TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)';
     if (Platform.isWindows || Platform.isLinux) {
       databaseFactory = databaseFactoryFfi;
       return databaseFactory.openDatabase(
@@ -75,8 +68,9 @@ class HistoryDatabase implements IHistoryDatabase {
     final Database db = await _database;
 
     await db.delete('history',
-        where: 'tag = ? AND threadId = ? AND timestamp = ?',
+        where: 'imageboard = ? AND tag = ? AND threadId = ? AND timestamp = ?',
         whereArgs: [
+          tab.imageboard.name,
           tab.tag,
           tab.id,
           tab.timestamp.toString(),
@@ -89,8 +83,10 @@ class HistoryDatabase implements IHistoryDatabase {
 
     for (HistoryTab tab in tabs) {
       await db.delete('history',
-          where: 'tag = ? AND threadId = ? AND timestamp = ?',
+          where:
+              'imageboard = ? AND tag = ? AND threadId = ? AND timestamp = ?',
           whereArgs: [
+            tab.imageboard.name,
             tab.tag,
             tab.id,
             tab.timestamp.toString(),
@@ -118,6 +114,8 @@ class HistoryDatabase implements IHistoryDatabase {
           tag: map['tag'],
           id: map['threadId'],
           name: map['name'],
+          imageboard: imageboardFromString(map['imageboard']),
+          archiveDate: map['archiveDate'],
           prevTab: boardListTab,
           timestamp: DateTime.parse(map['timestamp']));
     }).reversed.toList();

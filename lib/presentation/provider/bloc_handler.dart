@@ -68,16 +68,17 @@ class BlocHandler {
             key: ValueKey(tab),
             // threadRepository: ThreadRepository(
             //     boardTag: (tab as ThreadTab).tag, threadId: tab.id),
-            threadRepository:
-                ThreadRepositoryManager().get((tab as ThreadTab).tag, tab.id),
+            threadRepository: ThreadRepositoryManager().get(
+                tab.imageboard, (tab as ThreadTab).tag, tab.id,
+                date: tab.archiveDate),
             tab: tab,
             provider: _provider)
           ..add(LoadThreadEvent());
       case BranchTab:
-        final threadRepository =
-            ThreadRepositoryManager().get((tab as BranchTab).tag, tab.threadId);
+        final threadRepository = ThreadRepositoryManager()
+            .get(tab.imageboard, (tab as BranchTab).tag, tab.threadId);
         final branchRepository =
-            BranchRepositoryManager().get(tab.tag, tab.id) ??
+            BranchRepositoryManager().get(tab.imageboard, tab.tag, tab.id) ??
                 BranchRepositoryManager().create(threadRepository, tab.id);
         final ThreadBloc? threadBloc = _tabs.entries.firstWhere(
           (entry) =>
