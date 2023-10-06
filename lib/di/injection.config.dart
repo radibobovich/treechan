@@ -139,5 +139,18 @@ _i1.GetIt init(
       _prod,
     },
   );
+  gh.factoryParam<_i9.RestClient, _i10.Dio, dynamic>(
+    (
+      dio,
+      _,
+    ) =>
+        _i9.DvachArchiveRestClient(dio),
+    instanceName: 'dvachArchive',
+    registerFor: {
+      _test,
+      _dev,
+      _prod,
+    },
+  );
   return getIt;
 }
