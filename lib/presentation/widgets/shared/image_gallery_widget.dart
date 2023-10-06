@@ -119,6 +119,11 @@ class _SwipeGalleryState extends State<SwipeGallery>
                     Center(child: CircularProgressIndicator(value: progress)),
                   ],
                 );
+              } else if (state.extendedImageLoadState == LoadState.failed) {
+                return Image.network(
+                  widget.previewLinks[index],
+                  fit: BoxFit.contain,
+                );
               }
               return null;
             },
