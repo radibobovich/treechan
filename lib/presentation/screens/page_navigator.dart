@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,17 +25,7 @@ class PageNavigatorState extends State<PageNavigator>
     provider.init(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       provider.addTab(boardListTab);
-      debugThread(provider);
     });
-  }
-
-  void debugThread(PageProvider provider) {
-    if (kDebugMode && const String.fromEnvironment('thread') == 'true') {
-      debugPrint('debugging thread');
-      DrawerTab debugThreadTab = ThreadTab(
-          name: "debug", tag: "b", prevTab: boardListTab, id: 282647314);
-      provider.addTab(debugThreadTab);
-    }
   }
 
   @override
