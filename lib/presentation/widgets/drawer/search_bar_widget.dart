@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/domain/imageboards/imageboard_specific.dart';
 
-import '../../../domain/services/url_service.dart';
 import '../../provider/page_provider.dart';
 
 class SearchBar extends StatefulWidget {
   const SearchBar({
     super.key,
-    // required this.onOpen,
     required this.onCloseDrawer,
   });
-  // final Function onOpen;
   final Function onCloseDrawer;
   @override
   State<SearchBar> createState() => _SearchBarState();
@@ -18,7 +16,6 @@ class SearchBar extends StatefulWidget {
 
 class _SearchBarState extends State<SearchBar> {
   final TextEditingController _controller = TextEditingController();
-  final UrlService searchBarService = UrlService();
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +42,8 @@ class _SearchBarState extends State<SearchBar> {
 
   void submit() {
     try {
-      context
-          .read<PageProvider>()
-          .addTab(searchBarService.parseInput(_controller.text));
+      context.read<PageProvider>().addTab(
+          ImageboardSpecific.tryOpenUnknownTabFromLink(_controller.text, null));
       widget.onCloseDrawer();
     } catch (e) {
       // do nothing
