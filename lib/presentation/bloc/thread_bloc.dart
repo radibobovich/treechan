@@ -74,6 +74,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   }
 
   FutureOr<void> _refresh(event, emit) async {
+    if ((tab as ThreadTab).imageboard == Imageboard.dvachArchive) return;
     if (isBusy) return;
     isBusy = true;
 
