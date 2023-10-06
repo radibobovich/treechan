@@ -89,8 +89,6 @@ class EndDrawerPostWidget extends StatelessWidget {
                   post: node.data,
                   currentTab: currentTab,
                   treeNode: node,
-                  roots: bloc.threadRepository.getRootsSynchronously,
-                  // bloc: BlocProvider.of<ThreadBloc>(context)
                 )
               ],
             )),
