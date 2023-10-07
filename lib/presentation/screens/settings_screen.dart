@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:settings_ui/settings_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:treechan/main.dart';
 
@@ -87,7 +88,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   initialValue: prefs.getBool('spoilers')!,
                   onToggle: (value) {
                     setState(() {
-                      prefs.setBool('spoilers', value);
+                      prefs.setBool('spoilers', value).then((value) async {
+                        prefs = await SharedPreferences.getInstance();
+                      });
                     });
                   },
                 ),

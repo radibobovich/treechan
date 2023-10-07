@@ -96,59 +96,50 @@ class HtmlContainer extends StatelessWidget {
         'You should pass bloc while using HtmlContainer, else you can not open post previews');
 
     // Wrapped in ExcludeSemantics because of AssertError exception in debug mode
-    return FutureBuilder<SharedPreferences>(
-        future: SharedPreferences.getInstance(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const SizedBox.shrink();
-          return ExcludeSemantics(
-            child: Html(
-              // limit text on BoardScreen
-              style: currentTab is BoardTab
-                  ? {
-                      '#': Style(
-                          maxLines: 15, textOverflow: TextOverflow.ellipsis)
-                    }
-                  : {},
-              data: post.comment,
-              customRender: {
-                "span": (node, children) =>
-                    ImageboardSpecific(currentTab.imageboard)
-                        .spanCustomRender(node, children, prefs: prefs),
-                "a": (node, children) =>
-                    ImageboardSpecific(currentTab.imageboard).linkCustomRender(
-                      node,
-                      children,
-                      context: context,
-                      treeNode: treeNode,
-                      post: post,
-                      bloc: bloc,
-                      currentTab: currentTab,
-                    ),
-                // (node, children) {
-                //   return GestureDetector(
-                //     onTap: () => openLink(node, context, bloc),
-                //     child: Text(
-                //       // custom link color render
-                //       style: TextStyle(
-                //           color: Theme.of(context).secondaryHeaderColor,
-                //           decoration: TextDecoration.underline,
-                //           // highlight current parent in the post text if
-                //           // there are multiple parents
-                //           fontWeight: (treeNode != null &&
-                //                   post.aTagsCount > 1 &&
-                //                   treeNode!.parent != null &&
-                //                   node.tree.element!.text
-                //                       .contains('>>${treeNode!.parent!.data.id}'))
-                //               ? FontWeight.bold
-                //               : FontWeight.normal),
-                //       node.tree.element!.text,
-                //     ),
-                //   );
-                // },
-              },
-            ),
-          );
-        });
+    return ExcludeSemantics(
+      child: Html(
+        // limit text on BoardScreen
+        style: currentTab is BoardTab
+            ? {'#': Style(maxLines: 15, textOverflow: TextOverflow.ellipsis)}
+            : {},
+        data: post.comment,
+        customRender: {
+          "span": (node, children) => ImageboardSpecific(currentTab.imageboard)
+              .spanCustomRender(node, children, prefs: prefs),
+          "a": (node, children) =>
+              ImageboardSpecific(currentTab.imageboard).linkCustomRender(
+                node,
+                children,
+                context: context,
+                treeNode: treeNode,
+                post: post,
+                bloc: bloc,
+                currentTab: currentTab,
+              ),
+          // (node, children) {
+          //   return GestureDetector(
+          //     onTap: () => openLink(node, context, bloc),
+          //     child: Text(
+          //       // custom link color render
+          //       style: TextStyle(
+          //           color: Theme.of(context).secondaryHeaderColor,
+          //           decoration: TextDecoration.underline,
+          //           // highlight current parent in the post text if
+          //           // there are multiple parents
+          //           fontWeight: (treeNode != null &&
+          //                   post.aTagsCount > 1 &&
+          //                   treeNode!.parent != null &&
+          //                   node.tree.element!.text
+          //                       .contains('>>${treeNode!.parent!.data.id}'))
+          //               ? FontWeight.bold
+          //               : FontWeight.normal),
+          //       node.tree.element!.text,
+          //     ),
+          //   );
+          // },
+        },
+      ),
+    );
   }
 }
 
