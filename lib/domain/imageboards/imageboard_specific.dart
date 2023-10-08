@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -27,6 +28,7 @@ abstract interface class ImageboardSpecific {
   static final UnknownSpecific _unknownSpecific = UnknownSpecific();
 
   abstract final List<String> hostnames;
+  abstract Dio dio;
 
   factory ImageboardSpecific(Imageboard imageboard) {
     switch (imageboard) {
@@ -38,6 +40,11 @@ abstract interface class ImageboardSpecific {
         return _unknownSpecific;
     }
   }
+
+  /// Custom [Dio] that is specific for the imageboard.
+  ///
+  /// Useful when you need to set up interceptors.
+  Dio getDio(String boardTag, int threadId);
 
   /// Renders imageboard specific styles such as greentext and spoilers.
   ///
@@ -92,6 +99,10 @@ abstract interface class ImageboardSpecific {
 
 /// Imageboard independent function that parses the link and decides
 /// what imageboard it leads to, then calls imageboard specific parser method.
+///
+/// Sometimes you can't get imageboard from the [url], for example, if
+/// the [url] is a search query got from [SearchBar]. In this case
+/// imageboard will be inferenced from [currentTab].
 DrawerTab _tryOpenUnknownTabFromLink(String url, DrawerTab? currentTab,
     {String? searchTag}) {
   if (url == "") {
@@ -114,19 +125,20 @@ DrawerTab _tryOpenUnknownTabFromLink(String url, DrawerTab? currentTab,
       .contains(parsedUrl.pathSegments[0])) {
     // fix if the user entered a link without a protocol
     parsedUrl = Uri.parse("https://$url");
+
     debugPrint("Fixed protocol: ");
     for (var segment in parsedUrl.pathSegments) {
       debugPrint(segment);
     }
-  }
 
-  if (!ImageboardSpecific.allHostnamesList.contains(parsedUrl.host)) {
-    throw Exception("Host not allowed");
+    imageboard = ImageboardSpecific.allHostnamesMap.entries
+        .firstWhere((entry) => entry.value.contains(parsedUrl.host))
+        .key;
+  } else {
+    /// A case when user entered board tag only or tag/id string,
+    /// we have to inference the imageboard from [currentTab]
+    imageboard = currentTab?.imageboard ?? boardListTab.imageboard;
   }
-
-  imageboard = ImageboardSpecific.allHostnamesMap.entries
-      .firstWhere((entry) => entry.value.contains(parsedUrl.host))
-      .key;
 
   /// Calls imageboard specific part of the procedure
   final DrawerTab newTab = ImageboardSpecific(imageboard)

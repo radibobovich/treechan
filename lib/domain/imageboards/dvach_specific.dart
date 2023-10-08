@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -5,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/imageboards/imageboard_specific.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/domain/models/tab.dart';
+import 'package:treechan/exceptions.dart';
 import 'package:treechan/presentation/bloc/thread_base.dart';
 import 'package:treechan/presentation/widgets/shared/html_container_widget.dart';
 import 'package:treechan/utils/constants/enums.dart';
@@ -14,26 +16,58 @@ class DvachSpecific implements ImageboardSpecific {
   @override
   List<String> get hostnames =>
       ImageboardSpecific.allHostnamesMap[Imageboard.dvach]!;
+  @override
+  Dio dio = Dio();
 
   @override
-  bool isReplyLinkInCurrentTab(String url, DrawerTab currentTab) {
-    if (currentTab is! ThreadTab) return false;
-    return url.contains("/${currentTab.tag}/res/${currentTab.id}.html#");
-  }
+  Dio getDio(String boardTag, int threadId) {
+    if (dio.interceptors.isNotEmpty) return dio;
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onResponse: (response, handler) {
+          if (response.statusCode != null) {
+            debugPrint('onResponse: statusCode is ${response.statusCode}');
+            switch (response.statusCode) {
+              case 200:
+                {
+                  if (response.redirects.isEmpty) break;
+                  final String origin =
+                      response.redirects.first.location.origin;
+                  final String redirectPath =
+                      response.redirects.last.location.path;
+                  debugPrint('''
+ThreadRemoteLoader: got a redirect. Throwing ArchiveRedirectException, redirect
+path is ${origin + redirectPath}''');
+                  throw ArchiveRedirectException(
+                    requestOptions: response.requestOptions,
+                    baseUrl: origin,
+                    redirectPath: redirectPath,
+                  );
+                }
+            }
+          }
+          handler.next(response);
+        },
+        onError: (e, handler) {
+          if (e.response?.statusCode != null) {
+            switch (e.response!.statusCode) {
+              case 404:
+                throw ThreadNotFoundException(
+                  message: "404",
+                  tag: boardTag,
+                  id: threadId,
+                  requestOptions: e.requestOptions,
+                );
+            }
 
-  @override
-  bool isReplyLinkToParentThreadTab(String url, IdMixin currentTab) {
-    if (currentTab is! BranchTab) return false;
-
-    IdMixin tab = currentTab;
-
-    /// go to threadTab parent (branch can be opened from previous branch
-    /// so we can't just use tab.prevTab)
-    while (tab is! ThreadTab) {
-      tab = tab.prevTab as IdMixin;
-    }
-
-    return url.contains("/${tab.tag}/res/${tab.id}.html#");
+            // _onThreadLoadResponseError(response.statusCode!, boardTag, threadId);
+          } else {
+            handler.next(e);
+          }
+        },
+      ),
+    );
+    return dio;
   }
 
   @override
@@ -130,6 +164,27 @@ class DvachSpecific implements ImageboardSpecific {
     } else {
       return children;
     }
+  }
+
+  @override
+  bool isReplyLinkInCurrentTab(String url, DrawerTab currentTab) {
+    if (currentTab is! ThreadTab) return false;
+    return url.contains("/${currentTab.tag}/res/${currentTab.id}.html#");
+  }
+
+  @override
+  bool isReplyLinkToParentThreadTab(String url, IdMixin currentTab) {
+    if (currentTab is! BranchTab) return false;
+
+    IdMixin tab = currentTab;
+
+    /// go to threadTab parent (branch can be opened from previous branch
+    /// so we can't just use tab.prevTab)
+    while (tab is! ThreadTab) {
+      tab = tab.prevTab as IdMixin;
+    }
+
+    return url.contains("/${tab.tag}/res/${tab.id}.html#");
   }
 
   @override

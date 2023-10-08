@@ -7,6 +7,7 @@ import 'package:injectable/injectable.dart';
 import 'package:mockito/mockito.dart';
 import 'package:treechan/data/rest/rest_client.dart';
 import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/imageboards/imageboard_specific.dart';
 import 'package:treechan/domain/models/api/dvach/posts_after_dvach_api_model.dart';
 import 'package:treechan/domain/models/api/posts_after_api_model.dart';
 import 'package:treechan/exceptions.dart';
@@ -37,7 +38,8 @@ class ThreadRemoteRefresher implements IThreadRemoteRefresher {
     required int lastPostId,
   }) async {
     final RestClient restClient = getIt<RestClient>(
-        instanceName: imageboard.name, param1: _getDio(boardTag, threadId));
+        instanceName: imageboard.name,
+        param1: ImageboardSpecific(imageboard).getDio(boardTag, threadId));
 
     final PostsAfterApiModel apiModel = await restClient.getPostsAfter(
         boardTag: boardTag, threadId: threadId, id: lastPostId + 1);
@@ -84,6 +86,7 @@ class MockThreadRemoteRefresher extends Mock implements IThreadRemoteRefresher {
   }
 }
 
+@Deprecated('Use ImageboardSpecific instead')
 Dio _getDio(String boardTag, int threadId) {
   final Dio dio = Dio();
   dio.interceptors.add(

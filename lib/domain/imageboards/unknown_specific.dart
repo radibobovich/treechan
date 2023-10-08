@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -12,6 +13,13 @@ class UnknownSpecific implements ImageboardSpecific {
 
   @override
   List<String> get hostnames => ImageboardSpecific.allHostnamesList;
+
+  @override
+  Dio dio = Dio();
+  @override
+  Dio getDio(String boardTag, int threadId) {
+    return dio;
+  }
 
   @override
   bool isReplyLinkInCurrentTab(String url, DrawerTab currentTab) {
