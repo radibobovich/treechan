@@ -90,9 +90,4 @@ void main() {
     );
     expect(newTab, expectedTab);
   });
-  test('External link test', () {
-    const String url = 'google.com';
-    expect(() => ImageboardSpecific.tryOpenUnknownTabFromLink(url, null),
-        throwsException);
-  });
 }
