@@ -121,23 +121,28 @@ DrawerTab _tryOpenUnknownTabFromLink(String url, DrawerTab? currentTab,
     if (!ImageboardSpecific.allHostnamesList.contains(parsedUrl.host)) {
       throw Exception("Host not allowed");
     }
-  } else if (ImageboardSpecific.allHostnamesList
-      .contains(parsedUrl.pathSegments[0])) {
-    // fix if the user entered a link without a protocol
-    parsedUrl = Uri.parse("https://$url");
-
-    debugPrint("Fixed protocol: ");
-    for (var segment in parsedUrl.pathSegments) {
-      debugPrint(segment);
-    }
-
     imageboard = ImageboardSpecific.allHostnamesMap.entries
         .firstWhere((entry) => entry.value.contains(parsedUrl.host))
         .key;
   } else {
-    /// A case when user entered board tag only or tag/id string,
-    /// we have to inference the imageboard from [currentTab]
-    imageboard = currentTab?.imageboard ?? boardListTab.imageboard;
+    if (ImageboardSpecific.allHostnamesList
+        .contains(parsedUrl.pathSegments[0])) {
+      // fix if the user entered a link without a protocol
+      parsedUrl = Uri.parse("https://$url");
+
+      debugPrint("Fixed protocol: ");
+      for (var segment in parsedUrl.pathSegments) {
+        debugPrint(segment);
+      }
+
+      imageboard = ImageboardSpecific.allHostnamesMap.entries
+          .firstWhere((entry) => entry.value.contains(parsedUrl.host))
+          .key;
+    } else {
+      /// A case when user entered board tag only or tag/id string,
+      /// we have to inference the imageboard from [currentTab]
+      imageboard = currentTab?.imageboard ?? boardListTab.imageboard;
+    }
   }
 
   /// Calls imageboard specific part of the procedure
