@@ -135,48 +135,55 @@ class BoardLoaded extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: NormalAppBar(
-            currentTab: currentTab,
-          )),
-      body: EasyRefresh(
-        header: _getClassicRefreshHeader(),
-        footer: _getClassicRefreshFooter(),
-        controller: controller,
-        onRefresh: () {
-          context.read<BoardBloc>().add(ReloadBoardEvent());
-        },
-        onLoad: () {
-          context.read<BoardBloc>().add(RefreshBoardEvent());
-        },
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-          child: ListView.builder(
-            controller: context.read<BoardBloc>().scrollController,
-            itemCount: state.threads!.length,
-            itemBuilder: (context, index) {
-              final Thread thread = state.threads![index];
-              thread.hidden = BlocProvider.of<BoardBloc>(context)
-                  .hiddenThreads
-                  .contains(thread.posts.first.id);
-              return Dismissible(
-                key: ValueKey(thread.posts.first.id),
-                confirmDismiss: (direction) async {
-                  markNeedsRebuild();
-                  hideOrRevealThread(thread, context);
-                  return false;
-                },
-                child: ThreadCard(
-                  // key: ValueKey(thread.posts.first.id),
-                  thread: thread,
-                  currentTab: currentTab,
-                ),
-              );
-            },
+      // appBar: PreferredSize(
+      //     preferredSize: const Size.fromHeight(56),
+      //     child: NormalAppBar(
+      //       currentTab: currentTab,
+      //     )),
+      extendBodyBehindAppBar: true,
+      body: Stack(children: [
+        EasyRefresh(
+          header: _getClassicRefreshHeader(),
+          footer: _getClassicRefreshFooter(),
+          controller: controller,
+          onRefresh: () {
+            context.read<BoardBloc>().add(ReloadBoardEvent());
+          },
+          onLoad: () {
+            context.read<BoardBloc>().add(RefreshBoardEvent());
+          },
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+            child: ListView.builder(
+              padding: const EdgeInsets.only(top: 86),
+              controller: context.read<BoardBloc>().scrollController,
+              itemCount: state.threads!.length,
+              itemBuilder: (context, index) {
+                final Thread thread = state.threads![index];
+                thread.hidden = BlocProvider.of<BoardBloc>(context)
+                    .hiddenThreads
+                    .contains(thread.posts.first.id);
+                return Dismissible(
+                  key: ValueKey(thread.posts.first.id),
+                  confirmDismiss: (direction) async {
+                    markNeedsRebuild();
+                    hideOrRevealThread(thread, context);
+                    return false;
+                  },
+                  child: ThreadCard(
+                    // key: ValueKey(thread.posts.first.id),
+                    thread: thread,
+                    currentTab: currentTab,
+                  ),
+                );
+              },
+            ),
           ),
         ),
-      ),
+        NormalAppBar(
+          currentTab: currentTab,
+        )
+      ]),
     );
   }
 }

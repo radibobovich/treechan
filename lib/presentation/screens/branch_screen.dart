@@ -37,47 +37,52 @@ class _BranchScreenState extends State<BranchScreen>
     return ShouldRebuild(
       shouldRebuild: (oldWidget, newWidget) => false,
       child: Scaffold(
-          appBar: BranchAppBar(currentTab: widget.currentTab),
-          body: BlocBuilder<BranchBloc, BranchState>(
-            builder: (context, state) {
-              if (state is BranchLoadedState) {
-                return FlexibleTreeView<Post>(
-                  // key: treeKey,
-                  key: ValueKey(state.branch.data.id),
-                  scrollable: prefs.getBool('2dscroll')!,
-                  indent: !Platform.isWindows ? 16 : 24,
-                  showLines: state.threadInfo.showLines,
-                  scrollController:
-                      BlocProvider.of<BranchBloc>(context).scrollController,
-                  nodes: [state.branch],
-                  nodeWidth: MediaQuery.of(context).size.width / 1.5,
-                  nodeItemBuilder: (context, node) {
-                    node.data.hidden = BlocProvider.of<BranchBloc>(context)
-                        .threadRepository
-                        .hiddenPosts
-                        .contains(node.data.id);
-                    return PostWidget(
-                      // get separated key set based on branch node id
-                      key: node.getGlobalKey(state.branch.data.id),
-                      bloc: context.read<BranchBloc>(),
-                      node: node,
-                      roots: [state.branch],
-                      currentTab: widget.currentTab,
-                      scrollService:
-                          BlocProvider.of<BranchBloc>(context).scrollService,
-                    );
-                  },
-                );
-              } else if (state is BranchErrorState) {
-                if (state.exception is NoConnectionException) {
-                  return const NoConnectionPlaceholder();
-                }
-                return Center(child: Text(state.message));
-              } else {
-                return const Center(child: CircularProgressIndicator());
+          // appBar: BranchAppBar(currentTab: widget.currentTab),
+          body: Stack(children: [
+        BlocBuilder<BranchBloc, BranchState>(
+          builder: (context, state) {
+            if (state is BranchLoadedState) {
+              return FlexibleTreeView<Post>(
+                // key: treeKey,
+                key: ValueKey(state.branch.data.id),
+                scrollable: prefs.getBool('2dscroll')!,
+                indent: !Platform.isWindows ? 16 : 24,
+                showLines: state.threadInfo.showLines,
+                scrollController:
+                    BlocProvider.of<BranchBloc>(context).scrollController,
+                nodes: [state.branch],
+                nodeWidth: MediaQuery.of(context).size.width / 1.5,
+                header: SizedBox.fromSize(size: const Size.fromHeight(86)),
+
+                nodeItemBuilder: (context, node) {
+                  node.data.hidden = BlocProvider.of<BranchBloc>(context)
+                      .threadRepository
+                      .hiddenPosts
+                      .contains(node.data.id);
+                  return PostWidget(
+                    // get separated key set based on branch node id
+                    key: node.getGlobalKey(state.branch.data.id),
+                    bloc: context.read<BranchBloc>(),
+                    node: node,
+                    roots: [state.branch],
+                    currentTab: widget.currentTab,
+                    scrollService:
+                        BlocProvider.of<BranchBloc>(context).scrollService,
+                  );
+                },
+              );
+            } else if (state is BranchErrorState) {
+              if (state.exception is NoConnectionException) {
+                return const NoConnectionPlaceholder();
               }
-            },
-          )),
+              return Center(child: Text(state.message));
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+        BranchAppBar(currentTab: widget.currentTab),
+      ])),
     );
   }
 }
