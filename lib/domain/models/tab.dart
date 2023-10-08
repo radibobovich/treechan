@@ -14,7 +14,7 @@ DrawerTab boardListTab =
 
 abstract class DrawerTab {
   String? name;
-  final Imageboard imageboard;
+  Imageboard imageboard;
   DrawerTab({required this.name, required this.imageboard});
   getBloc(BuildContext context);
 
@@ -126,7 +126,6 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
     this.tag = tag;
     this.prevTab = prevTab;
     this.id = id;
-    assert(imageboard != Imageboard.dvachArchive || archiveDate != null);
   }
 
   String? archiveDate;
