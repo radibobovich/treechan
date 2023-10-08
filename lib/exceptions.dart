@@ -17,6 +17,16 @@ class ThreadNotFoundException extends DioException {
   }
 }
 
+class ArchiveRedirectException extends DioException {
+  ArchiveRedirectException(
+      {required super.requestOptions,
+      required this.baseUrl,
+      required this.redirectPath});
+  final String baseUrl;
+  final String redirectPath;
+  String get url => baseUrl + redirectPath;
+}
+
 class BoardNotFoundException implements Exception {
   final String message;
 
