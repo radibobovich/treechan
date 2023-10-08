@@ -42,8 +42,9 @@ class _SearchBarState extends State<SearchBar> {
 
   void submit() {
     try {
-      context.read<PageProvider>().addTab(
-          ImageboardSpecific.tryOpenUnknownTabFromLink(_controller.text, null));
+      final provider = context.read<PageProvider>();
+      provider.addTab(ImageboardSpecific.tryOpenUnknownTabFromLink(
+          _controller.text, provider.tabManager.currentTab));
       widget.onCloseDrawer();
     } catch (e) {
       // do nothing

@@ -4,7 +4,6 @@ import 'package:test/test.dart';
 import 'package:treechan/data/rest/rest_client.dart';
 import 'package:treechan/domain/models/api/dvach/board_dvach_api_model.dart';
 import 'package:treechan/domain/models/api/dvach/thread_archive_dvach_api_model.dart';
-import 'package:treechan/domain/models/api/thread_api_model.dart';
 
 main() {
   test('Board list API test', () async {
@@ -21,7 +20,7 @@ main() {
 
       BoardResponseDvachApiModel model =
           await client.getBoardIndex(boardTag: 'b');
-      debugPrint(model.board?.name);
+      debugPrint(model.board.name);
       debugPrint(model.threads.length.toString());
       expect(model.threads.length, greaterThan(0));
     });
@@ -31,7 +30,7 @@ main() {
 
       BoardResponseDvachApiModel model =
           await client.getBoardCatalog(boardTag: 'b');
-      debugPrint(model.board?.name);
+      debugPrint(model.board.name);
       debugPrint(model.threads.length.toString());
       expect(model.threads.length, greaterThan(0));
     });
@@ -42,7 +41,7 @@ main() {
       BoardResponseDvachApiModel model =
           await client.getBoardCatalogByTime(boardTag: 'b');
 
-      debugPrint(model.board?.name);
+      debugPrint(model.board.name);
       debugPrint(model.threads.length.toString());
       expect(model.threads.length, greaterThan(0));
     });
@@ -55,7 +54,7 @@ main() {
       BoardResponseDvachApiModel model =
           await client.getBoardPage(boardTag: 'b', page: 1);
 
-      debugPrint(model.board?.name);
+      debugPrint(model.board.name);
       debugPrint(model.threads.length.toString());
       expect(model.threads.length, greaterThan(0));
     });

@@ -67,6 +67,29 @@ void main() {
     expect(newTab, expectedTab);
   });
 
+  test('Board tag search scenario test', () {
+    const String searchQuery = 'b';
+    final DrawerTab newTab =
+        ImageboardSpecific.tryOpenUnknownTabFromLink(searchQuery, boardListTab);
+    final DrawerTab expectedTab =
+        BoardTab(imageboard: Imageboard.dvach, tag: 'b', prevTab: boardListTab);
+
+    expect(newTab, expectedTab);
+  });
+
+  test('Board tag + id search scenario test', () {
+    const String searchQuery = 'a/7633107';
+    final DrawerTab newTab =
+        ImageboardSpecific.tryOpenUnknownTabFromLink(searchQuery, boardListTab);
+    final DrawerTab expectedTab = ThreadTab(
+      name: null,
+      imageboard: Imageboard.dvach,
+      tag: 'a',
+      prevTab: boardListTab,
+      id: 7633107,
+    );
+    expect(newTab, expectedTab);
+  });
   test('External link test', () {
     const String url = 'google.com';
     expect(() => ImageboardSpecific.tryOpenUnknownTabFromLink(url, null),

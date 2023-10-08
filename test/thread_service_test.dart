@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +8,7 @@ import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/domain/models/repository_stream.dart';
 import 'package:treechan/domain/models/tree.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/utils/constants/enums.dart';
@@ -42,6 +45,7 @@ void main() async {
 
   test('ThreadRepository', () async {
     final threadRepository = ThreadRepository(
+      messenger: StreamController<RepositoryMessage>(),
       imageboard: Imageboard.dvach,
       boardTag: 'abu',
       threadId: 50074,
@@ -91,6 +95,7 @@ void main() async {
 
   test('Thread refresh', () async {
     final threadRepository = ThreadRepository(
+      messenger: StreamController<RepositoryMessage>(),
       imageboard: Imageboard.dvach,
       boardTag: 'b',
       threadId: 282647314,
@@ -150,6 +155,7 @@ void main() async {
   group('Search in tree', () {
     test('Search for one occurency', () async {
       final ThreadRepository repo = ThreadRepository(
+        messenger: StreamController<RepositoryMessage>(),
         imageboard: Imageboard.dvach,
         boardTag: 'b',
         threadId: 282647314,
@@ -167,6 +173,7 @@ void main() async {
     });
     test('Search for multiple occurencies', () async {
       final ThreadRepository repo = ThreadRepository(
+          messenger: StreamController<RepositoryMessage>(),
           imageboard: Imageboard.dvach,
           boardTag: 'b',
           threadId: 282647314,
