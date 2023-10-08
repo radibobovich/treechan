@@ -4,9 +4,8 @@ import 'dart:convert';
 
 import '../../data/board_list_fetcher.dart';
 import '../models/category.dart';
-import 'repository.dart';
 
-class BoardListRepository implements Repository {
+class BoardListRepository {
   BoardListRepository({required this.fetcher, this.openAsCatalog});
   final BoardListFetcher fetcher;
 
@@ -36,7 +35,6 @@ class BoardListRepository implements Repository {
     _favoriteBoards.clear();
   }
 
-  @override
   Future<void> load() async {
     final List<Board> boards = await fetcher.getBoards();
 
