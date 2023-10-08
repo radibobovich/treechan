@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:treechan/data/local/history_database.dart';
@@ -16,6 +17,7 @@ import 'package:treechan/presentation/bloc/board_list_bloc.dart';
 import 'package:treechan/presentation/provider/bloc_handler.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/utils/constants/dev.dart';
+import 'package:treechan/utils/custom_hidable_visibility.dart';
 
 import '../../domain/models/catalog.dart';
 import '../../domain/models/tab.dart';
@@ -95,12 +97,23 @@ class TabManager {
   BlocProvider<BranchBloc> getBranchScreen(BranchTab tab) =>
       blocHandler.getBranchScreen(tab);
 
+  double systemNavBarOpacity = 1;
   void animateTo(int index) {
     if (provider.currentPageIndex != 2) provider.setCurrentPageIndex(2);
     _currentTabIndex = index;
     tabController.animateTo(index);
     if (currentBloc is! BoardListBloc) {
       tabScrollControllerReference = currentBloc.scrollController;
+      tabScrollControllerReference.addListener(() {
+        systemNavBarOpacity = customHidableVisibility(
+            tabScrollControllerReference.position, 0, 0, systemNavBarOpacity);
+        SystemChrome.setSystemUIOverlayStyle(
+          SystemUiOverlayStyle(
+            systemNavigationBarColor:
+                Colors.black.withOpacity(systemNavBarOpacity.clamp(0.002, 1)),
+          ),
+        );
+      });
     } else {
       tabScrollControllerReference = ScrollController();
     }

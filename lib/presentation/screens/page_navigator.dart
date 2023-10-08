@@ -76,15 +76,17 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final systemBarHeight = MediaQuery.of(context).padding.bottom;
     return Hidable(
       controller: provider.tabManager.tabScrollControllerReference,
       hidableVisibility: customHidableVisibility,
-      preferredWidgetSize: const Size.fromHeight(40),
+      preferredWidgetSize: Size.fromHeight(40 + systemBarHeight),
       child: SizedBox(
         height: 40,
         child: BottomNavigationBar(
           selectedFontSize: 0.0,
           unselectedFontSize: 0.0,
+          enableFeedback: false,
           type: BottomNavigationBarType.fixed,
           currentIndex: provider.currentPageIndex,
           items: const [
