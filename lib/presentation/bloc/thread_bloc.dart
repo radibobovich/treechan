@@ -52,8 +52,10 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
         threadInfo: threadInfo,
       ));
     } on ThreadNotFoundException catch (e) {
-      _tryLoadArchiveThread();
       emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
+    } on ArchiveRedirectException catch (e) {
+      emit(ThreadErrorState(
+          message: 'Перенаправление на архивный тред...', exception: e));
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError) {
         emit(ThreadErrorState(
@@ -193,10 +195,6 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
       newReplies: threadRepository.newReplies,
       forceNewReplies: shouldNotifyNewPosts ? false : true,
     );
-  }
-
-  void _tryLoadArchiveThread() {
-    // TODO: handle redirects to archive
   }
 
   @override
