@@ -141,7 +141,6 @@ class _ThreadAppBarState extends State<ThreadAppBar> {
       key: UniqueKey(),
       onVisibilityChanged: (info) {
         if (info.visibleFraction > 0) {
-          debugPrint('Thread appBar visibility changed');
           context.read<ThreadBloc>().resetNewPostsCount();
         }
       },
