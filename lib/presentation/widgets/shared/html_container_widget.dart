@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/domain/imageboards/imageboard_specific.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/main.dart';

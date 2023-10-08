@@ -91,38 +91,35 @@ class Board {
   });
 
   Board.fromResponseDvachApi(BoardResponseDvachApiModel boardResponse)
-      : bumpLimit = boardResponse.board?.bump_limit ?? -1,
-        category = boardResponse.board?.category ?? 'unknown',
-        defaultName = boardResponse.board?.default_name! ?? 'unknown',
+      : bumpLimit = boardResponse.board.bump_limit,
+        category = boardResponse.board.category,
+        defaultName = boardResponse.board.default_name!,
         // enableDices = board.enableDices,
         // enableFlags = board.enableFlags,
         // enableIcons = board.enableIcons,
         // enableLikes = board.enableLikes,
         // enableNames = board.enableNames,
         // enableOekaki = board.enableOekaki,
-        enablePosting = boardResponse.board?.enable_posting ?? false,
-        enableSage = boardResponse.board?.enable_sage ?? true,
+        enablePosting = boardResponse.board.enable_posting,
+        enableSage = boardResponse.board.enable_sage,
         // enableShield = board.enableShield,
         // enableSubject = board.enableSubject,
         // enableThreadTags = board.enableThreadTags,
         // enableTrips = board.enableTrips,
-        fileTypes = boardResponse.board?.file_types ?? [],
-        id = boardResponse.board?.id ?? 'unknown',
-        info = boardResponse.board?.info ?? '',
-        infoOuter = boardResponse.board?.info_outer ?? '',
-        maxComment = boardResponse.board?.max_comment ?? -1,
-        maxFilesSize = boardResponse.board?.max_files_size ?? -1,
-        maxPages = boardResponse.board?.max_pages ?? -1,
-        name = boardResponse.board?.name ?? 'unknown',
-        threadsPerPage = boardResponse.board?.threads_per_page ?? -1,
+        fileTypes = boardResponse.board.file_types,
+        id = boardResponse.board.id,
+        info = boardResponse.board.info,
+        infoOuter = boardResponse.board.info_outer,
+        maxComment = boardResponse.board.max_comment,
+        maxFilesSize = boardResponse.board.max_files_size,
+        maxPages = boardResponse.board.max_pages,
+        name = boardResponse.board.name,
+        threadsPerPage = boardResponse.board.threads_per_page,
         imageboard = Imageboard.dvach,
         threads = boardResponse.threads.map((thread) {
           if (boardResponse.pages != null) {
             return Thread.fromIndexBoardDvachApi(
-                thread,
-                boardResponse.board?.id ??
-                    boardResponse.threads.first.board ??
-                    'unknown');
+                thread, boardResponse.board.id);
           } else {
             return Thread.fromCatalogBoardDvachApi(thread);
           }
