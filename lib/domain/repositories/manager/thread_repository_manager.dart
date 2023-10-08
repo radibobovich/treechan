@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/models/repository_stream.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 import 'package:treechan/utils/constants/dev.dart';
 import 'package:treechan/utils/constants/enums.dart';
@@ -16,10 +19,17 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
 
   static final List<ThreadRepository> _repos = [];
 
+  static late StreamController<RepositoryMessage> _repositoryMessenger;
+
+  void initMessenger(StreamController<RepositoryMessage> repositoryMessenger) {
+    ThreadRepositoryManager._repositoryMessenger = repositoryMessenger;
+  }
+
   /// Creates new repository with [tag] and [id].
   ThreadRepository create(Imageboard imageboard, String tag, int id,
       {String? archiveDate}) {
     final threadRepo = ThreadRepository(
+        messenger: _repositoryMessenger,
         imageboard: imageboard,
         boardTag: env == Env.prod ? tag : debugBoardTag,
         threadId: env == Env.prod ? id : debugThreadId,

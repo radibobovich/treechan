@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/local/hidden_posts.database.dart';
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/domain/models/repository_stream.dart';
 import 'package:treechan/domain/models/tab.dart';
 import 'package:treechan/domain/repositories/tracker_repository.dart';
+import 'package:treechan/exceptions.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/utils/constants/enums.dart';
 import 'package:treechan/utils/fix_html_video.dart';
@@ -19,22 +23,29 @@ import '../../utils/fix_blank_space.dart';
 import 'repository.dart';
 
 class ThreadRepository implements Repository {
-  ThreadRepository(
-      {required this.imageboard,
-      required this.boardTag,
-      required this.threadId,
-      this.archiveDate,
-      required IThreadLoader threadLoader,
-      required IThreadRefresher threadRefresher})
-      : _threadLoader = threadLoader,
-        _threadRefresher = threadRefresher;
-
-  final IThreadLoader _threadLoader;
-  final IThreadRefresher _threadRefresher;
-  final Imageboard imageboard;
+  ThreadRepository({
+    required this.imageboard,
+    required this.boardTag,
+    required this.threadId,
+    this.archiveDate,
+    required this.threadLoader,
+    required this.threadRefresher,
+    required StreamController<RepositoryMessage> messenger,
+  }) : _messenger = messenger {
+    // _messengerStream = _messenger.stream;
+  }
+  IThreadLoader threadLoader;
+  IThreadRefresher threadRefresher;
+  @override
+  Imageboard imageboard;
+  @override
   final String boardTag;
   final int threadId;
-  final String? archiveDate;
+  String? archiveDate;
+  final StreamController<RepositoryMessage> _messenger;
+  // late final Stream<RepositoryMessage> _messengerStream;
+  @override
+  int get id => threadId;
 
   /// Contains all comment tree roots.
   ///
@@ -93,8 +104,21 @@ class ThreadRepository implements Repository {
     // final ThreadFetcherDeprecated fetcher =
     //     ThreadFetcherDeprecated(boardTag: boardTag, threadId: threadId);
 
-    _posts = await _threadLoader.getPosts(
-        boardTag: boardTag, threadId: threadId, date: archiveDate);
+    try {
+      _posts = await threadLoader.getPosts(
+          boardTag: boardTag, threadId: threadId, date: archiveDate);
+    } on ArchiveRedirectException catch (e) {
+      _messenger.add(RepositoryRedirectRequest(
+        repository: this,
+        baseUrl: e.baseUrl,
+        redirectPath: e.redirectPath,
+      ));
+      rethrow;
+      // await _messenger.stream.firstWhere((message){
+
+      // });
+      // _posts = await _threadLoader.getPosts(boardTag: boardTag, threadId: threadId, date: e.)
+    }
 
     _threadInfo = ThreadInfo(
       boardTag: boardTag,
@@ -141,7 +165,7 @@ class ThreadRepository implements Repository {
     //     boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
     final int oldPostsCount = _posts.length;
 
-    List<Post> newPosts = await _threadRefresher.getNewPosts(
+    List<Post> newPosts = await threadRefresher.getNewPosts(
         boardTag: boardTag, threadId: threadId, lastPostId: _threadInfo.maxNum);
     newPostsCount = newPosts.length;
     if (newPosts.isEmpty) return;

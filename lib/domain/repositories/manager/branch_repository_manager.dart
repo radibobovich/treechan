@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:treechan/data/thread/thread_loader.dart';
 import 'package:treechan/data/thread/thread_refresher.dart';
 import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/models/repository_stream.dart';
 import 'package:treechan/domain/repositories/manager/repository_manager.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/utils/constants/dev.dart';
@@ -18,6 +21,12 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
   BranchRepositoryManager._internal();
 
   static final List<BranchRepository> _repos = [];
+
+  static late StreamController<RepositoryMessage> _repositoryMessenger;
+
+  void initMessenger(StreamController<RepositoryMessage> repositoryMessenger) {
+    BranchRepositoryManager._repositoryMessenger = repositoryMessenger;
+  }
 
   BranchRepository create(ThreadRepository threadRepo, int id) {
     final branchRepo =
@@ -45,6 +54,7 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
         orElse: () {
       return BranchRepository(
           threadRepository: ThreadRepository(
+            messenger: _repositoryMessenger,
             imageboard: imageboard,
             boardTag: 'error',
             threadId: 0,
