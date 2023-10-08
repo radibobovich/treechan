@@ -12,6 +12,7 @@ import 'package:treechan/domain/repositories/manager/thread_repository_manager.d
 import 'package:treechan/domain/repositories/repository.dart';
 import 'package:treechan/domain/repositories/thread_repository.dart';
 import 'package:treechan/domain/services/scroll_service.dart';
+import 'package:treechan/presentation/bloc/board_list_bloc.dart';
 import 'package:treechan/presentation/provider/bloc_handler.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/utils/constants/dev.dart';
@@ -44,6 +45,12 @@ class TabManager {
   late final Function() notifyListeners;
   late final PageProvider provider;
   late final BlocHandler blocHandler;
+
+  /// Listened by bottom nav bar [Hidable] to control visibility of the bar
+  /// during the tab scroll.
+  ///
+  /// Gets reassigned to the [currentBloc] scroll conttroller
+  ScrollController tabScrollControllerReference = ScrollController();
   void init(PageNavigatorState gotState, Function() notifyCallback,
       PageProvider provider) {
     state = gotState;
@@ -92,6 +99,11 @@ class TabManager {
     if (provider.currentPageIndex != 2) provider.setCurrentPageIndex(2);
     _currentTabIndex = index;
     tabController.animateTo(index);
+    if (currentBloc is! BoardListBloc) {
+      tabScrollControllerReference = currentBloc.scrollController;
+    } else {
+      tabScrollControllerReference = ScrollController();
+    }
     notifyListeners();
   }
 
@@ -127,7 +139,7 @@ class TabManager {
     await Future.delayed(
         const Duration(milliseconds: 20)); // enables transition animation
 
-    if (alreadyOpenedArchiveThread != null) {}
+    // if (alreadyOpenedArchiveThread != null) {}
     animateTo(_tabs.keys.toList().indexOf(tab));
     getIt<IHistoryDatabase>().add(tab);
   }

@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/utils/custom_hidable_visibility.dart';
 
 import '../widgets/drawer/drawer.dart';
 import '../../domain/models/tab.dart';
@@ -74,24 +76,29 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: BottomNavigationBar(
-        selectedFontSize: 0.0,
-        unselectedFontSize: 0.0,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: provider.currentPageIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.visibility), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: ''), // or Icons.language
-          BottomNavigationBarItem(icon: Icon(Icons.refresh), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.more_vert), label: '')
-        ],
-        onTap: (value) {
-          provider.setCurrentPageIndex(value, context: context);
-        },
+    return Hidable(
+      controller: provider.tabManager.tabScrollControllerReference,
+      hidableVisibility: customHidableVisibility,
+      preferredWidgetSize: const Size.fromHeight(40),
+      child: SizedBox(
+        height: 40,
+        child: BottomNavigationBar(
+          selectedFontSize: 0.0,
+          unselectedFontSize: 0.0,
+          type: BottomNavigationBarType.fixed,
+          currentIndex: provider.currentPageIndex,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.visibility), label: ''),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard), label: ''), // or Icons.language
+            BottomNavigationBarItem(icon: Icon(Icons.refresh), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.more_vert), label: '')
+          ],
+          onTap: (value) {
+            provider.setCurrentPageIndex(value, context: context);
+          },
+        ),
       ),
     );
   }
