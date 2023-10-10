@@ -142,20 +142,20 @@ class BoardLoaded extends StatelessWidget {
       //     )),
       extendBodyBehindAppBar: true,
       body: Stack(children: [
-        EasyRefresh(
-          header: _getClassicRefreshHeader(),
-          footer: _getClassicRefreshFooter(),
-          controller: controller,
-          onRefresh: () {
-            context.read<BoardBloc>().add(ReloadBoardEvent());
-          },
-          onLoad: () {
-            context.read<BoardBloc>().add(RefreshBoardEvent());
-          },
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 90, 16.0, 0),
+          child: EasyRefresh(
+            header: _getClassicRefreshHeader(),
+            footer: _getClassicRefreshFooter(),
+            controller: controller,
+            onRefresh: () {
+              context.read<BoardBloc>().add(ReloadBoardEvent());
+            },
+            onLoad: () {
+              context.read<BoardBloc>().add(RefreshBoardEvent());
+            },
             child: ListView.builder(
-              padding: const EdgeInsets.only(top: 86),
+              padding: const EdgeInsets.only(top: 0),
               controller: context.read<BoardBloc>().scrollController,
               itemCount: state.threads!.length,
               itemBuilder: (context, index) {
