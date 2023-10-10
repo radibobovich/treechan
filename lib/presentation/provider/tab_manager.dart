@@ -106,7 +106,7 @@ class TabManager {
       tabScrollControllerReference = currentBloc.scrollController;
       tabScrollControllerReference.addListener(() {
         systemNavBarOpacity = customHidableVisibility(
-            tabScrollControllerReference.position, 0, 0, systemNavBarOpacity);
+            tabScrollControllerReference.position, systemNavBarOpacity);
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             systemNavigationBarColor:
