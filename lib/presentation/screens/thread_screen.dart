@@ -10,7 +10,6 @@ import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
-import 'package:treechan/utils/custom_hidable_visibility.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../exceptions.dart';
@@ -145,7 +144,7 @@ class _ThreadAppBarState extends State<ThreadAppBar> {
         }
       },
       child: Hidable(
-        hidableVisibility: customHidableVisibility,
+        deltaFactor: 0.04,
         controller: !Platform.isWindows
             ? context.read<ThreadBloc>().scrollController
             : ScrollController(),
