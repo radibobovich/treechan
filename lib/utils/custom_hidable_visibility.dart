@@ -1,10 +1,10 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-double customHidableVisibility(ScrollPosition position, double previousOffset,
-    double currentOffset, double currentVisibility) {
+double customHidableVisibility(
+    ScrollPosition position, double currentVisibility) {
   const double deltaFactor = 0.04;
-  if (position.atEdge) {
+  if (position.pixels == 0) {
     return 1;
   }
 
