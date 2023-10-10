@@ -6,7 +6,6 @@ import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
-import 'package:treechan/utils/custom_hidable_visibility.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../utils/constants/enums.dart';
@@ -27,11 +26,11 @@ class _NormalAppBarState extends State<NormalAppBar> {
   @override
   Widget build(BuildContext context) {
     return Hidable(
-      hidableVisibility: customHidableVisibility,
+      deltaFactor: 0.04,
       controller: !Platform.isWindows
           ? context.read<BoardBloc>().scrollController
           : ScrollController(),
-      preferredWidgetSize: const Size.fromHeight(96),
+      preferredWidgetSize: const Size.fromHeight(86),
       child: AppBar(
         title: Text(
           widget.currentTab.name ?? "Загрузка...",

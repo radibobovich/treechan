@@ -107,6 +107,7 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
         }
       },
       child: Hidable(
+        deltaFactor: 0.04,
         controller: !Platform.isWindows
             ? context.read<BranchBloc>().scrollController
             : ScrollController(),
