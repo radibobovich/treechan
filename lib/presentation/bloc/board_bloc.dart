@@ -21,6 +21,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late BoardSearchService searchService;
   late TextEditingController textController = TextEditingController();
   final ScrollController scrollController = ScrollController();
+  bool isBusy = false;
   Key key;
   bool isDisposed = false;
   BoardBloc(
@@ -79,6 +80,15 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   }
 
   FutureOr<void> _reload(event, emit) async {
+    if (isBusy) return;
+    isBusy = true;
+    final currentState = state;
+    if (currentState is BoardLoadedState) {
+      emit(BoardLoadingState(
+          boardName: currentState.boardName,
+          threads: currentState.threads,
+          completeRefresh: false));
+    }
     try {
       await boardRepository.load();
       hiddenThreads = await HiddenThreadsDatabase()
@@ -94,6 +104,8 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       }
     } on Exception catch (e) {
       emit(BoardErrorState(message: e.toString(), exception: e));
+    } finally {
+      isBusy = false;
     }
   }
 
@@ -179,6 +191,13 @@ class BoardLoadedState extends BoardState {
   final bool completeRefresh;
   BoardLoadedState(
       {required this.boardName, this.threads, this.completeRefresh = true});
+}
+
+class BoardLoadingState extends BoardLoadedState {
+  BoardLoadingState(
+      {required super.boardName,
+      required super.threads,
+      required super.completeRefresh});
 }
 
 class BoardSearchState extends BoardState {
