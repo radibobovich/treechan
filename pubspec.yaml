@@ -65,7 +65,7 @@ dependencies:
   hidable:
     git: 
       url: https://github.com/insolite-dev/hidable
-      ref: feature/custom-visibility-algorithm
+      ref: develop
 dev_dependencies:
   flutter_test:
     sdk: flutter

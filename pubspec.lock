@@ -526,8 +526,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "feature/custom-visibility-algorithm"
-      resolved-ref: d709eb489a25e80f8635692f67a6ccab32fa0d02
+      ref: develop
+      resolved-ref: "3371a1cd0101a7464be48a8c8e1cb7623ffd90b0"
       url: "https://github.com/insolite-dev/hidable"
     source: git
     version: "1.0.5"
