@@ -66,6 +66,12 @@ class _NormalAppBarState extends State<NormalAppBar> {
               onOpen: (ThreadTab tab) =>
                   Provider.of<PageProvider>(context, listen: false).addTab(tab))
         ],
+        bottom: context.select<BoardBloc, bool>((BoardBloc bloc) => bloc.isBusy)
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(4),
+                child: LinearProgressIndicator(),
+              )
+            : null,
       ),
     );
   }
