@@ -56,10 +56,11 @@ class PageProvider with ChangeNotifier {
   ];
 
   int currentPageIndex = 2;
-  // int get currentPageIndex => _currentPageIndex;
-  // Widget get currentPage => getCurrentPage();
 
   late TabController pageController;
+
+  /// Attaches [TabManager], [TrackerCubit] and [ThreadSearchCubit].
+  /// Also starts listening to notification tap events.
   void init(PageNavigatorState gotState) {
     tabManager.init(gotState, _notifyListeners, this);
     pageController =
@@ -102,7 +103,8 @@ class PageProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void openSearch() {
+  /// Handles search button tap.
+  void _openSearch() {
     final currentBloc = tabManager.currentBloc;
 
     if (currentBloc is board_list.BoardListBloc) {
@@ -121,11 +123,13 @@ class PageProvider with ChangeNotifier {
     }
   }
 
+  /// Handles bottom navbar button tap.
+  ///
   /// 0 - search, 1 - tracker, 2 - browser, 3 - refresh, 4 - actions
   void setCurrentPageIndex(int index, {BuildContext? context}) {
     /// When open search from [BrowserScreen]
     if (currentPageIndex == 2 && index == 0) {
-      openSearch();
+      _openSearch();
       notifyListeners();
       return;
     }
@@ -156,7 +160,7 @@ class PageProvider with ChangeNotifier {
       } else if (index == 4) {
         assert(context != null, 'context is null');
         if (context == null) return;
-        openActions(context);
+        _openActions(context);
         return;
       }
     }
@@ -186,21 +190,22 @@ class PageProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void openActions(BuildContext context) {
+  /// Handles context menu button tap.
+  void _openActions(BuildContext context) {
     final currentTab = tabManager.currentTab;
     final currentBloc = tabManager.currentBloc;
     if (currentTab is BoardTab) {
-      openBoardActions(currentBloc as BoardBloc, context);
+      _openBoardActions(currentBloc as BoardBloc, context);
     } else if (currentTab is IdMixin) {
-      openThreadActions(currentBloc as ThreadBase, context);
+      _openThreadActions(currentBloc as ThreadBase, context);
     }
   }
 
-  void openBoardActions(BoardBloc bloc, BuildContext context) {
+  void _openBoardActions(BoardBloc bloc, BuildContext context) {
     showPopupMenuBoard(context, bloc, tabManager.currentTab as BoardTab);
   }
 
-  void openThreadActions(ThreadBase bloc, BuildContext context) {
+  void _openThreadActions(ThreadBase bloc, BuildContext context) {
     showPopupMenuThread(context, bloc, this);
   }
 
