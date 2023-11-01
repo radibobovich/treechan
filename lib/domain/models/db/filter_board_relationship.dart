@@ -34,7 +34,9 @@ class FilterBoardRelationship {
   final int boardReference;
 
   FilterBoardRelationship(
-      {required this.filterReference, required this.boardReference});
+      {required this.id,
+      required this.filterReference,
+      required this.boardReference});
 
   @override
   String toString() {
