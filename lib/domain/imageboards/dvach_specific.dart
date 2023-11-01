@@ -21,7 +21,7 @@ class DvachSpecific implements ImageboardSpecific {
 
   @override
   Dio getDio(String boardTag, int threadId) {
-    if (dio.interceptors.isNotEmpty) return dio;
+    if (dio.interceptors.length > 1) return dio;
     dio.interceptors.add(
       InterceptorsWrapper(
         onResponse: (response, handler) {
