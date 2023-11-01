@@ -13,13 +13,15 @@ class Filter {
   final String imageboard;
   final String name;
   final String pattern;
+  final bool caseSensitive;
 
   Filter(
       {required this.id,
       required this.enabled,
       required this.imageboard,
       required this.name,
-      required this.pattern});
+      required this.pattern,
+      required this.caseSensitive});
 
   @override
   String toString() {
@@ -31,13 +33,15 @@ class Filter {
         enabled = (map['enabled'] as int) == 1,
         imageboard = map['imageboard'] as String,
         name = map['name'] as String,
-        pattern = map['pattern'] as String;
+        pattern = map['pattern'] as String,
+        caseSensitive = (map['caseSensitive'] as int) == 1;
 
   Filter.fromFilterView(FilterView filterView)
       : enabled = filterView.enabled,
         id = filterView.id,
         name = filterView.name,
         pattern = filterView.pattern,
+        caseSensitive = filterView.caseSensitive,
         imageboard = filterView.imageboard;
 }
 
@@ -48,7 +52,8 @@ class FilterWithBoards extends Filter {
       required super.enabled,
       required super.imageboard,
       required super.name,
-      required super.pattern});
+      required super.pattern,
+      required super.caseSensitive});
 
   FilterWithBoards.fromFilterView(FilterView filterView)
       : boards = [filterView.tag],
@@ -60,19 +65,28 @@ class FilterWithBoards extends Filter {
       bool? enabled,
       String? imageboard,
       String? name,
-      String? pattern}) {
+      String? pattern,
+      bool? caseSensitive}) {
     return FilterWithBoards(
         id: id ?? this.id,
         boards ?? this.boards,
         enabled: enabled ?? this.enabled,
         imageboard: imageboard ?? this.imageboard,
         name: name ?? this.name,
-        pattern: pattern ?? this.pattern);
+        pattern: pattern ?? this.pattern,
+        caseSensitive: caseSensitive ?? this.caseSensitive);
   }
 
   @override
   String toString() {
     return 'Imageboard: $imageboard, name: $name, pattern: $pattern, enabled: $enabled\nboards: $boards\n';
+  }
+
+  String get boardsEnumeration {
+    return boards
+        .toString()
+        .substring(1, boards.toString().length - 1)
+        .trimRight();
   }
 
   @override
@@ -117,6 +131,7 @@ class FilterView extends Filter {
     required super.imageboard,
     required super.name,
     required super.pattern,
+    required super.caseSensitive,
   });
   final String tag;
 
@@ -135,7 +150,8 @@ class FilterView extends Filter {
       bool? enabled,
       String? imageboard,
       String? name,
-      String? pattern}) {
+      String? pattern,
+      bool? caseSensitive}) {
     return FilterView(
       tag: tag ?? this.tag,
       id: id ?? this.id,
@@ -143,6 +159,7 @@ class FilterView extends Filter {
       imageboard: imageboard ?? this.imageboard,
       name: name ?? this.name,
       pattern: pattern ?? this.pattern,
+      caseSensitive: caseSensitive ?? this.caseSensitive,
     );
   }
 
