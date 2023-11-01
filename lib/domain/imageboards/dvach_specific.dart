@@ -16,6 +16,12 @@ class DvachSpecific implements ImageboardSpecific {
   @override
   List<String> get hostnames =>
       ImageboardSpecific.allHostnamesMap[Imageboard.dvach]!;
+
+  @override
+  List<int> imageTypes = [0, 1, 2, 4, 9];
+
+  @override
+  List<int> videoTypes = [6, 10];
   @override
   Dio dio = Dio();
 
