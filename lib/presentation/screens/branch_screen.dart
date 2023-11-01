@@ -7,6 +7,7 @@ import 'package:hidable/hidable.dart';
 import 'package:should_rebuild/should_rebuild.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
+import 'package:treechan/utils/constants/constants.dart';
 import 'package:treechan/utils/constants/enums.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -53,7 +54,8 @@ class _BranchScreenState extends State<BranchScreen>
                 nodes: [state.branch],
                 nodeWidth: MediaQuery.of(context).size.width / 1.5,
                 header: SizedBox.fromSize(size: const Size.fromHeight(86)),
-
+                footer: SizedBox.fromSize(
+                    size: const Size.fromHeight(AppConstants.navBarHeight)),
                 nodeItemBuilder: (context, node) {
                   node.data.hidden = BlocProvider.of<BranchBloc>(context)
                       .threadRepository

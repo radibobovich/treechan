@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
+import 'package:treechan/utils/constants/constants.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../exceptions.dart';
@@ -84,6 +86,8 @@ class _ThreadScreenState extends State<ThreadScreen>
                     nodes: state.roots!,
                     nodeWidth: MediaQuery.of(context).size.width / 1.5,
                     header: SizedBox.fromSize(size: const Size.fromHeight(86)),
+                    footer: SizedBox.fromSize(
+                        size: const Size.fromHeight(AppConstants.navBarHeight)),
                     nodeItemBuilder: (context, node) {
                       node.data.hidden = BlocProvider.of<ThreadBloc>(context)
                           .threadRepository
