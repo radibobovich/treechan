@@ -31,7 +31,7 @@ void showPopupMenuThread(
     BuildContext context, ThreadBase bloc, PageProvider provider) async {
   final RelativeRect rect = RelativeRect.fromLTRB(
       MediaQuery.of(context).size.width - 136, // width of popup menu
-      MediaQuery.of(context).size.height - 4 * 48 - 60,
+      MediaQuery.of(context).size.height - 5 * 48 - 60,
       // 48 is the height of one tile, 60 is approx. height of bottom bars
       0,
       0);
