@@ -162,8 +162,10 @@ class BoardLoaded extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final Thread thread = state.threads![index];
                       thread.hidden = BlocProvider.of<BoardBloc>(context)
-                          .hiddenThreads
-                          .contains(thread.posts.first.id);
+                              .hiddenThreads
+                              .contains(thread.posts.first.id)
+                          ? true
+                          : thread.hidden;
                       return Dismissible(
                         key: ValueKey(thread.posts.first.id),
                         confirmDismiss: (direction) async {

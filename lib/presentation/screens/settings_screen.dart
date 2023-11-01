@@ -4,6 +4,7 @@ import 'package:settings_ui/settings_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:treechan/main.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -50,6 +51,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }).then((value) => setState(() {}));
                 },
               ),
+            ],
+          ),
+          SettingsSection(
+            title: const Text('Доски',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            tiles: [
+              SettingsTile.navigation(
+                leading: const Icon(Icons.visibility_off),
+                title: const Text('Автоскрытие'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onPressed: (context) {
+                  Navigator.pushNamed(context, '/filters', arguments: {
+                    'displayMode': FiltersDisplayMode.all,
+                  });
+                },
+              )
             ],
           ),
           SettingsSection(

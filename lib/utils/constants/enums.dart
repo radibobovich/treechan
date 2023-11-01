@@ -44,3 +44,13 @@ Imageboard imageboardFromString(String str) {
   }
   throw Exception('Unknown imageboard');
 }
+
+/// Returns imageboards which are not archives.
+List<Imageboard> getOriginalImageboards({bool withUnknown = false}) {
+  return Imageboard.values.toList()
+    ..removeWhere((element) =>
+        archivesMap.containsValue(element) ||
+        (!withUnknown && element == Imageboard.unknown));
+}
+
+enum FiltersDisplayMode { all, board }

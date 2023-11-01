@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/presentation/bloc/filters_cubit.dart';
+import 'package:treechan/presentation/screens/filter/filter_edit_screen.dart';
+import 'package:treechan/presentation/screens/filter/filters_screen.dart';
 
 import 'domain/models/tab.dart';
 import 'presentation/bloc/history_bloc.dart';
@@ -33,6 +36,27 @@ Route<dynamic> getRoute(RouteSettings settings) {
       return MaterialPageRoute(
           builder: (_) =>
               HiddenPostsScreen(tag: args['tag'], threadId: args['threadId']));
+    case '/filters':
+      final args = settings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+                create: (context) => FiltersCubit(
+                  displayMode: args['displayMode'],
+                  imageboard: args['imageboard'],
+                  boardTag: args['boardTag'],
+                )..init(),
+                child: const FiltersScreen(),
+              ));
+    case '/filter_edit':
+      final args = settings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+          builder: (_) => FilterEditScreen(
+                filter: args['filter'],
+                add: args['add'],
+                update: args['update'],
+                getBoards: args['getBoards'],
+                currentBoard: args['currentBoard'],
+              ));
     default:
       return MaterialPageRoute(builder: (_) => const PageNavigator());
   }
