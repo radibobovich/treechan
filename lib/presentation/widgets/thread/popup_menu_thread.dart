@@ -44,6 +44,7 @@ void showPopupMenuThread(
       _getHiddenPostsMenuItem(context, bloc),
       await _getTrackMenuButton(provider),
       _getScrollToTopMenuButton(bloc),
+      _getScrollToBottomMenuButton(bloc),
     ],
     elevation: 8.0,
   );
@@ -108,6 +109,25 @@ PopupMenuItem<dynamic> _getScrollToTopMenuButton(ThreadBase bloc) {
       bloc.scrollController.animateTo(
         0,
         duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    },
+  );
+}
+
+PopupMenuItem<dynamic> _getScrollToBottomMenuButton(ThreadBase bloc) {
+  return PopupMenuItem(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: const Text('В конец'),
+    onTap: () async {
+      await bloc.scrollController.animateTo(
+        bloc.scrollController.position.maxScrollExtent * 2,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+      bloc.scrollController.animateTo(
+        bloc.scrollController.offset + 200,
+        duration: const Duration(milliseconds: 20),
         curve: Curves.easeOut,
       );
     },
