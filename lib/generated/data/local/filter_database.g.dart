@@ -89,7 +89,7 @@ class _$FilterDatabase extends FilterDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Filter` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `enabled` INTEGER NOT NULL, `imageboard` TEXT NOT NULL, `name` TEXT NOT NULL, `pattern` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Filter` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `enabled` INTEGER NOT NULL, `imageboard` TEXT NOT NULL, `name` TEXT NOT NULL, `pattern` TEXT NOT NULL, `caseSensitive` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Board` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `tag` TEXT NOT NULL)');
         await database.execute(
@@ -135,7 +135,8 @@ class _$FilterDao extends FilterDao {
                   'enabled': item.enabled ? 1 : 0,
                   'imageboard': item.imageboard,
                   'name': item.name,
-                  'pattern': item.pattern
+                  'pattern': item.pattern,
+                  'caseSensitive': item.caseSensitive ? 1 : 0
                 }),
         _filterUpdateAdapter = UpdateAdapter(
             database,
@@ -146,7 +147,8 @@ class _$FilterDao extends FilterDao {
                   'enabled': item.enabled ? 1 : 0,
                   'imageboard': item.imageboard,
                   'name': item.name,
-                  'pattern': item.pattern
+                  'pattern': item.pattern,
+                  'caseSensitive': item.caseSensitive ? 1 : 0
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -168,7 +170,8 @@ class _$FilterDao extends FilterDao {
             enabled: (row['enabled'] as int) != 0,
             imageboard: row['imageboard'] as String,
             name: row['name'] as String,
-            pattern: row['pattern'] as String));
+            pattern: row['pattern'] as String,
+            caseSensitive: (row['caseSensitive'] as int) != 0));
   }
 
   @override
@@ -179,35 +182,32 @@ class _$FilterDao extends FilterDao {
             enabled: (row['enabled'] as int) != 0,
             imageboard: row['imageboard'] as String,
             name: row['name'] as String,
-            pattern: row['pattern'] as String),
+            pattern: row['pattern'] as String,
+            caseSensitive: (row['caseSensitive'] as int) != 0),
         arguments: [id]);
   }
 
   @override
-  Future<void> toggleAllFilters(
+  Future<void> toggleAllFilters(bool enabled) async {
+    await _queryAdapter.queryNoReturn('UPDATE \"Filter\" SET enabled = ?1',
+        arguments: [enabled ? 1 : 0]);
+  }
+
+  @override
+  Future<void> toggleAllFiltersForBoard(
     bool enabled,
     String imageboard,
-    String boardTag,
+    int boardId,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE \"Filter\" SET enabled = ?1   WHERE imageboard = ?2 AND tag = ?3',
-        arguments: [enabled ? 1 : 0, imageboard, boardTag]);
+        'UPDATE \"Filter\" SET enabled = ?1   WHERE imageboard = ?2 AND id IN    (SELECT filter_reference FROM FilterBoardRelationship     WHERE board_reference = ?3)',
+        arguments: [enabled ? 1 : 0, imageboard, boardId]);
   }
 
   @override
   Future<void> deleteFilterById(int id) async {
     await _queryAdapter
         .queryNoReturn('DELETE FROM \"Filter\" WHERE id = ?1', arguments: [id]);
-  }
-
-  @override
-  Future<void> deleteFiltersByBoardId(
-    int id,
-    String imageboard,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM \"Filter\" WHERE id IN      (SELECT filter_reference FROM FilterBoardRelationship     WHERE board_reference = ?1)   AND imageboard = ?2',
-        arguments: [id, imageboard]);
   }
 
   @override
@@ -275,6 +275,15 @@ class _$FilterBoardRelationshipDao extends FilterBoardRelationshipDao {
                   'id': item.id,
                   'filter_reference': item.filterReference,
                   'board_reference': item.boardReference
+                }),
+        _filterBoardRelationshipDeletionAdapter = DeletionAdapter(
+            database,
+            'FilterBoardRelationship',
+            ['id'],
+            (FilterBoardRelationship item) => <String, Object?>{
+                  'id': item.id,
+                  'filter_reference': item.filterReference,
+                  'board_reference': item.boardReference
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -286,12 +295,28 @@ class _$FilterBoardRelationshipDao extends FilterBoardRelationshipDao {
   final InsertionAdapter<FilterBoardRelationship>
       _filterBoardRelationshipInsertionAdapter;
 
+  final DeletionAdapter<FilterBoardRelationship>
+      _filterBoardRelationshipDeletionAdapter;
+
   @override
   Future<List<FilterBoardRelationship>> getRelationships() async {
     return _queryAdapter.queryList('SELECT * from FilterBoardRelationship',
         mapper: (Map<String, Object?> row) => FilterBoardRelationship(
+            id: row['id'] as int?,
             filterReference: row['filter_reference'] as int,
             boardReference: row['board_reference'] as int));
+  }
+
+  @override
+  Future<List<FilterBoardRelationship>> getRelationshipsByFilterId(
+      int filterId) async {
+    return _queryAdapter.queryList(
+        'SELECT * from FilterBoardRelationship   WHERE filter_reference = ?1',
+        mapper: (Map<String, Object?> row) => FilterBoardRelationship(
+            id: row['id'] as int?,
+            filterReference: row['filter_reference'] as int,
+            boardReference: row['board_reference'] as int),
+        arguments: [filterId]);
   }
 
   @override
@@ -305,6 +330,17 @@ class _$FilterBoardRelationshipDao extends FilterBoardRelationshipDao {
   }
 
   @override
+  Future<List<FilterBoardRelationship>> getRelationshipsByBoardId(
+    int boardId,
+    String imageboard,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM FilterBoardRelationship WHERE board_reference = ?1 AND (SELECT imageboard    FROM \"Filter\"    WHERE \"Filter\".id = FilterBoardRelationship.filter_reference)  = ?2',
+        mapper: (Map<String, Object?> row) => FilterBoardRelationship(id: row['id'] as int?, filterReference: row['filter_reference'] as int, boardReference: row['board_reference'] as int),
+        arguments: [boardId, imageboard]);
+  }
+
+  @override
   Future<void> clear() async {
     await _queryAdapter.queryNoReturn('DELETE FROM FilterBoardRelationship');
   }
@@ -313,5 +349,10 @@ class _$FilterBoardRelationshipDao extends FilterBoardRelationshipDao {
   Future<int> insertRelationship(FilterBoardRelationship relationship) {
     return _filterBoardRelationshipInsertionAdapter.insertAndReturnId(
         relationship, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteRelationship(FilterBoardRelationship relationship) async {
+    await _filterBoardRelationshipDeletionAdapter.delete(relationship);
   }
 }
