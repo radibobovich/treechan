@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:floor/floor.dart';
 import 'package:flutter/foundation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:treechan/data/local/dao/filter_daos.dart';
 
@@ -10,6 +11,24 @@ import 'package:treechan/domain/models/db/filter_board_relationship.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
 part '../../generated/data/local/filter_database.g.dart';
+
+/// Used to obtain a [FilterDatabase] instance.
+@LazySingleton()
+class FilterDb {
+  static late FilterDatabase _instance;
+  static bool initialized = false;
+  Future<FilterDatabase> get instance async {
+    if (!initialized) {
+      _instance = await $FloorFilterDatabase
+          .databaseBuilder('filter_database.db')
+          .build()
+          .whenComplete(() {
+        initialized = true;
+      });
+    }
+    return _instance;
+  }
+}
 
 /// A database that manages autohide filters.
 ///
@@ -41,6 +60,7 @@ abstract class FilterDatabase extends FloorDatabase {
         boardId = (await boardDao.findBoardBytag(tag))!.id!;
       }
       final relationship = FilterBoardRelationship(
+        id: null,
         filterReference: filterId,
         boardReference: boardId,
       );
@@ -55,11 +75,11 @@ abstract class FilterDatabase extends FloorDatabase {
     final List<FilterView> filters = [];
 
     final String query =
-        '''SELECT "$filterDb".id, enabled, name, pattern, imageboard, $boardDb.tag
+        '''SELECT "$filterDb".id, enabled, name, pattern, imageboard, caseSensitive, $boardDb.tag
 FROM "$filterDb"
 INNER JOIN $boardDb ON $filterBoardRelationshipDb.$boardReferenceColumn = $boardDb.id
 INNER JOIN $filterBoardRelationshipDb ON "$filterDb".id = $filterBoardRelationshipDb.$filterReferenceColumn
-  WHERE tag = "$boardTag"
+  WHERE (tag = "$boardTag" OR tag = "ANY")
   AND imageboard = "${imageboard.name}"
   ''';
     final List<Map<String, Object?>> maps = await database.rawQuery(query);
@@ -120,7 +140,7 @@ INNER JOIN $filterBoardRelationshipDb ON "$filterDb".id = $filterBoardRelationsh
         boardId ??= await boardDao.insertBoard(Board(id: null, tag: board));
 
         await relationshipDao.insertRelationship(FilterBoardRelationship(
-            filterReference: filterId, boardReference: boardId));
+            id: null, filterReference: filterId, boardReference: boardId));
       }
 
       for (var board in removedBoards) {
@@ -138,6 +158,7 @@ INNER JOIN $filterBoardRelationshipDb ON "$filterDb".id = $filterBoardRelationsh
       imageboard: newFilter.imageboard,
       name: newFilter.name,
       pattern: newFilter.pattern,
+      caseSensitive: newFilter.caseSensitive,
     );
     await filterDao.updateFilter(filter);
   }
@@ -162,22 +183,50 @@ INNER JOIN $filterBoardRelationshipDb ON "$filterDb".id = $filterBoardRelationsh
     return filter.enabled;
   }
 
-  /// Sets all filters enabled property to boolean provided.
-  Future<void> toggleAllFilters(bool enabled,
+  /// Sets all filters property to boolean provided.
+  Future<void> toggleAllFilters(bool enabled) async {
+    await filterDao.toggleAllFilters(enabled);
+  }
+
+  /// Sets all board filters enabled property to boolean provided.
+  Future<void> toggleAllFiltersForBoard(bool enabled,
       {required Imageboard imageboard, required String boardTag}) async {
-    await filterDao.toggleAllFilters(enabled, imageboard.name, boardTag);
+    final board = await boardDao.findBoardBytag(boardTag);
+    if (board == null) return;
+    final boardId = board.id!;
+
+    await filterDao.toggleAllFiltersForBoard(enabled, imageboard.name, boardId);
   }
 
   Future<void> removeFilterById(int id) async {
     await filterDao.deleteFilterById(id);
   }
 
+  /// Removes relationship between board and filters
+  /// that are applied to the board specified.
   Future<void> removeFiltersByBoardTag(
       String tag, Imageboard imageboard) async {
     final board = await boardDao.findBoardBytag(tag);
     if (board == null) return;
 
-    await filterDao.deleteFiltersByBoardId(board.id!, imageboard.name);
+    final relationshipsToDelete = await relationshipDao
+        .getRelationshipsByBoardId(board.id!, imageboard.name);
+    if (relationshipsToDelete.isEmpty) return;
+
+    for (var relationship in relationshipsToDelete) {
+      await relationshipDao.deleteRelationship(relationship);
+    }
+
+    for (FilterBoardRelationship item in relationshipsToDelete) {
+      final otherFilterRelationships = await relationshipDao
+          .getRelationshipsByFilterId(item.filterReference);
+
+      /// If there are no other relationships then the filter has had only
+      /// one board, so we can delete record from filter table
+      if (otherFilterRelationships.isEmpty) {
+        await filterDao.deleteFilterById(item.filterReference);
+      }
+    }
   }
 
   Future<void> clearAll() async {
