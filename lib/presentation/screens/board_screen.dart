@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/presentation/widgets/board/thread_card_classic.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../bloc/board_bloc.dart';
 
@@ -173,11 +175,14 @@ class BoardLoaded extends StatelessWidget {
                           hideOrRevealThread(thread, context);
                           return false;
                         },
-                        child: ThreadCard(
-                          // key: ValueKey(thread.posts.first.id),
-                          thread: thread,
-                          currentTab: currentTab,
-                        ),
+                        child: state.boardView == BoardView.treechan
+                            ? ThreadCard(
+                                // key: ValueKey(thread.posts.first.id),
+                                thread: thread,
+                                currentTab: currentTab,
+                              )
+                            : ThreadCardClassic(
+                                thread: thread, currentTab: currentTab),
                       );
                     },
                   ),
@@ -217,11 +222,17 @@ class BoardSearch extends StatelessWidget {
           itemCount: state.searchResult.length,
           itemBuilder: (context, index) {
             final Thread thread = state.searchResult[index];
-            return ThreadCard(
-              key: ValueKey(thread.posts.first.id),
-              thread: thread,
-              currentTab: currentTab,
-            );
+
+            return state.boardView == BoardView.treechan
+                ? ThreadCard(
+                    key: ValueKey(thread.posts.first.id),
+                    thread: thread,
+                    currentTab: currentTab,
+                  )
+                : ThreadCardClassic(
+                    key: ValueKey(thread.posts.first.id),
+                    thread: thread,
+                    currentTab: currentTab);
           },
         ),
       ),
