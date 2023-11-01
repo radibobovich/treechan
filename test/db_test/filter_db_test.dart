@@ -23,11 +23,13 @@ void main() {
       await db.clearAll();
 
       final filter = Filter(
-          id: null,
-          enabled: true,
-          imageboard: Imageboard.dvach.name,
-          name: 'filter1',
-          pattern: 'test');
+        id: null,
+        enabled: true,
+        imageboard: Imageboard.dvach.name,
+        name: 'filter1',
+        pattern: 'test',
+        caseSensitive: false,
+      );
       final List<String> tags = ['b', 'bo'];
 
       await db.addFilter(filter: filter, boardTags: tags);
@@ -37,12 +39,14 @@ void main() {
       debugPrint(filters.toString());
 
       final FilterView expectedFilter = FilterView(
-          tag: 'bo',
-          id: -1,
-          enabled: true,
-          imageboard: 'dvach',
-          name: 'filter1',
-          pattern: 'test');
+        tag: 'bo',
+        id: -1,
+        enabled: true,
+        imageboard: 'dvach',
+        name: 'filter1',
+        pattern: 'test',
+        caseSensitive: false,
+      );
       expect(filters.length, 1, reason: 'Expected one filter');
       expect(filters.first, expectedFilter, reason: "Filter doesn't match");
     });
@@ -54,11 +58,13 @@ void main() {
           .build();
 
       final filter = Filter(
-          id: null,
-          enabled: true,
-          imageboard: Imageboard.dvach.name,
-          name: 'filter2',
-          pattern: 'test');
+        id: null,
+        enabled: true,
+        imageboard: Imageboard.dvach.name,
+        name: 'filter2',
+        pattern: 'test',
+        caseSensitive: false,
+      );
       final List<String> tags = ['b', 'pr'];
 
       await db.addFilter(filter: filter, boardTags: tags);
@@ -68,19 +74,23 @@ void main() {
       debugPrint(filters.toString());
 
       final FilterView expectedFilter1 = FilterView(
-          tag: 'b',
-          id: -1,
-          enabled: true,
-          imageboard: 'dvach',
-          name: 'filter1',
-          pattern: 'test');
+        tag: 'b',
+        id: -1,
+        enabled: true,
+        imageboard: 'dvach',
+        name: 'filter1',
+        pattern: 'test',
+        caseSensitive: false,
+      );
       final FilterView expectedFilter2 = FilterView(
-          tag: 'b',
-          id: -1,
-          enabled: true,
-          imageboard: 'dvach',
-          name: 'filter2',
-          pattern: 'test');
+        tag: 'b',
+        id: -1,
+        enabled: true,
+        imageboard: 'dvach',
+        name: 'filter2',
+        pattern: 'test',
+        caseSensitive: false,
+      );
 
       expect(filters.length, 2, reason: 'Expected two filters');
       expect(filters.first, expectedFilter1,
@@ -97,19 +107,25 @@ void main() {
       final List<FilterWithBoards> filters = await db.getFiltersWithBoards();
       debugPrint(filters.toString());
 
-      final expectedFilter1 = FilterWithBoards(['b', 'bo'],
-          id: -1,
-          enabled: true,
-          imageboard: 'dvach',
-          name: 'filter1',
-          pattern: 'test');
+      final expectedFilter1 = FilterWithBoards(
+        ['b', 'bo'],
+        id: -1,
+        enabled: true,
+        imageboard: 'dvach',
+        name: 'filter1',
+        pattern: 'test',
+        caseSensitive: false,
+      );
 
-      final expectedFilter2 = FilterWithBoards(['b', 'pr'],
-          id: -1,
-          enabled: true,
-          imageboard: 'dvach',
-          name: 'filter2',
-          pattern: 'test');
+      final expectedFilter2 = FilterWithBoards(
+        ['b', 'pr'],
+        id: -1,
+        enabled: true,
+        imageboard: 'dvach',
+        name: 'filter2',
+        pattern: 'test',
+        caseSensitive: false,
+      );
 
       expect(filters.length, 2, reason: 'Expected two filters');
       expect(filters.first, expectedFilter1);
@@ -124,11 +140,13 @@ void main() {
       await db.clearAll();
 
       final filter = Filter(
-          id: null,
-          enabled: true,
-          imageboard: Imageboard.dvach.name,
-          name: 'filter2',
-          pattern: 'test');
+        id: null,
+        enabled: true,
+        imageboard: Imageboard.dvach.name,
+        name: 'filter2',
+        pattern: 'test',
+        caseSensitive: false,
+      );
       final List<String> tags = ['b', 'pr'];
       final filterId = await db.addFilter(filter: filter, boardTags: tags);
 
@@ -149,7 +167,8 @@ void main() {
           enabled: true,
           imageboard: Imageboard.dvach.name,
           name: 'filter1',
-          pattern: 'test');
+          pattern: 'test',
+          caseSensitive: false);
       final List<String> tags1 = ['b', 'bo'];
       await db.addFilter(filter: filter1, boardTags: tags1);
 
@@ -158,14 +177,27 @@ void main() {
           enabled: true,
           imageboard: Imageboard.dvach.name,
           name: 'filter2',
-          pattern: 'test');
+          pattern: 'test',
+          caseSensitive: false);
       final List<String> tags2 = ['b', 'pr'];
       await db.addFilter(filter: filter2, boardTags: tags2);
 
       await db.removeFiltersByBoardTag('b', Imageboard.dvach);
 
       final filters = await db.getFiltersWithBoards();
-      expect(filters, isEmpty);
+
+      /// Expected to get the same filters but without b boards
+      expect(filters.length, 2, reason: 'Expected two filters');
+
+      final filter1Boards = filters.first.boards;
+      final filter2Boards = filters.last.boards;
+
+      expect(listEquals(filter1Boards, ['bo']), true,
+          reason:
+              "First filter boards list hasn't been updated correctly. Expected: ['bo']; Got: $filter1Boards");
+      expect(listEquals(filter2Boards, ['pr']), true,
+          reason:
+              "Second filter boards list hasn't been updated correctly. Expected: ['pr']; Got: $filter2Boards");
     });
   });
 
@@ -177,11 +209,13 @@ void main() {
       await db.clearAll();
 
       final filter = Filter(
-          id: null,
-          enabled: true,
-          imageboard: Imageboard.dvach.name,
-          name: 'filter1',
-          pattern: 'test');
+        id: null,
+        enabled: true,
+        imageboard: Imageboard.dvach.name,
+        name: 'filter1',
+        pattern: 'test',
+        caseSensitive: false,
+      );
       final List<String> tags = ['b', 'bo'];
       final filterId = await db.addFilter(filter: filter, boardTags: tags);
 
@@ -222,7 +256,8 @@ void main() {
           enabled: true,
           imageboard: Imageboard.dvach.name,
           name: 'filter1',
-          pattern: 'test');
+          pattern: 'test',
+          caseSensitive: false);
       final List<String> tags = ['b', 'bo'];
       await db.addFilter(filter: filter, boardTags: tags);
 
