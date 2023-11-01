@@ -30,12 +30,14 @@ class PopupMenuBoard extends StatelessWidget {
             getViewButton(popupContext, bloc),
             getSortButton(popupContext, bloc),
             getHiddenThreadsButton(popupContext, currentTab),
+            getFiltersButton(context, currentTab),
           ];
         } else {
           // page sort mode: can go to catalog
           return <PopupMenuEntry<dynamic>>[
             getViewButton(popupContext, bloc),
             getHiddenThreadsButton(context, currentTab),
+            getFiltersButton(context, currentTab),
           ];
         }
       },
@@ -46,7 +48,7 @@ class PopupMenuBoard extends StatelessWidget {
 /// Called from BottomNavigationBar button.
 void showPopupMenuBoard(
     BuildContext context, BoardBloc bloc, BoardTab currentTab) {
-  final int tilesCount = bloc.boardRepository.sortType == SortBy.page ? 2 : 3;
+  final int tilesCount = bloc.boardRepository.sortType == SortBy.page ? 4 : 5;
   final RelativeRect rect = RelativeRect.fromLTRB(
       MediaQuery.of(context).size.width - 136, // width of popup menu
       MediaQuery.of(context).size.height - tilesCount * 48 - 60,
@@ -61,10 +63,12 @@ void showPopupMenuBoard(
             getViewButton(context, bloc),
             getSortButton(context, bloc),
             getHiddenThreadsButton(context, currentTab),
+            getFiltersButton(context, currentTab),
           ]
         : [
             getViewButton(context, bloc),
             getHiddenThreadsButton(context, currentTab),
+            getFiltersButton(context, currentTab),
           ],
     elevation: 8.0,
   );
@@ -128,6 +132,25 @@ PopupMenuItem<dynamic> getHiddenThreadsButton(
                 'currentTab': currentTab,
                 'onOpen': (ThreadTab tab) =>
                     context.read<PageProvider>().addTab(tab)
+              }));
+    },
+  );
+}
+
+PopupMenuItem<dynamic> getFiltersButton(
+    BuildContext context, BoardTab currentTab) {
+  return PopupMenuItem(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: const Text('Автоскрытие'),
+    onTap: () {
+      /// Use delay because handleTap() calls Navigator.pop() and interferes
+      /// with the push()
+      Future.delayed(
+          const Duration(milliseconds: 50),
+          () => Navigator.pushNamed(context, '/filters', arguments: {
+                'displayMode': FiltersDisplayMode.board,
+                'imageboard': currentTab.imageboard,
+                'boardTag': currentTab.tag,
               }));
     },
   );
