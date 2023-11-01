@@ -54,3 +54,12 @@ List<Imageboard> getOriginalImageboards({bool withUnknown = false}) {
 }
 
 enum FiltersDisplayMode { all, board }
+
+enum BoardView { treechan, classic }
+
+BoardView boardViewFromString(String str) {
+  for (BoardView value in BoardView.values) {
+    if (value.name == str) return value;
+  }
+  throw Exception('Unknown board view');
+}
