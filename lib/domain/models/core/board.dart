@@ -60,6 +60,11 @@ class Board {
   @override
   int get hashCode => id.hashCode ^ name.hashCode;
 
+  @override
+  String toString() {
+    return '$id $name';
+  }
+
   Board({
     required this.bumpLimit,
     required this.category,
