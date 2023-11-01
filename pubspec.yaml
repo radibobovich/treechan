@@ -67,6 +67,7 @@ dependencies:
       url: https://github.com/insolite-dev/hidable
       ref: develop
   floor: ^1.4.2
+  flutter_form_builder: ^8.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
