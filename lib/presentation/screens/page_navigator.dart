@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/utils/constants/constants.dart';
 
 import '../widgets/drawer/drawer.dart';
 import '../../domain/models/tab.dart';
@@ -79,9 +80,10 @@ class BottomBar extends StatelessWidget {
     return Hidable(
       controller: provider.tabManager.tabScrollControllerReference,
       deltaFactor: 0.04,
-      preferredWidgetSize: Size.fromHeight(40 + systemBarHeight),
+      preferredWidgetSize:
+          Size.fromHeight(AppConstants.navBarHeight + systemBarHeight),
       child: SizedBox(
-        height: 40,
+        height: AppConstants.navBarHeight,
         child: BottomNavigationBar(
           selectedFontSize: 0.0,
           unselectedFontSize: 0.0,
