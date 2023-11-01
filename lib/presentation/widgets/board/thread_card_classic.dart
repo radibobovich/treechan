@@ -36,66 +36,82 @@ class _ThreadCardClassicState extends State<ThreadCardClassic> {
                 });
               }
             : () => openThread(context, widget.thread, widget.currentTab),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// Title, header, media
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: widget.thread.hidden
+            ? Row(
                 children: [
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 80),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 5, 0, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Text(post.subject,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                            const Spacer(),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-                              child: CardHeader(
-                                  thread: widget.thread, greyName: true),
-                            ),
-                          ],
-                        ),
-                      ),
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: Text(post.subject,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                  ),
-                  MediaPreview(
-                    files: post.files,
-                    imageboard: widget.currentTab.imageboard,
-                    height: 70,
-                    singleImage: true,
                   )
                 ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: HtmlContainer(
-                  bloc: null,
-                  post: post,
-                  currentTab: widget.currentTab,
-                  // onOpenCatalog: onOpenCatalog,
+              )
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Title, header, media
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 80),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 5, 0, 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Text(post.subject,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  const Spacer(),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 4, 4, 0),
+                                    child: CardHeader(
+                                        thread: widget.thread, greyName: true),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        MediaPreview(
+                          files: post.files,
+                          imageboard: widget.currentTab.imageboard,
+                          height: 70,
+                          singleImage: true,
+                        )
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: HtmlContainer(
+                        bloc: null,
+                        post: post,
+                        currentTab: widget.currentTab,
+                        // onOpenCatalog: onOpenCatalog,
+                      ),
+                    ),
+                    CardFooter(
+                      thread: widget.thread,
+                      padding: const EdgeInsets.fromLTRB(8, 0, 0, 4),
+                    ),
+                  ],
                 ),
               ),
-              CardFooter(
-                thread: widget.thread,
-                padding: const EdgeInsets.fromLTRB(8, 0, 0, 4),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
