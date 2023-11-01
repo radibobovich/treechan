@@ -83,7 +83,11 @@ class EndDrawerPostWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _PostHeader(post: node.data),
-                MediaPreview(files: node.data.files, height: 60),
+                MediaPreview(
+                  files: node.data.files,
+                  height: 60,
+                  imageboard: currentTab.imageboard,
+                ),
                 HtmlContainer(
                   bloc: bloc,
                   post: node.data,
