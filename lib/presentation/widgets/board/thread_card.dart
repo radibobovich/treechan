@@ -39,7 +39,7 @@ class _ThreadCardState extends State<ThreadCard> {
                   widget.thread.hidden = false;
                 });
               }
-            : () => openThread(context),
+            : () => openThread(context, widget.thread, widget.currentTab),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -50,7 +50,7 @@ class _ThreadCardState extends State<ThreadCard> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 8, 8, 16),
-                    child: _CardHeader(thread: widget.thread),
+                    child: CardHeader(thread: widget.thread),
                   ),
                   Text.rich(TextSpan(
                     text: widget.thread.posts.first.subject,
@@ -64,14 +64,17 @@ class _ThreadCardState extends State<ThreadCard> {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MediaPreview(files: widget.thread.posts.first.files),
+                      MediaPreview(
+                        files: widget.thread.posts.first.files,
+                        imageboard: widget.currentTab.imageboard,
+                      ),
                       HtmlContainer(
                         bloc: null,
                         post: widget.thread.posts.first,
                         currentTab: widget.currentTab,
                         // onOpenCatalog: onOpenCatalog,
                       ),
-                      _CardFooter(thread: widget.thread),
+                      CardFooter(thread: widget.thread),
                     ],
                   )
           ],
@@ -79,41 +82,48 @@ class _ThreadCardState extends State<ThreadCard> {
       ),
     );
   }
+}
 
-  void openThread(BuildContext context) {
-    FocusManager.instance.primaryFocus?.unfocus();
-    context.read<PageProvider>().addTab(ThreadTab(
-        imageboard: widget.thread.imageboard,
-        id: env == Env.prod ? widget.thread.posts.first.id : debugThreadId,
-        tag: env == Env.prod
-            ? widget.thread.posts.first.boardTag
-            : debugBoardTag,
-        name: widget.thread.posts.first.subject,
-        prevTab: widget.currentTab));
-  }
+void openThread(BuildContext context, Thread thread, BoardTab currentTab) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  context.read<PageProvider>().addTab(ThreadTab(
+      imageboard: thread.imageboard,
+      id: env == Env.prod ? thread.posts.first.id : debugThreadId,
+      tag: env == Env.prod ? thread.posts.first.boardTag : debugBoardTag,
+      name: thread.posts.first.subject,
+      prevTab: currentTab));
 }
 
 // contains username and date
-class _CardHeader extends StatelessWidget {
-  const _CardHeader({
+class CardHeader extends StatelessWidget {
+  const CardHeader({
     Key? key,
     required this.thread,
+    this.greyName = false,
   }) : super(key: key);
-
+  final bool greyName;
   final Thread thread;
   @override
   Widget build(BuildContext context) {
+    final nameStyle = greyName
+        ? TextStyle(color: Theme.of(context).textTheme.bodySmall!.color)
+        : null;
     DateTimeService dateTimeSerivce =
         DateTimeService(timestamp: thread.posts.first.timestamp);
     return Row(
       children: [
+        /// name
         thread.posts.first.boardTag != 's'
-            ? Text(thread.posts.first.name)
-            : Text(extractUserInfo(thread.posts.first.name)),
+            ? Text(thread.posts.first.name, style: nameStyle)
+            : Text(extractUserInfo(thread.posts.first.name), style: nameStyle),
+
+        /// device icons
         thread.posts.first.boardTag == 's'
             ? UserPlatformIcons(userName: thread.posts.first.name)
             : const SizedBox.shrink(),
         const Spacer(),
+
+        /// date
         Text(dateTimeSerivce.getAdaptiveDate(),
             style:
                 TextStyle(color: Theme.of(context).textTheme.bodySmall!.color))
@@ -122,14 +132,15 @@ class _CardHeader extends StatelessWidget {
   }
 }
 
-class _CardFooter extends StatelessWidget {
-  const _CardFooter({
+class CardFooter extends StatelessWidget {
+  const CardFooter({
     Key? key,
     required this.thread,
+    this.padding = const EdgeInsets.fromLTRB(8, 4, 8, 12),
   }) : super(key: key);
 
   final Thread thread;
-
+  final EdgeInsetsGeometry padding;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -138,7 +149,7 @@ class _CardFooter extends StatelessWidget {
           thickness: 1,
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+          padding: padding,
           child: Row(
             children: [
               const Icon(Icons.question_answer, size: 20),
