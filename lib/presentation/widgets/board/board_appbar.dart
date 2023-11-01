@@ -47,7 +47,7 @@ class _NormalAppBarState extends State<NormalAppBar> {
                       .sortType ==
                   SortBy.page) {
                 BlocProvider.of<BoardBloc>(context)
-                    .add(ChangeViewBoardEvent(null, query: ""));
+                    .add(ChangeSortBoardEvent(null, query: ""));
               } else {
                 BlocProvider.of<BoardBloc>(context)
                     .add(SearchQueryChangedEvent(""));

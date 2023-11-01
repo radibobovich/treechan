@@ -80,7 +80,7 @@ PopupMenuItem<dynamic> getViewButton(BuildContext context, BoardBloc bloc) {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: const Text('Каталог'),
       onTap: () {
-        bloc.add(ChangeViewBoardEvent(null));
+        bloc.add(ChangeSortBoardEvent(null));
         // setState(() {});
       },
     );
@@ -89,7 +89,7 @@ PopupMenuItem<dynamic> getViewButton(BuildContext context, BoardBloc bloc) {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: const Text('Страницы'),
       onTap: () {
-        bloc.add(ChangeViewBoardEvent(SortBy.page));
+        bloc.add(ChangeSortBoardEvent(SortBy.page));
       },
     );
   }
@@ -102,7 +102,7 @@ PopupMenuItem<dynamic> getSortButton(BuildContext context, BoardBloc bloc) {
       child: const Text('Сортировать по бампам'),
       onTap: () {
         prefs.setString('boardSortType', 'bump');
-        bloc.add(ChangeViewBoardEvent(SortBy.bump));
+        bloc.add(ChangeSortBoardEvent(SortBy.bump));
       },
     );
   } else {
@@ -111,7 +111,7 @@ PopupMenuItem<dynamic> getSortButton(BuildContext context, BoardBloc bloc) {
       child: const Text('Сортировать по дате'),
       onTap: () {
         prefs.setString('boardSortType', 'time');
-        bloc.add(ChangeViewBoardEvent(SortBy.time));
+        bloc.add(ChangeSortBoardEvent(SortBy.time));
         bloc.scrollToTop();
       },
     );

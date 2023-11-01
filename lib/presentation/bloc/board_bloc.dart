@@ -31,19 +31,18 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       : super(BoardInitialState()) {
     tabSub = tabProvider.catalogStream.listen((catalog) {
       if (catalog.boardTag == boardRepository.boardTag && !isDisposed) {
-        add(ChangeViewBoardEvent(null, query: catalog.searchTag));
+        add(ChangeSortBoardEvent(null, query: catalog.searchTag));
       }
     });
 
     on<LoadBoardEvent>(_load);
     on<ReloadBoardEvent>(_reload);
     on<RefreshBoardEvent>(_refresh);
-    on<ChangeViewBoardEvent>(_changeView);
+    on<ChangeSortBoardEvent>(_changeView);
     on<SearchQueryChangedEvent>(_searchQueryChanged);
   }
 
   FutureOr<void> _searchQueryChanged(event, emit) async {
-    // textController.text = event.query;
     try {
       emit(BoardSearchState(
           searchResult: await searchService.search(event.query),
@@ -74,7 +73,6 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
 
       add(LoadBoardEvent());
     } catch (e) {
-      // emit(BoardErrorState(e.toString()));
       add(LoadBoardEvent(refreshCompleted: false));
     }
   }
@@ -162,8 +160,8 @@ class ReloadBoardEvent extends BoardEvent {}
 
 class RefreshBoardEvent extends BoardEvent {}
 
-class ChangeViewBoardEvent extends BoardEvent {
-  ChangeViewBoardEvent(this.sortType, {this.query}) {
+class ChangeSortBoardEvent extends BoardEvent {
+  ChangeSortBoardEvent(this.sortType, {this.query}) {
     if (sortType != null && sortType != SortBy.page) {
       prefs.setString('boardSortType', sortType.toString().split('.').last);
     }

@@ -61,7 +61,7 @@ class BlocHandler {
                       param1: Imageboard.dvach,
                       param2: 'assets/dev/board.json'),
                   boardTag: tab.tag))
-            ..add(ChangeViewBoardEvent(null, query: tab.query));
+            ..add(ChangeSortBoardEvent(null, query: tab.query));
         }
       case ThreadTab:
         return ThreadBloc(
