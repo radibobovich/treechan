@@ -53,6 +53,10 @@ class TabManager {
   ///
   /// Gets reassigned to the [currentBloc] scroll conttroller
   ScrollController tabScrollControllerReference = ScrollController();
+
+  /// Attaches tab controller for [PageNavigator],
+  /// initializes repository managers and listens to app background/foreground
+  /// changes. Also listens to archive thread redirects.
   void init(PageNavigatorState gotState, Function() notifyCallback,
       PageProvider provider) {
     state = gotState;
@@ -98,6 +102,8 @@ class TabManager {
       blocHandler.getBranchScreen(tab);
 
   double systemNavBarOpacity = 1;
+
+  /// Animates to a tab with index specified.
   void animateTo(int index) {
     if (provider.currentPageIndex != 2) provider.setCurrentPageIndex(2);
     _currentTabIndex = index;
@@ -120,6 +126,7 @@ class TabManager {
     notifyListeners();
   }
 
+  /// Reassigns [tabController] with new tabs length.
   void _refreshController() {
     tabController = TabController(length: tabs.length, vsync: state);
   }
@@ -135,6 +142,7 @@ class TabManager {
     return null;
   }
 
+  /// Adds new tab or animates to it if already opened.
   void addTab(DrawerTab tab) async {
     ThreadTab? alreadyOpenedArchiveThread =
         _findAlreadyOpenedArchiveThread(tab);
@@ -157,6 +165,7 @@ class TabManager {
     getIt<IHistoryDatabase>().add(tab);
   }
 
+  /// Closes tab and removes its repository if not tracked.
   void removeTab(DrawerTab tab) async {
     int currentIndex = _currentTabIndex;
     int removingTabIndex = _tabs.keys.toList().indexOf(tab);
@@ -207,6 +216,7 @@ class TabManager {
     notifyListeners();
   }
 
+  /// Returns to a previous tab using [DrawerTab] prevTab property.
   void goBack() {
     DrawerTab currentTab = tabs.keys.elementAt(currentIndex);
     if (currentTab is BoardListTab) {
@@ -240,6 +250,7 @@ class TabManager {
     });
   }
 
+  /// Handles the case when user opens link leading to a board catalog.
   void openCatalog(
       {required Imageboard imageboard,
       required String boardTag,
@@ -371,24 +382,6 @@ thread repository, so that is probably a mistake.''');
         tag: repository.boardTag,
         threadId: repository.id) as ThreadTab;
 
-    // /// Try to find if the archive is already opened.
-    // /// [addTab] method can't spot this because a new tab is archive and
-    // /// the ola one is a normal tab.
-    // ///  Throws [StateError] if not opened.
-    // MapEntry<DrawerTab, dynamic>? alreadyOpenedArchiveTab;
-    // try {
-    //   alreadyOpenedArchiveTab = tabs.entries.firstWhere((entry) =>
-    //       entry.key is ThreadTab &&
-    //       (entry.key as ThreadTab).id == archiveTab.id &&
-    //       (entry.key as ThreadTab).tag == archiveTab.tag &&
-    //       (entry.key as ThreadTab).archiveDate != null);
-    // } on StateError {
-    //   debugPrint('Opening archive thread');
-    // }
-    // // final alreadyOpenedArchiveTab = tabs[archiveTab];
-    // if (alreadyOpenedArchiveTab != null) {
-    //   return;
-    // }
     final bloc = tabs[updatableTab];
 
     tabs.remove(updatableTab);
