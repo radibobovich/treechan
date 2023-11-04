@@ -70,9 +70,7 @@ class MediaPreview extends StatelessWidget {
           );
         } else {
           return Padding(
-            padding: (files == null
-                ? const EdgeInsets.all(0)
-                : const EdgeInsets.all(8.0)),
+            padding: const EdgeInsets.all(8.0),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: classicPreview
