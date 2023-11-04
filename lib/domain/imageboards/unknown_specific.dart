@@ -15,6 +15,12 @@ class UnknownSpecific implements ImageboardSpecific {
   List<String> get hostnames => ImageboardSpecific.allHostnamesList;
 
   @override
+  List<int> imageTypes = [];
+
+  @override
+  List<int> videoTypes = [];
+
+  @override
   Dio dio = Dio();
   @override
   Dio getDio(String boardTag, int threadId) {

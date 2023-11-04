@@ -1,3 +1,5 @@
+import 'package:treechan/utils/constants/enums.dart';
+
 import '../main.dart';
 
 Future<void> initializePreferences() async {
@@ -47,6 +49,9 @@ Future<void> initializePreferences() async {
   }
   if (prefs.getBool('bottomDrawerTabs') == null) {
     await prefs.setBool('bottomDrawerTabs', false);
+  }
+  if (prefs.getString('boardView') == null) {
+    await prefs.setString('boardView', BoardView.treechan.name);
   }
   return;
 }

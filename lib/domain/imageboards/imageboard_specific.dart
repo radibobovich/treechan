@@ -41,6 +41,10 @@ abstract interface class ImageboardSpecific {
     }
   }
 
+  /// Number codes for file types in post attachments
+  abstract List<int> imageTypes;
+  abstract List<int> videoTypes;
+
   /// Custom [Dio] that is specific for the imageboard.
   ///
   /// Useful when you need to set up interceptors.

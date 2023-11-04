@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/main.dart';
 import 'package:treechan/presentation/bloc/board_bloc.dart';
 
@@ -27,7 +28,7 @@ class PopupMenuBoard extends StatelessWidget {
         if (bloc.boardRepository.sortType != SortBy.page) {
           // catalog mode: can return to page mode, sort by time or bump and search
           return <PopupMenuEntry<dynamic>>[
-            getViewButton(popupContext, bloc),
+            getSortViewButton(popupContext, bloc),
             getSortButton(popupContext, bloc),
             getHiddenThreadsButton(popupContext, currentTab),
             getFiltersButton(context, currentTab),
@@ -35,7 +36,7 @@ class PopupMenuBoard extends StatelessWidget {
         } else {
           // page sort mode: can go to catalog
           return <PopupMenuEntry<dynamic>>[
-            getViewButton(popupContext, bloc),
+            getSortViewButton(popupContext, bloc),
             getHiddenThreadsButton(context, currentTab),
             getFiltersButton(context, currentTab),
           ];
@@ -60,21 +61,23 @@ void showPopupMenuBoard(
     position: rect,
     items: bloc.boardRepository.sortType != SortBy.page
         ? [
-            getViewButton(context, bloc),
+            getSortViewButton(context, bloc),
             getSortButton(context, bloc),
             getHiddenThreadsButton(context, currentTab),
             getFiltersButton(context, currentTab),
+            getViewButton(context, bloc),
           ]
         : [
-            getViewButton(context, bloc),
+            getSortViewButton(context, bloc),
             getHiddenThreadsButton(context, currentTab),
             getFiltersButton(context, currentTab),
+            getViewButton(context, bloc),
           ],
     elevation: 8.0,
   );
 }
 
-PopupMenuItem<dynamic> getViewButton(BuildContext context, BoardBloc bloc) {
+PopupMenuItem<dynamic> getSortViewButton(BuildContext context, BoardBloc bloc) {
   if (bloc.boardRepository.sortType == SortBy.page) {
     return PopupMenuItem(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -152,6 +155,24 @@ PopupMenuItem<dynamic> getFiltersButton(
                 'imageboard': currentTab.imageboard,
                 'boardTag': currentTab.tag,
               }));
+    },
+  );
+}
+
+PopupMenuItem<dynamic> getViewButton(BuildContext context, BoardBloc bloc) {
+  return PopupMenuItem(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: const Text('Сменить вид'),
+    onTap: () async {
+      final prefs = await SharedPreferences.getInstance();
+      final BoardView currentView = boardViewFromString(
+          prefs.getString('boardView') ?? BoardView.classic.name);
+      if (currentView == BoardView.treechan) {
+        await prefs.setString('boardView', BoardView.classic.name);
+      } else {
+        await prefs.setString('boardView', BoardView.treechan.name);
+      }
+      bloc.add(ReloadBoardEvent());
     },
   );
 }
