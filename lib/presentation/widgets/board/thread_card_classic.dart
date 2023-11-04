@@ -92,7 +92,7 @@ class _ThreadCardClassicState extends State<ThreadCardClassic> {
                           files: post.files,
                           imageboard: widget.currentTab.imageboard,
                           height: 70,
-                          singleImage: true,
+                          classicPreview: true,
                         )
                       ],
                     ),
