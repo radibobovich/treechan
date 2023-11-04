@@ -285,6 +285,10 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   void _openEndDrawer() {
     scaffoldKey.currentState!.openEndDrawer();
   }
+
+  List<File> getAttachments() {
+    return threadRepository.getAttachments();
+  }
 }
 
 abstract class ThreadEvent {}

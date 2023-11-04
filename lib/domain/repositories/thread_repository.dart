@@ -250,4 +250,14 @@ class ThreadRepository implements Repository {
       _checkDepth(element);
     }
   }
+
+  /// Returns list of all attachments from every post.
+  List<File> getAttachments() {
+    final List<File> files = [];
+    for (var post in _posts) {
+      if (post.files == null) continue;
+      files.addAll(post.files!);
+    }
+    return files;
+  }
 }
