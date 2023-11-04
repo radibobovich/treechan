@@ -14,6 +14,8 @@
 //   return postList;
 // }
 
+import 'package:treechan/utils/constants/enums.dart';
+
 import '../api/dvach/board_dvach_api_model.dart';
 import 'thread.dart';
 
@@ -47,6 +49,7 @@ class Board {
   //position in favorite list
   int? position;
 
+  final Imageboard imageboard;
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -56,6 +59,11 @@ class Board {
 
   @override
   int get hashCode => id.hashCode ^ name.hashCode;
+
+  @override
+  String toString() {
+    return '$id $name';
+  }
 
   Board({
     required this.bumpLimit,
@@ -84,6 +92,7 @@ class Board {
     required this.threadsPerPage,
     required this.threads,
     this.position,
+    required this.imageboard,
   });
 
   Board.fromResponseDvachApi(BoardResponseDvachApiModel boardResponse)
@@ -111,6 +120,7 @@ class Board {
         maxPages = boardResponse.board.max_pages,
         name = boardResponse.board.name,
         threadsPerPage = boardResponse.board.threads_per_page,
+        imageboard = Imageboard.dvach,
         threads = boardResponse.threads.map((thread) {
           if (boardResponse.pages != null) {
             return Thread.fromIndexBoardDvachApi(
@@ -145,6 +155,7 @@ class Board {
         maxPages = board.max_pages,
         name = board.name,
         threadsPerPage = board.threads_per_page,
+        imageboard = Imageboard.dvach,
         threads = [];
 
   Map<String, dynamic> toJson() {
@@ -174,6 +185,7 @@ class Board {
       "name": name,
       "threadsPerPage": threadsPerPage,
       "threads": threads,
+      "imageboard": imageboard.name,
     };
   }
 
@@ -202,6 +214,7 @@ class Board {
         maxPages = json['maxPages'],
         name = json['name'],
         threadsPerPage = json['threadsPerPage'],
+        imageboard = imageboardFromString(json['imageboard']),
         threads = [];
 }
 

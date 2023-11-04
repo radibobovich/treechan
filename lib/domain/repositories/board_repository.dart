@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:treechan/data/board_fetcher.dart';
-import 'package:treechan/domain/repositories/repository.dart';
+import 'package:treechan/data/local/filter_database.dart';
+import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/models/db/filter.dart';
 import 'package:treechan/utils/fix_blank_space.dart';
 
 import '../../utils/constants/enums.dart';
@@ -8,7 +10,7 @@ import '../../utils/constants/enums.dart';
 import '../../utils/fix_html_video.dart';
 import '../models/core/core_models.dart';
 
-class BoardRepository implements Repository {
+class BoardRepository {
   BoardRepository(
       {required this.boardFetcher,
       required this.boardTag,
@@ -37,14 +39,13 @@ class BoardRepository implements Repository {
     return false;
   }
 
-  @override
   Future<void> load() async {
     currentPage = 0;
     final Board board =
         await boardFetcher.getBoardApiModel(currentPage, boardTag, sortType);
 
     boardName = board.name;
-    _threads = board.threads;
+    _threads = await filterThreads(board.threads);
     for (var thread in _threads) {
       if (fixBlankSpace(thread.posts[0])) break;
     }
@@ -61,7 +62,7 @@ class BoardRepository implements Repository {
     final Board board = await boardFetcher.getBoardApiModel(
         currentPage + 1, boardTag, sortType);
 
-    List<Thread> newThreads = board.threads;
+    List<Thread> newThreads = await filterThreads(board.threads);
     if (newThreads.isNotEmpty) {
       currentPage += 1;
     }
@@ -74,5 +75,25 @@ class BoardRepository implements Repository {
         _threads.add(newThread);
       }
     }
+  }
+
+  /// Hides threads that matches autohide filter.
+  Future<List<Thread>> filterThreads(List<Thread> threads) async {
+    final db = await getIt<FilterDb>().instance;
+    final List<FilterView> filters = await db.getFiltersForBoard(
+        imageboard: boardFetcher.imageboard, boardTag: boardTag);
+    filters.removeWhere((filter) => filter.enabled == false);
+
+    for (Thread thread in threads) {
+      for (FilterView filter in filters) {
+        final regExp =
+            RegExp(r"" + filter.pattern, caseSensitive: filter.caseSensitive);
+        if (regExp.hasMatch(
+            '${thread.posts.first.subject} ${thread.posts.first.comment}')) {
+          thread.hidden = true;
+        }
+      }
+    }
+    return threads;
   }
 }

@@ -1,7 +1,10 @@
+import 'package:treechan/utils/constants/enums.dart';
+
 abstract class TrackedItem {
   final String tag;
   final int threadId;
   final String name;
+  final Imageboard imageboard;
   final int posts;
   final int newPosts;
   final int newPostsDiff;
@@ -15,6 +18,7 @@ abstract class TrackedItem {
       {required this.tag,
       required this.threadId,
       required this.name,
+      required this.imageboard,
       required this.posts,
       required this.newPosts,
       required this.newPostsDiff,
@@ -32,6 +36,7 @@ class TrackedThread extends TrackedItem {
       {required super.tag,
       required super.threadId,
       required super.name,
+      required super.imageboard,
       required super.posts,
       required super.newPosts,
       required super.newPostsDiff,
@@ -53,6 +58,7 @@ class TrackedBranch extends TrackedItem {
       required this.branchId,
       required super.threadId,
       required super.name,
+      required super.imageboard,
       required super.posts,
       required super.newPosts,
       required super.newPostsDiff,

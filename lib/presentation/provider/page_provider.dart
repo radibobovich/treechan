@@ -13,6 +13,7 @@ import 'package:treechan/presentation/screens/thread_search_screen.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
 import 'package:treechan/presentation/widgets/tracker/popup_menu_tracker.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
 import '../bloc/board_bloc.dart';
@@ -32,8 +33,12 @@ class PageProvider with ChangeNotifier {
   void removeTab(DrawerTab tab) => tabManager.removeTab(tab);
   void goBack() => tabManager.goBack();
   void setName(DrawerTab tab, String name) => tabManager.setName(tab, name);
-  void openCatalog({required String boardTag, required String query}) =>
-      tabManager.openCatalog(boardTag: boardTag, query: query);
+  void openCatalog(
+          {required Imageboard imageboard,
+          required String boardTag,
+          required String query}) =>
+      tabManager.openCatalog(
+          imageboard: imageboard, boardTag: boardTag, query: query);
 
   /// The stream is listened by new [BoardBloc] to check if you need to switch
   /// the board screen to a catalog mode.
@@ -51,10 +56,11 @@ class PageProvider with ChangeNotifier {
   ];
 
   int currentPageIndex = 2;
-  // int get currentPageIndex => _currentPageIndex;
-  // Widget get currentPage => getCurrentPage();
 
   late TabController pageController;
+
+  /// Attaches [TabManager], [TrackerCubit] and [ThreadSearchCubit].
+  /// Also starts listening to notification tap events.
   void init(PageNavigatorState gotState) {
     tabManager.init(gotState, _notifyListeners, this);
     pageController =
@@ -97,7 +103,8 @@ class PageProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void openSearch() {
+  /// Handles search button tap.
+  void _openSearch() {
     final currentBloc = tabManager.currentBloc;
 
     if (currentBloc is board_list.BoardListBloc) {
@@ -116,11 +123,13 @@ class PageProvider with ChangeNotifier {
     }
   }
 
+  /// Handles bottom navbar button tap.
+  ///
   /// 0 - search, 1 - tracker, 2 - browser, 3 - refresh, 4 - actions
   void setCurrentPageIndex(int index, {BuildContext? context}) {
     /// When open search from [BrowserScreen]
     if (currentPageIndex == 2 && index == 0) {
-      openSearch();
+      _openSearch();
       notifyListeners();
       return;
     }
@@ -151,7 +160,7 @@ class PageProvider with ChangeNotifier {
       } else if (index == 4) {
         assert(context != null, 'context is null');
         if (context == null) return;
-        openActions(context);
+        _openActions(context);
         return;
       }
     }
@@ -181,21 +190,22 @@ class PageProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void openActions(BuildContext context) {
+  /// Handles context menu button tap.
+  void _openActions(BuildContext context) {
     final currentTab = tabManager.currentTab;
     final currentBloc = tabManager.currentBloc;
     if (currentTab is BoardTab) {
-      openBoardActions(currentBloc as BoardBloc, context);
+      _openBoardActions(currentBloc as BoardBloc, context);
     } else if (currentTab is IdMixin) {
-      openThreadActions(currentBloc as ThreadBase, context);
+      _openThreadActions(currentBloc as ThreadBase, context);
     }
   }
 
-  void openBoardActions(BoardBloc bloc, BuildContext context) {
+  void _openBoardActions(BoardBloc bloc, BuildContext context) {
     showPopupMenuBoard(context, bloc, tabManager.currentTab as BoardTab);
   }
 
-  void openThreadActions(ThreadBase bloc, BuildContext context) {
+  void _openThreadActions(ThreadBase bloc, BuildContext context) {
     showPopupMenuThread(context, bloc, this);
   }
 

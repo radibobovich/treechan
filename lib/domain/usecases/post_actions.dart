@@ -100,7 +100,11 @@ class GoToPostUseCase implements BaseUseCaseWithParams<GoToPostParams, void> {
         'No way to get threadScrollService.');
     ThreadTab? threadTab = tab.getParentThreadTab();
     threadTab ??= ThreadTab(
-        id: tab.threadId, tag: tab.tag, prevTab: boardListTab, name: null);
+        imageboard: tab.imageboard,
+        id: tab.threadId,
+        tag: tab.tag,
+        prevTab: boardListTab,
+        name: null);
 
     /// Adds tab if [ThreadTab] was closed or animates to it if not
     addTab(threadTab);

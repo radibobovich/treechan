@@ -72,6 +72,7 @@ class _TrackerTileState extends State<TrackerTile>
         id: item.threadId,
         tag: item.tag,
         name: item.name,
+        imageboard: item.imageboard,
         prevTab: boardListTab,
       );
       context.read<PageProvider>().addTab(tab);
@@ -81,6 +82,7 @@ class _TrackerTileState extends State<TrackerTile>
         threadId: item.threadId,
         tag: item.tag,
         name: item.name,
+        imageboard: item.imageboard,
         prevTab: boardListTab,
       );
       context.read<PageProvider>().addTab(tab);

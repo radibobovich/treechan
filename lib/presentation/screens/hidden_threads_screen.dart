@@ -93,7 +93,11 @@ class ThreadTile extends StatelessWidget {
         onTap: () {
           Navigator.pop(context);
           onOpen(ThreadTab(
-              tag: tag, prevTab: currentTab, id: thread.id, name: null));
+              imageboard: currentTab.imageboard,
+              tag: tag,
+              prevTab: currentTab,
+              id: thread.id,
+              name: null));
         });
   }
 }

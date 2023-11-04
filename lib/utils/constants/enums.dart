@@ -32,4 +32,34 @@ enum Browser {
   internetExplorer
 }
 
-enum Imageboard { dvach }
+enum Imageboard { dvach, dvachArchive, unknown }
+
+Map<Imageboard, Imageboard> archivesMap = {
+  Imageboard.dvach: Imageboard.dvachArchive
+};
+
+Imageboard imageboardFromString(String str) {
+  for (Imageboard value in Imageboard.values) {
+    if (value.name == str) return value;
+  }
+  throw Exception('Unknown imageboard');
+}
+
+/// Returns imageboards which are not archives.
+List<Imageboard> getOriginalImageboards({bool withUnknown = false}) {
+  return Imageboard.values.toList()
+    ..removeWhere((element) =>
+        archivesMap.containsValue(element) ||
+        (!withUnknown && element == Imageboard.unknown));
+}
+
+enum FiltersDisplayMode { all, board }
+
+enum BoardView { treechan, classic }
+
+BoardView boardViewFromString(String str) {
+  for (BoardView value in BoardView.values) {
+    if (value.name == str) return value;
+  }
+  throw Exception('Unknown board view');
+}

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/board/popup_menu_board.dart';
+import 'package:treechan/utils/custom_hidable_visibility.dart';
 
 import '../../../domain/models/tab.dart';
 import '../../../utils/constants/enums.dart';
@@ -25,8 +27,12 @@ class _NormalAppBarState extends State<NormalAppBar> {
   @override
   Widget build(BuildContext context) {
     return Hidable(
-      controller: context.read<BoardBloc>().scrollController,
-      preferredWidgetSize: const Size.fromHeight(96),
+      deltaFactor: 0.04,
+      visibility: customHidableVisibility,
+      controller: !Platform.isWindows
+          ? context.read<BoardBloc>().scrollController
+          : ScrollController(),
+      preferredWidgetSize: const Size.fromHeight(86),
       child: AppBar(
         title: Text(
           widget.currentTab.name ?? "Загрузка...",
@@ -43,7 +49,7 @@ class _NormalAppBarState extends State<NormalAppBar> {
                       .sortType ==
                   SortBy.page) {
                 BlocProvider.of<BoardBloc>(context)
-                    .add(ChangeViewBoardEvent(null, query: ""));
+                    .add(ChangeSortBoardEvent(null, query: ""));
               } else {
                 BlocProvider.of<BoardBloc>(context)
                     .add(SearchQueryChangedEvent(""));
@@ -62,6 +68,12 @@ class _NormalAppBarState extends State<NormalAppBar> {
               onOpen: (ThreadTab tab) =>
                   Provider.of<PageProvider>(context, listen: false).addTab(tab))
         ],
+        bottom: context.select<BoardBloc, bool>((BoardBloc bloc) => bloc.isBusy)
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(4),
+                child: LinearProgressIndicator(),
+              )
+            : null,
       ),
     );
   }
@@ -72,7 +84,7 @@ class _NormalAppBarState extends State<NormalAppBar> {
         : IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
-              Scaffold.of(context).openDrawer();
+              openDrawer();
             },
           );
   }

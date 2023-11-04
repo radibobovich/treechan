@@ -14,7 +14,16 @@ class BranchRepository implements Repository {
   BranchRepository({required this.threadRepository, required this.postId});
   final ThreadRepository threadRepository;
   final int postId;
+
+  @override
+  Imageboard get imageboard => threadRepository.imageboard;
+  @override
+  set imageboard(value) => threadRepository.imageboard = value;
+
+  @override
   String get boardTag => threadRepository.boardTag;
+  @override
+  int get id => postId;
 
   /// Root node of the branch.
   TreeNode<Post>? _root;

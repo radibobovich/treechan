@@ -60,7 +60,24 @@ class PostDvachApiModel implements PostApiModel {
   });
 
   factory PostDvachApiModel.fromJson(Map<String, dynamic> json) =>
-      _$PostDvachApiModelFromJson(json);
+      _$PostDvachApiModelFromJson(json
+        ..update(
+            'parent', (value) => value is String ? int.parse(value) : value)
+        ..update(
+          'board',
+          (value) => value,
+          ifAbsent: () => '',
+        )
+        ..update(
+          'views',
+          (value) => value,
+          ifAbsent: () => -1,
+        )
+        ..update(
+          'endless',
+          (value) => value,
+          ifAbsent: () => 0,
+        ));
 }
 
 @JsonSerializable()
@@ -106,5 +123,11 @@ class FileDvachApiModel {
   });
 
   factory FileDvachApiModel.fromJson(Map<String, dynamic> json) =>
-      _$FileDvachApiModelFromJson(json);
+      _$FileDvachApiModelFromJson(json
+        ..update('fullname', (value) => value, ifAbsent: () => '')
+        ..update(
+          'displayname',
+          (value) => value,
+          ifAbsent: () => '',
+        ));
 }

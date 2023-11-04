@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/exceptions.dart';
@@ -21,6 +22,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
   late BoardSearchService searchService;
   late TextEditingController textController = TextEditingController();
   final ScrollController scrollController = ScrollController();
+  bool isBusy = false;
   Key key;
   bool isDisposed = false;
   BoardBloc(
@@ -30,29 +32,30 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       : super(BoardInitialState()) {
     tabSub = tabProvider.catalogStream.listen((catalog) {
       if (catalog.boardTag == boardRepository.boardTag && !isDisposed) {
-        add(ChangeViewBoardEvent(null, query: catalog.searchTag));
+        add(ChangeSortBoardEvent(null, query: catalog.searchTag));
       }
     });
 
     on<LoadBoardEvent>(_load);
     on<ReloadBoardEvent>(_reload);
     on<RefreshBoardEvent>(_refresh);
-    on<ChangeViewBoardEvent>(_changeView);
+    on<ChangeSortBoardEvent>(_changeSort);
     on<SearchQueryChangedEvent>(_searchQueryChanged);
   }
 
   FutureOr<void> _searchQueryChanged(event, emit) async {
-    // textController.text = event.query;
     try {
       emit(BoardSearchState(
-          searchResult: await searchService.search(event.query),
-          query: event.query));
+        searchResult: await searchService.search(event.query),
+        query: event.query,
+        boardView: (state as dynamic).boardView,
+      ));
     } on Exception catch (e) {
       emit(BoardErrorState(message: e.toString(), exception: e));
     }
   }
 
-  FutureOr<void> _changeView(event, emit) async {
+  FutureOr<void> _changeSort(event, emit) async {
     try {
       bool changed =
           await boardRepository.changeSortType(event.sortType!, event.query);
@@ -73,12 +76,23 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
 
       add(LoadBoardEvent());
     } catch (e) {
-      // emit(BoardErrorState(e.toString()));
       add(LoadBoardEvent(refreshCompleted: false));
     }
   }
 
   FutureOr<void> _reload(event, emit) async {
+    if (isBusy) return;
+    isBusy = true;
+    final currentState = state;
+
+    if (currentState is BoardLoadedState) {
+      emit(BoardLoadingState(
+        boardName: currentState.boardName,
+        threads: currentState.threads,
+        completeRefresh: false,
+        boardView: currentState.boardView,
+      ));
+    }
     try {
       await boardRepository.load();
       hiddenThreads = await HiddenThreadsDatabase()
@@ -94,19 +108,26 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
       }
     } on Exception catch (e) {
       emit(BoardErrorState(message: e.toString(), exception: e));
+    } finally {
+      isBusy = false;
     }
   }
 
   FutureOr<void> _load(event, emit) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final BoardView boardView = boardViewFromString(
+          prefs.getString('boardView') ?? BoardView.treechan.name);
       hiddenThreads = await HiddenThreadsDatabase()
           .getHiddenThreadIds(boardRepository.boardTag);
       final List<Thread>? threads = await boardRepository.getThreads();
       searchService = BoardSearchService(threads: threads!);
       emit(BoardLoadedState(
-          boardName: boardRepository.boardName,
-          threads: threads,
-          completeRefresh: event.refreshCompleted));
+        boardName: boardRepository.boardName,
+        threads: threads,
+        completeRefresh: event.refreshCompleted,
+        boardView: boardView,
+      ));
     } on BoardNotFoundException {
       emit(BoardErrorState(message: "404 - Доска не найдена"));
     } on NoCookieException {
@@ -150,8 +171,8 @@ class ReloadBoardEvent extends BoardEvent {}
 
 class RefreshBoardEvent extends BoardEvent {}
 
-class ChangeViewBoardEvent extends BoardEvent {
-  ChangeViewBoardEvent(this.sortType, {this.query}) {
+class ChangeSortBoardEvent extends BoardEvent {
+  ChangeSortBoardEvent(this.sortType, {this.query}) {
     if (sortType != null && sortType != SortBy.page) {
       prefs.setString('boardSortType', sortType.toString().split('.').last);
     }
@@ -177,14 +198,30 @@ class BoardLoadedState extends BoardState {
   final String boardName;
   final List<Thread>? threads;
   final bool completeRefresh;
+  final BoardView boardView;
   BoardLoadedState(
-      {required this.boardName, this.threads, this.completeRefresh = true});
+      {required this.boardName,
+      this.threads,
+      this.completeRefresh = true,
+      required this.boardView});
+}
+
+class BoardLoadingState extends BoardLoadedState {
+  BoardLoadingState(
+      {required super.boardName,
+      required super.threads,
+      required super.completeRefresh,
+      required super.boardView});
 }
 
 class BoardSearchState extends BoardState {
-  BoardSearchState({required this.searchResult, required this.query});
+  BoardSearchState(
+      {required this.searchResult,
+      required this.query,
+      required this.boardView});
   final List<Thread> searchResult;
   final String query;
+  final BoardView boardView;
 }
 
 class BoardErrorState extends BoardState {

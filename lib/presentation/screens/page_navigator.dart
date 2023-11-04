@@ -1,8 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
+import 'package:treechan/utils/constants/constants.dart';
+import 'package:treechan/utils/custom_hidable_visibility.dart';
 
 import '../widgets/drawer/drawer.dart';
 import '../../domain/models/tab.dart';
@@ -19,6 +22,7 @@ class PageNavigator extends StatefulWidget {
 
 class PageNavigatorState extends State<PageNavigator>
     with TickerProviderStateMixin {
+  Orientation? prevOrientation;
   @override
   void initState() {
     super.initState();
@@ -26,17 +30,7 @@ class PageNavigatorState extends State<PageNavigator>
     provider.init(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       provider.addTab(boardListTab);
-      debugThread(provider);
     });
-  }
-
-  void debugThread(PageProvider provider) {
-    if (kDebugMode && const String.fromEnvironment('thread') == 'true') {
-      debugPrint('debugging thread');
-      DrawerTab debugThreadTab = ThreadTab(
-          name: "debug", tag: "b", prevTab: boardListTab, id: 282647314);
-      provider.addTab(debugThreadTab);
-    }
   }
 
   @override
@@ -59,18 +53,29 @@ class PageNavigatorState extends State<PageNavigator>
       },
       child: ScaffoldMessenger(
         key: provider.messengerKey,
-        child: Scaffold(
-          key: _scaffoldKey,
+        child: OrientationBuilder(builder: (context, orientation) {
+          prevOrientation ??= orientation;
+          if (prevOrientation != orientation) {
+            if (orientation == Orientation.portrait) {
+              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+            } else {
+              SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                  overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+            }
+          }
+          return Scaffold(
+            key: _scaffoldKey,
 
-          /// Holds pages ([TrackerScreen] and [BrowserScreen])
-          body: TabBarView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: provider.pageController,
-              children: provider.pages),
-          drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
-          drawerEdgeDragWidth: 50,
-          bottomNavigationBar: BottomBar(provider: provider),
-        ),
+            /// Holds pages ([TrackerScreen] and [BrowserScreen])
+            body: TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
+                controller: provider.pageController,
+                children: provider.pages),
+            drawer: AppDrawer(provider: provider, scaffoldKey: _scaffoldKey),
+            drawerEdgeDragWidth: 50,
+            bottomNavigationBar: BottomBar(provider: provider),
+          );
+        }),
       ),
     );
   }
@@ -85,24 +90,33 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: BottomNavigationBar(
-        selectedFontSize: 0.0,
-        unselectedFontSize: 0.0,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: provider.currentPageIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.visibility), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: ''), // or Icons.language
-          BottomNavigationBarItem(icon: Icon(Icons.refresh), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.more_vert), label: '')
-        ],
-        onTap: (value) {
-          provider.setCurrentPageIndex(value, context: context);
-        },
+    final systemBarHeight = MediaQuery.of(context).padding.bottom;
+    return Hidable(
+      controller: provider.tabManager.tabScrollControllerReference,
+      visibility: customHidableVisibility,
+      deltaFactor: 0.04,
+      preferredWidgetSize:
+          Size.fromHeight(AppConstants.navBarHeight + systemBarHeight),
+      child: SizedBox(
+        height: AppConstants.navBarHeight,
+        child: BottomNavigationBar(
+          selectedFontSize: 0.0,
+          unselectedFontSize: 0.0,
+          enableFeedback: false,
+          type: BottomNavigationBarType.fixed,
+          currentIndex: provider.currentPageIndex,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.visibility), label: ''),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard), label: ''), // or Icons.language
+            BottomNavigationBarItem(icon: Icon(Icons.refresh), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.more_vert), label: '')
+          ],
+          onTap: (value) {
+            provider.setCurrentPageIndex(value, context: context);
+          },
+        ),
       ),
     );
   }

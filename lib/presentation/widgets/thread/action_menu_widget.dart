@@ -212,6 +212,7 @@ class ActionMenu extends StatelessWidget {
     context.read<PageProvider>().addTab(
           BranchTab(
             tag: (currentTab as TagMixin).tag,
+            imageboard: currentTab.imageboard,
             id: node.data.id,
             threadId: threadId,
             name: 'Ответ: "${removeHtmlTags(node.data.comment, links: false)}"',

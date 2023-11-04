@@ -35,6 +35,9 @@ class AppDrawer extends StatelessWidget {
           ),
           HistoryButton(provider: provider),
           const SettingsButton(),
+          SizedBox.fromSize(
+            size: Size.fromHeight(MediaQuery.of(context).padding.bottom),
+          )
           // history button
         ],
       ),
@@ -109,6 +112,7 @@ class _TabsListState extends State<TabsList> {
             child: MediaQuery.removePadding(
               context: context,
               removeTop: true,
+              removeBottom: true,
               child: ListView.builder(
                 reverse: reverseDrawerTabs,
                 itemCount: tabs.length,

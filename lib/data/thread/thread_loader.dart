@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:mockito/mockito.dart';
 import 'package:treechan/data/rest/rest_client.dart';
 import 'package:treechan/di/injection.dart';
+import 'package:treechan/domain/imageboards/imageboard_specific.dart';
+import 'package:treechan/domain/models/api/dvach/thread_archive_dvach_api_model.dart';
 import 'package:treechan/domain/models/api/dvach/thread_dvach_api_model.dart';
 import 'package:treechan/domain/models/api/thread_api_model.dart';
 import 'package:treechan/exceptions.dart';
@@ -18,6 +21,7 @@ abstract class IThreadLoader {
   Future<List<Post>> getPosts({
     required String boardTag,
     required int threadId,
+    String? date,
   });
 }
 
@@ -35,16 +39,36 @@ class ThreadRemoteLoader implements IThreadRemoteLoader {
   Future<List<Post>> getPosts({
     required String boardTag,
     required int threadId,
+    String? date,
   }) async {
-    final RestClient restClient = getIt<RestClient>(
-        instanceName: imageboard.name, param1: _getDio(boardTag, threadId));
-    final ThreadResponseApiModel apiModel =
-        await restClient.loadThread(boardTag: boardTag, threadId: threadId);
+    RestClient restClient = getIt<RestClient>(
+        instanceName: imageboard.name,
+        param1: ImageboardSpecific(imageboard).getDio(boardTag, threadId));
+
+    late final ThreadResponseApiModel apiModel;
+    try {
+      apiModel = await restClient.loadThread(
+          boardTag: boardTag, threadId: threadId, date: date);
+    } on ThreadNotFoundException catch (e) {
+      debugPrint('ThreadRemoteLoader: 404. Trying to get archive version...');
+      try {
+        await ImageboardSpecific(imageboard).getDio(boardTag, threadId).get(
+            e.requestOptions.baseUrl +
+                e.requestOptions.path.replaceFirst('.json', '.html'),
+            options: Options(followRedirects: true));
+      } on ArchiveRedirectException {
+        rethrow;
+      } on ThreadNotFoundException {
+        rethrow;
+      }
+    }
 
     /// TODO: Better create ThreadResponseApiModel.toCoreModel()
     /// so we dont have to check for type here
     if (apiModel is ThreadResponseDvachApiModel) {
       return Thread.fromThreadDvachApi(apiModel).posts;
+    } else if (apiModel is ThreadArchiveResponseDvachApiModel) {
+      return apiModel.toThreadCoreModel().posts;
     } else {
       throw Exception("Unknown thread response model");
     }
@@ -62,8 +86,11 @@ class MockThreadRemoteLoader extends Mock implements IThreadRemoteLoader {
   final String assetPath;
 
   @override
-  Future<List<Post>> getPosts(
-      {required String boardTag, required int threadId}) async {
+  Future<List<Post>> getPosts({
+    required String boardTag,
+    required int threadId,
+    String? date,
+  }) async {
     final ThreadResponseApiModel apiModel =
         ThreadResponseDvachApiModel.fromJson(
             jsonDecode(await rootBundle.loadString(assetPath)));
@@ -73,11 +100,35 @@ class MockThreadRemoteLoader extends Mock implements IThreadRemoteLoader {
   }
 }
 
+@Deprecated('Use ImageboardSpecific getDio method')
 Dio _getDio(String boardTag, int threadId) {
   final Dio dio = Dio();
 
   dio.interceptors.add(
     InterceptorsWrapper(
+      onResponse: (response, handler) {
+        if (response.statusCode != null) {
+          debugPrint('onResponse: statusCode is ${response.statusCode}');
+          switch (response.statusCode) {
+            case 200:
+              {
+                if (response.redirects.isEmpty) break;
+                final String origin = response.redirects.first.location.origin;
+                final String redirectPath =
+                    response.redirects.last.location.path;
+                debugPrint('''
+ThreadRemoteLoader: got a redirect. Throwing ArchiveRedirectException, redirect
+path is ${origin + redirectPath}''');
+                throw ArchiveRedirectException(
+                  requestOptions: response.requestOptions,
+                  baseUrl: origin,
+                  redirectPath: redirectPath,
+                );
+              }
+          }
+        }
+        handler.next(response);
+      },
       onError: (e, handler) {
         if (e.response?.statusCode != null) {
           switch (e.response!.statusCode) {
@@ -89,6 +140,7 @@ Dio _getDio(String boardTag, int threadId) {
                 requestOptions: e.requestOptions,
               );
           }
+
           // _onThreadLoadResponseError(response.statusCode!, boardTag, threadId);
         } else {
           handler.next(e);

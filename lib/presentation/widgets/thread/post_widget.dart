@@ -115,12 +115,13 @@ class _PostWidgetState extends State<PostWidget>
                                           fontWeight: FontWeight.bold),
                                     )),
                                   ),
-                            MediaPreview(files: post.files),
+                            MediaPreview(
+                                files: post.files,
+                                imageboard: widget.currentTab.imageboard),
                             HtmlContainer(
                               bloc: widget.bloc,
                               post: post,
                               treeNode: widget.node,
-                              roots: widget.roots,
                               currentTab: widget.currentTab,
                               scrollService: widget.scrollService,
                             ),

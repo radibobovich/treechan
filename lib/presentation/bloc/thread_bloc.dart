@@ -53,6 +53,9 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
       ));
     } on ThreadNotFoundException catch (e) {
       emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
+    } on ArchiveRedirectException catch (e) {
+      emit(ThreadErrorState(
+          message: 'Перенаправление на архивный тред...', exception: e));
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError) {
         emit(ThreadErrorState(
@@ -74,6 +77,7 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   }
 
   FutureOr<void> _refresh(event, emit) async {
+    if ((tab as ThreadTab).imageboard == Imageboard.dvachArchive) return;
     if (isBusy) return;
     isBusy = true;
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:settings_ui/settings_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:treechan/main.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -52,6 +54,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           SettingsSection(
+            title: const Text('Доски',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            tiles: [
+              SettingsTile.navigation(
+                leading: const Icon(Icons.visibility_off),
+                title: const Text('Автоскрытие'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onPressed: (context) {
+                  Navigator.pushNamed(context, '/filters', arguments: {
+                    'displayMode': FiltersDisplayMode.all,
+                  });
+                },
+              )
+            ],
+          ),
+          SettingsSection(
               title: const Text('Тред',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               tiles: <SettingsTile>[
@@ -87,7 +105,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   initialValue: prefs.getBool('spoilers')!,
                   onToggle: (value) {
                     setState(() {
-                      prefs.setBool('spoilers', value);
+                      prefs.setBool('spoilers', value).then((value) async {
+                        prefs = await SharedPreferences.getInstance();
+                      });
                     });
                   },
                 ),

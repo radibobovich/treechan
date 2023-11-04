@@ -167,8 +167,11 @@ class BoardTile extends StatelessWidget {
           FocusManager.instance.primaryFocus?.unfocus();
           BlocProvider.of<BoardListBloc>(context).add(LoadBoardListEvent());
         }
-        context.read<PageProvider>().addTab(
-            BoardTab(name: board.name, tag: board.id, prevTab: boardListTab));
+        context.read<PageProvider>().addTab(BoardTab(
+            imageboard: board.imageboard,
+            name: board.name,
+            tag: board.id,
+            prevTab: boardListTab));
       },
       onLongPress: () {
         showContextMenu(context, board);
@@ -229,8 +232,11 @@ class _FavoriteBoardsListState extends State<FavoriteBoardsList> {
   }
 
   openBoard(Board board) async {
-    Provider.of<PageProvider>(context, listen: false).addTab(
-        BoardTab(name: board.name, tag: board.id, prevTab: boardListTab));
+    Provider.of<PageProvider>(context, listen: false).addTab(BoardTab(
+        imageboard: board.imageboard,
+        name: board.name,
+        tag: board.id,
+        prevTab: boardListTab));
   }
 
   /// Calls when user reorder favorite boards.

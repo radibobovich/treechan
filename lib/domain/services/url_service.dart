@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:treechan/utils/constants/enums.dart';
 
 import '../models/tab.dart';
 
-// TODO: write tests
-class SearchService {
-  SearchService({this.currentTab});
+@Deprecated('Use ImageboardSpecific.tryOpenLink() instead.')
+class UrlService {
+  // UrlService({this.currentTab});
 
-  late String url;
-  late Uri parsedUrl;
-  DrawerTab? currentTab;
-  late DrawerTab newTab;
-  DrawerTab parseInput(String url, {String? searchTag}) {
+  // late String url;
+  // late Uri parsedUrl;
+  // DrawerTab? currentTab;
+  // late DrawerTab newTab;
+  DrawerTab tryOpenLink(String url, DrawerTab? currentTab,
+      {String? searchTag}) {
     List<String> allowedHosts = ["2ch.hk", "2ch.life"];
     if (url == "") {
       throw Exception("Empty url");
     }
-    this.url = url;
-    parsedUrl = Uri.parse(url);
+    // this.url = url;
+    Uri parsedUrl = Uri.parse(url);
 
     debugPrint("Got link: '$url' Parsed: ");
     for (var segment in parsedUrl.pathSegments) {
@@ -36,9 +38,12 @@ class SearchService {
       }
     }
 
+    late DrawerTab newTab;
     if (parsedUrl.pathSegments.isNotEmpty) {
       newTab = BoardTab(
-          tag: parsedUrl.pathSegments[0], prevTab: currentTab ?? boardListTab);
+          imageboard: Imageboard.dvach,
+          tag: parsedUrl.pathSegments[0],
+          prevTab: currentTab ?? boardListTab);
       // find and remove empty segments
       final cleanSegments = <String>[];
       cleanSegments.addAll(parsedUrl.pathSegments);
@@ -48,15 +53,17 @@ class SearchService {
         if (cleanSegments[1] == "res" && cleanSegments.length == 3) {
           // split is used to remove the .html extension
           newTab = ThreadTab(
+              imageboard: Imageboard.dvach,
               tag: parsedUrl.pathSegments[0],
               prevTab: currentTab ?? boardListTab,
               id: int.parse(cleanSegments[2].split(".")[0]),
               name: null);
         } else if (cleanSegments.last == "catalog.html") {
           (newTab as BoardTab).isCatalog = true;
-          (newTab as BoardTab).query = searchTag;
+          newTab.query = searchTag;
         } else {
           newTab = ThreadTab(
+              imageboard: Imageboard.dvach,
               tag: (newTab as BoardTab).tag,
               prevTab: currentTab ?? boardListTab,
               id: int.parse(cleanSegments[1].split(".")[0]),
