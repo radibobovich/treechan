@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flexible_tree_view/flexible_tree_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +10,7 @@ import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
-import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
+import 'package:treechan/router.dart';
 import 'package:treechan/utils/constants/constants.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -174,7 +174,26 @@ class _ThreadAppBarState extends State<ThreadAppBar> {
                       .add(RefreshThreadEvent());
                 },
                 icon: const Icon(Icons.refresh)),
-            const PopupMenuThread()
+            // const PopupMenuThread()
+            IconButton(
+                onPressed: () {
+                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                      overlays: [
+                        SystemUiOverlay.top,
+                        SystemUiOverlay.bottom
+                      ]).then((value) =>
+                      // ignore: use_build_context_synchronously
+                      Navigator.pushNamed(context, '/thread_gallery',
+                          arguments: ThreadGalleryArgs(
+                            // ignore: use_build_context_synchronously
+                            files: context.read<ThreadBloc>().getAttachments(),
+                            currentTab: widget.currentTab,
+                            spacing: 0.5,
+                            portraitItemsPerRow: 5,
+                            landscapeItemsPerRow: 10,
+                          )));
+                },
+                icon: const Icon(Icons.grid_view))
           ],
           bottom:
               context.select<ThreadBloc, bool>((ThreadBloc bloc) => bloc.isBusy)

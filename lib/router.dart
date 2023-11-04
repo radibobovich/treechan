@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/bloc/filters_cubit.dart';
 import 'package:treechan/presentation/screens/filter/filter_edit_screen.dart';
 import 'package:treechan/presentation/screens/filter/filters_screen.dart';
+import 'package:treechan/presentation/screens/thread_gallery_screen.dart';
 
 import 'domain/models/tab.dart';
 import 'presentation/bloc/history_bloc.dart';
@@ -48,6 +50,7 @@ Route<dynamic> getRoute(RouteSettings settings) {
                 child: const FiltersScreen(),
               ));
     case '/filter_edit':
+      // TODO: rewrite all the args with objects
       final args = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(
           builder: (_) => FilterEditScreen(
@@ -57,7 +60,32 @@ Route<dynamic> getRoute(RouteSettings settings) {
                 getBoards: args['getBoards'],
                 currentBoard: args['currentBoard'],
               ));
+    case '/thread_gallery':
+      final args = settings.arguments as ThreadGalleryArgs;
+      return MaterialPageRoute(
+          builder: (_) => ThreadGalleryScreen(
+                files: args.files,
+                currentTab: args.currentTab,
+                spacing: args.spacing,
+                portraitItemsPerRow: args.portraitItemsPerRow,
+                landscapeItemsPerRow: args.landscapeItemsPerRow,
+              ));
     default:
       return MaterialPageRoute(builder: (_) => const PageNavigator());
   }
+}
+
+class ThreadGalleryArgs {
+  final List<File> files;
+  final ThreadTab currentTab;
+  final double spacing;
+  final int portraitItemsPerRow;
+  final int landscapeItemsPerRow;
+  ThreadGalleryArgs({
+    required this.portraitItemsPerRow,
+    required this.landscapeItemsPerRow,
+    required this.files,
+    required this.currentTab,
+    required this.spacing,
+  });
 }
