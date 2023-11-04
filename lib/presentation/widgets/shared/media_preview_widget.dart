@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/imageboards/imageboard_specific.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
-import 'package:treechan/domain/services/image_download_service.dart';
 
 import 'package:extended_image/extended_image.dart';
+import 'package:treechan/presentation/widgets/shared/fullscreen_gallery.dart';
 import 'package:treechan/utils/constants/dev.dart';
 import 'package:treechan/utils/constants/enums.dart';
-
-import 'image_gallery_widget.dart';
 
 /// Size of media item preview in [_showGalleryPreviewDialog].
 const double _dialogThumbnailDimension = 120;
@@ -41,14 +39,14 @@ class MediaPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (files == null || files!.isEmpty) return const SizedBox.shrink();
-    _fixLinks(files!, imageboard);
+    fixLinks(files!, imageboard);
     if (env == Env.test || env == Env.dev) {
       _mockLinks(files!);
     }
     return Builder(
       builder: (_) {
         if (showAsDialog) {
-          final mediaItems = _getMediaItems(
+          final mediaItems = getMediaItems(
             files!,
             imageboard,
             context,
@@ -77,7 +75,7 @@ class MediaPreview extends StatelessWidget {
                   ? const NeverScrollableScrollPhysics()
                   : const ClampingScrollPhysics(),
               child: Row(
-                children: _getMediaItems(files!, imageboard, context,
+                children: getMediaItems(files!, imageboard, context,
                     height: height, classicPreview: classicPreview),
               ),
             ),
@@ -92,7 +90,7 @@ class MediaPreview extends StatelessWidget {
 /// [Imageboard] and creates a list of [_MediaItemPreview].
 ///
 /// The list will contain only one image if [classicPreview] is true.
-List<Widget> _getMediaItems(
+List<Widget> getMediaItems(
     List<File> files, Imageboard imageboard, BuildContext context,
     {required double height,
     bool classicPreview = false,
@@ -164,7 +162,8 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
         if (widget.classicPreview) {
           /// Dont open gallery dialog if there is a single media item.
           if (widget.files.length == 1) {
-            _openFulscreenGallery(context, pageController);
+            openFullscreenGallery(context, pageController,
+                imageboard: widget.imageboard, files: widget.files);
             return;
           }
           _showGalleryPreviewDialog(context,
@@ -175,7 +174,8 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
         }
 
         if (isLoaded) {
-          _openFulscreenGallery(context, pageController);
+          openFullscreenGallery(context, pageController,
+              imageboard: widget.imageboard, files: widget.files);
         } else {
           _reloadThumbnail();
         }
@@ -242,53 +242,6 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
           ),
         );
       },
-    );
-  }
-
-  Future<dynamic> _openFulscreenGallery(
-      BuildContext context, ExtendedPageController pageController) {
-    return Navigator.push(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 50),
-        transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        opaque: false,
-        pageBuilder: (_, __, ___) => Scaffold(
-            // black background if video
-            backgroundColor: Colors.black,
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.save),
-                  onPressed: () {
-                    final index = pageController.page?.toInt();
-                    if (index == null) return;
-                    ImageboardSpecific(widget.imageboard)
-                            .videoTypes
-                            .contains(widget.files[index].type)
-                        ? downloadVideo(widget.files[index].path)
-                        : downloadImage(
-                            widget.files[index].path,
-                          );
-                  },
-                  // add a notification here to show that the image is downloaded
-                )
-              ],
-            ),
-            body: SwipeGallery(
-              imageboard: widget.imageboard,
-              files: widget.files,
-              pageController: pageController,
-            )),
-      ),
     );
   }
 
@@ -371,10 +324,10 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
   }
 }
 
-void _fixLinks(List<File> files, Imageboard imageboard) {
+List<File> fixLinks(List<File> files, Imageboard imageboard) {
   if (!(imageboard == Imageboard.dvach ||
       imageboard == Imageboard.dvachArchive)) {
-    return;
+    return files;
   }
   for (var file in files) {
     if (!file.thumbnail.contains("http")) {
@@ -384,6 +337,7 @@ void _fixLinks(List<File> files, Imageboard imageboard) {
       file.path = "https://2ch.hk${file.path}";
     }
   }
+  return files;
 }
 
 /// Used for testing purposes
