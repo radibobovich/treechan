@@ -9,6 +9,7 @@ import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/utils/constants/constants.dart';
 import 'package:treechan/utils/constants/enums.dart';
+import 'package:treechan/utils/custom_hidable_visibility.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../domain/models/tab.dart';
@@ -110,6 +111,7 @@ class BranchAppBar extends StatelessWidget implements PreferredSizeWidget {
       },
       child: Hidable(
         deltaFactor: 0.04,
+        visibility: customHidableVisibility,
         controller: !Platform.isWindows
             ? context.read<BranchBloc>().scrollController
             : ScrollController(),
