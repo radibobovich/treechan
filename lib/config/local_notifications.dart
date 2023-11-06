@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
@@ -26,7 +27,8 @@ Future<void> initLocalNotifications() async {
       linux: initializationSettingsLinux);
 
   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onDidReceiveNotificationResponse: _onDidReceiveNotificationResponse);
+      onDidReceiveNotificationResponse: _onDidReceiveNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse: notificationTapBackground);
 
   // await flutterLocalNotificationsPlugin
   //     .resolvePlatformSpecificImplementation<
@@ -52,9 +54,37 @@ _onDidReceiveNotificationResponse(
       jsonDecode(receivedNotificationResponse.payload!)));
 }
 
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse notificationResponse) {
+  debugPrint(
+      'Got action ${notificationResponse.actionId} from notification id ${notificationResponse.id}');
+  notificationActionBus.add(NotificationAction(
+      type: NotificationActionType.cancel,
+      actionId: notificationResponse.actionId,
+      notificationId: notificationResponse.id));
+}
+
 final StreamController<PushUpdateNotification>
     pushNotificationStreamController =
     StreamController<PushUpdateNotification>.broadcast();
+
+final StreamController<NotificationAction> notificationActionBus =
+    StreamController<NotificationAction>.broadcast();
+
+class NotificationAction {
+  final NotificationActionType type;
+  final String? actionId;
+  final int? notificationId;
+  // final int? actionId;
+  NotificationAction({
+    required this.type,
+    required this.actionId,
+    required this.notificationId,
+    // this.actionId
+  });
+}
+
+enum NotificationActionType { cancel }
 
 const String _normalChannel = 'normal';
 
