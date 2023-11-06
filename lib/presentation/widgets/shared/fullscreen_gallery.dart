@@ -1,8 +1,8 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:treechan/domain/imageboards/imageboard_specific.dart';
+import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
-import 'package:treechan/domain/services/image_download_service.dart';
+import 'package:treechan/domain/services/media_download_service.dart';
 import 'package:treechan/presentation/widgets/shared/image_gallery_widget.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
@@ -29,17 +29,14 @@ Future<dynamic> openFullscreenGallery(
             elevation: 0,
             actions: [
               IconButton(
-                icon: const Icon(Icons.save),
+                icon: const Icon(Icons.download),
                 onPressed: () {
                   final index = pageController.page?.toInt();
                   if (index == null) return;
-                  ImageboardSpecific(imageboard)
-                          .videoTypes
-                          .contains(files[index].type)
-                      ? downloadVideo(files[index].path)
-                      : downloadImage(
-                          files[index].path,
-                        );
+
+                  final downloader = getIt<MediaDownloadService>();
+                  downloader.downloadMedia(files[index],
+                      imageboard: imageboard);
                 },
                 // add a notification here to show that the image is downloaded
               )
