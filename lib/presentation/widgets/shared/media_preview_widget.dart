@@ -87,7 +87,7 @@ class MediaPreview extends StatelessWidget {
 }
 
 /// Picks attachments that are valid media files supported on the current
-/// [Imageboard] and creates a list of [_MediaItemPreview].
+/// [Imageboard] and creates a list of [MediaItemPreview].
 ///
 /// The list will contain only one image if [classicPreview] is true.
 List<Widget> getMediaItems(
@@ -106,7 +106,7 @@ List<Widget> getMediaItems(
   }
   for (var file in allowedFiles) {
     if (classicPreview && media.length == 1) break;
-    media.add(_MediaItemPreview(
+    media.add(MediaItemPreview(
       imageboard: imageboard,
       file: file,
       files: allowedFiles,
@@ -119,8 +119,8 @@ List<Widget> getMediaItems(
 }
 
 /// Represents one specific media item.
-class _MediaItemPreview extends StatefulWidget {
-  const _MediaItemPreview({
+class MediaItemPreview extends StatefulWidget {
+  const MediaItemPreview({
     Key? key,
     required this.imageboard,
     required this.file,
@@ -137,10 +137,10 @@ class _MediaItemPreview extends StatefulWidget {
   final bool classicPreview;
   final bool squareShaped;
   @override
-  State<_MediaItemPreview> createState() => _MediaItemPreviewState();
+  State<MediaItemPreview> createState() => _MediaItemPreviewState();
 }
 
-class _MediaItemPreviewState extends State<_MediaItemPreview>
+class _MediaItemPreviewState extends State<MediaItemPreview>
     with SingleTickerProviderStateMixin {
   late Widget thumbnail;
   bool isLoaded = true;
@@ -311,7 +311,8 @@ class _MediaItemPreviewState extends State<_MediaItemPreview>
         ),
         const Positioned.fill(
           child: Center(
-            child: Icon(Icons.play_arrow, size: 50, color: Colors.white),
+            child: Icon(Icons.play_arrow,
+                size: 50, color: Color.fromARGB(165, 255, 255, 255)),
           ),
         )
       ]);
