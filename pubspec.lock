@@ -513,15 +513,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
-  gallery_saver_updated:
+  gal:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: aa91c91d317a469989ce3f0c7a7a9e455286de83
-      url: "https://github.com/ARTISAN-inc/gallery_saver_updated.git"
-    source: git
-    version: "3.0.0"
+      name: gal
+      sha256: ebc581bea458be47e8e80761c4449ad3a0f045db206f6f4648885ac474444246
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.2"
   get_it:
     dependency: "direct main"
     description:

@@ -49,9 +49,6 @@ dependencies:
   mockito: ^5.4.2
   injectable: ^2.3.0
   get_it: ^7.6.4
-  gallery_saver_updated:
-    git:
-      url: https://github.com/ARTISAN-inc/gallery_saver_updated.git
   image_gallery_saver: ^2.0.3
   dio: ^5.3.3
   flutter_svg: ^2.0.7
@@ -64,6 +61,7 @@ dependencies:
       ref: develop
   floor: ^1.4.2
   flutter_form_builder: ^8.0.0
+  gal: ^2.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
