@@ -5,6 +5,7 @@ import 'package:treechan/data/board_list_fetcher.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/repositories/manager/branch_repository_manager.dart';
 import 'package:treechan/domain/repositories/manager/thread_repository_manager.dart';
+import 'package:treechan/main.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
 import '../../domain/models/tab.dart';
@@ -69,14 +70,20 @@ class BlocHandler {
             // threadRepository: ThreadRepository(
             //     boardTag: (tab as ThreadTab).tag, threadId: tab.id),
             threadRepository: ThreadRepositoryManager().get(
-                tab.imageboard, (tab as ThreadTab).tag, tab.id,
+                tab.imageboard, (tab as ThreadTab).tag, tab.id, tab.classic,
                 date: tab.archiveDate),
             tab: tab,
             provider: _provider)
           ..add(LoadThreadEvent());
       case BranchTab:
-        final threadRepository = ThreadRepositoryManager()
-            .get(tab.imageboard, (tab as BranchTab).tag, tab.threadId);
+        final threadRepository = ThreadRepositoryManager().get(
+          tab.imageboard,
+          (tab as BranchTab).tag,
+          tab.threadId,
+          tab.getParentThreadTab()?.classic ??
+              prefs.getBool('classicThreadView') ??
+              false,
+        );
         final branchRepository =
             BranchRepositoryManager().get(tab.imageboard, tab.tag, tab.id) ??
                 BranchRepositoryManager().create(threadRepository, tab.id);

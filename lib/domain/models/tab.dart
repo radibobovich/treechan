@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treechan/config/local_notifications.dart';
+import 'package:treechan/main.dart';
 import 'package:treechan/presentation/bloc/branch_bloc.dart';
 import 'package:treechan/utils/constants/enums.dart';
 
@@ -21,12 +22,12 @@ abstract class DrawerTab {
   factory DrawerTab.fromPush(PushUpdateNotification notification) {
     if (notification.type == 'thread') {
       return ThreadTab(
-        tag: notification.boardTag,
-        name: notification.name,
-        imageboard: notification.imageboard,
-        prevTab: boardListTab,
-        id: notification.id,
-      );
+          tag: notification.boardTag,
+          name: notification.name,
+          imageboard: notification.imageboard,
+          prevTab: boardListTab,
+          id: notification.id,
+          classic: prefs.getBool('classicThreadView') ?? false);
     } else if (notification.type == 'branch') {
       assert(notification.threadId != null,
           'threadId must not be null for branch');
@@ -121,6 +122,7 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
     required String tag,
     required DrawerTab prevTab,
     required int id,
+    required this.classic,
     this.archiveDate,
   }) {
     this.tag = tag;
@@ -129,6 +131,12 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
   }
 
   String? archiveDate;
+
+  /// If true, thread will be shown as a list of posts, like a normal imageboard
+  /// client shows.
+  ///
+  /// Can be changed later by user.
+  bool classic;
 
   @override
   ThreadBloc getBloc(BuildContext context) {
@@ -142,6 +150,7 @@ class ThreadTab extends DrawerTab with TagMixin, IdMixin<ThreadTab> {
       imageboard: imageboard,
       archiveDate: archiveDate,
       id: id,
+      classic: classic,
       prevTab: prevTab,
       timestamp: DateTime.now(),
     );
@@ -189,6 +198,7 @@ class HistoryTab extends ThreadTab {
     required super.prevTab,
     required super.id,
     required this.timestamp,
+    required super.classic,
     super.archiveDate,
   });
 
@@ -199,6 +209,7 @@ class HistoryTab extends ThreadTab {
         imageboard: imageboard,
         archiveDate: archiveDate,
         id: id,
+        classic: classic,
         prevTab: prevTab);
   }
 
@@ -209,6 +220,7 @@ class HistoryTab extends ThreadTab {
       'threadId': id,
       'imageboard': imageboard.name,
       'archiveDate': archiveDate,
+      'classic': classic == true ? 1 : 0,
       'timestamp': timestamp.toString(),
     };
   }

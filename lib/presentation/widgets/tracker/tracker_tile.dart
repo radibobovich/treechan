@@ -74,6 +74,7 @@ class _TrackerTileState extends State<TrackerTile>
         name: item.name,
         imageboard: item.imageboard,
         prevTab: boardListTab,
+        classic: item.classic,
       );
       context.read<PageProvider>().addTab(tab);
     } else if (item is TrackedBranch) {

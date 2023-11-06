@@ -63,7 +63,7 @@ class UnknownSpecific implements ImageboardSpecific {
   }
 
   @override
-  DrawerTab tryOpenTabFromLink(Uri parsedUrl, DrawerTab? currentTab,
+  Future<DrawerTab> tryOpenTabFromLink(Uri parsedUrl, DrawerTab? currentTab,
       {String? searchTag}) {
     throw UnimplementedError();
   }

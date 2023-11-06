@@ -49,6 +49,7 @@ void main() async {
       imageboard: Imageboard.dvach,
       boardTag: 'abu',
       threadId: 50074,
+      classic: false,
 
       /// it is a real thread so we dont mock loader and refresher
       threadLoader:
@@ -99,6 +100,7 @@ void main() async {
       imageboard: Imageboard.dvach,
       boardTag: 'b',
       threadId: 282647314,
+      classic: false,
       threadLoader: getIt.get<IThreadRemoteLoader>(
           param1: Imageboard.dvach, param2: 'assets/test/thread.json'),
       threadRefresher: getIt.get<IThreadRemoteRefresher>(
@@ -159,6 +161,7 @@ void main() async {
         imageboard: Imageboard.dvach,
         boardTag: 'b',
         threadId: 282647314,
+        classic: false,
         threadLoader: getIt.get<IThreadRemoteLoader>(
             param1: Imageboard.dvach, param2: 'assets/test/thread.json'),
         threadRefresher: getIt.get<IThreadRemoteRefresher>(
@@ -177,6 +180,7 @@ void main() async {
           imageboard: Imageboard.dvach,
           boardTag: 'b',
           threadId: 282647314,
+          classic: false,
           threadLoader: getIt.get<IThreadRemoteLoader>(
               param1: Imageboard.dvach, param2: 'assets/test/thread.json'),
           threadRefresher: getIt.get<IThreadRemoteRefresher>(

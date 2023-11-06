@@ -156,6 +156,7 @@ class TrackerRepository {
       tab.id,
       tab.name ?? "Тред",
       posts,
+      tab.classic,
     );
   }
 
@@ -201,15 +202,17 @@ class TrackerRepository {
       bool forceNewReplies = false,
       bool isDead = false}) async {
     await db.updateThread(
-        imageboard: tab.imageboard,
-        tag: tab.tag,
-        threadId: tab.id,
-        posts: posts,
-        newPosts: newPosts,
-        newReplies: newReplies,
-        forceNewPosts: forceNewPosts,
-        forceNewReplies: forceNewReplies,
-        isDead: isDead);
+      imageboard: tab.imageboard,
+      tag: tab.tag,
+      threadId: tab.id,
+      posts: posts,
+      newPosts: newPosts,
+      newReplies: newReplies,
+      forceNewPosts: forceNewPosts,
+      forceNewReplies: forceNewReplies,
+      isDead: isDead,
+      classic: tab.classic,
+    );
     refreshNotifier.add(RefreshNotification.fromTab(tab, isDead: isDead));
   }
 
@@ -281,6 +284,7 @@ class TrackerRepository {
       isDead: map['isDead'] == 1,
       addTimestamp: map['addTimestamp'],
       refreshTimestamp: map['refreshTimestamp'],
+      classic: map['classic'] == 1,
     );
   }
 
@@ -305,6 +309,7 @@ class TrackerRepository {
         isDead: map['isDead'] == 1,
         addTimestamp: map['addTimestamp'],
         refreshTimestamp: map['refreshTimestamp'],
+        classic: map['classic'] == 1,
       );
     });
     this.threads = threads;
@@ -423,7 +428,7 @@ class TrackerRepository {
   Future<void> _refreshClosedThread(TrackedThread thread) async {
     try {
       final ThreadRepository repo = ThreadRepositoryManager()
-          .get(thread.imageboard, thread.tag, thread.threadId);
+          .get(thread.imageboard, thread.tag, thread.threadId, thread.classic);
       bool firstLoading = false;
       if (repo.postsCount == 0) {
         await repo.load();
@@ -437,6 +442,7 @@ class TrackerRepository {
         name: null,
         imageboard: thread.imageboard,
         prevTab: boardListTab,
+        classic: false,
       );
       updateThreadByTab(
           tab: mockTab,
@@ -452,6 +458,7 @@ class TrackerRepository {
         name: null,
         imageboard: thread.imageboard,
         prevTab: boardListTab,
+        classic: false,
       );
       markAsDead(mockTab);
     } on DioException catch (e) {
@@ -469,13 +476,18 @@ class TrackerRepository {
   }
 
   Future<void> _refreshClosedBranch(TrackedBranch branch) async {
+    final prefs = await SharedPreferences.getInstance();
     try {
       BranchRepository? branchRepo = BranchRepositoryManager()
           .get(branch.imageboard, branch.tag, branch.branchId);
       bool firstLoading = false;
       if (branchRepo == null) {
-        final threadRepo = ThreadRepositoryManager()
-            .get(branch.imageboard, branch.tag, branch.threadId);
+        final threadRepo = ThreadRepositoryManager().get(
+          branch.imageboard,
+          branch.tag,
+          branch.threadId,
+          prefs.getBool('classicThreadView') ?? false,
+        );
         if (threadRepo.postsCount == 0) {
           await threadRepo.load();
         }
@@ -533,6 +545,7 @@ class TrackerRepository {
         name: null,
         imageboard: item.imageboard,
         prevTab: boardListTab,
+        classic: false,
       );
       await updateThreadByTab(
         tab: mockTab,

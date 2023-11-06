@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/domain/models/tab.dart';
 
@@ -90,14 +91,18 @@ class ThreadTile extends StatelessWidget {
         subtitle: Text(thread.id.toString()),
         trailing: Text(DateFormat('HH:mm dd.MM.yy ')
             .format(DateTime.fromMillisecondsSinceEpoch(thread.timestamp))),
-        onTap: () {
+        onTap: () async {
           Navigator.pop(context);
+
+          final prefs = await SharedPreferences.getInstance();
           onOpen(ThreadTab(
-              imageboard: currentTab.imageboard,
-              tag: tag,
-              prevTab: currentTab,
-              id: thread.id,
-              name: null));
+            imageboard: currentTab.imageboard,
+            tag: tag,
+            prevTab: currentTab,
+            id: thread.id,
+            name: null,
+            classic: prefs.getBool('classicThreadView') ?? false,
+          ));
         });
   }
 }

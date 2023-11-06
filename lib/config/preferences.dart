@@ -53,5 +53,9 @@ Future<void> initializePreferences() async {
   if (prefs.getString('boardView') == null) {
     await prefs.setString('boardView', BoardView.treechan.name);
   }
+  if (prefs.getBool('classicThreadView') == null) {
+    await prefs.setBool('classicThreadView', false);
+  }
+
   return;
 }

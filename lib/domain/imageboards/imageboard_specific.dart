@@ -97,7 +97,7 @@ abstract interface class ImageboardSpecific {
   ///
   /// You must not call it directly. This method is called from
   /// tryOpenTabFromLink global function that is imageboard independent.
-  DrawerTab tryOpenTabFromLink(Uri parsedUrl, DrawerTab? currentTab,
+  Future<DrawerTab> tryOpenTabFromLink(Uri parsedUrl, DrawerTab? currentTab,
       {String? searchTag});
 }
 
@@ -107,8 +107,8 @@ abstract interface class ImageboardSpecific {
 /// Sometimes you can't get imageboard from the [url], for example, if
 /// the [url] is a search query got from [SearchBar]. In this case
 /// imageboard will be inferenced from [currentTab].
-DrawerTab _tryOpenUnknownTabFromLink(String url, DrawerTab? currentTab,
-    {String? searchTag}) {
+Future<DrawerTab> _tryOpenUnknownTabFromLink(String url, DrawerTab? currentTab,
+    {String? searchTag}) async {
   if (url == "") {
     throw Exception("Empty url");
   }
@@ -150,7 +150,7 @@ DrawerTab _tryOpenUnknownTabFromLink(String url, DrawerTab? currentTab,
   }
 
   /// Calls imageboard specific part of the procedure
-  final DrawerTab newTab = ImageboardSpecific(imageboard)
+  final DrawerTab newTab = await ImageboardSpecific(imageboard)
       .tryOpenTabFromLink(parsedUrl, currentTab, searchTag: searchTag);
 
   return newTab;

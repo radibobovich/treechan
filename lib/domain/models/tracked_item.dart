@@ -44,10 +44,12 @@ class TrackedThread extends TrackedItem {
       required super.newRepliesDiff,
       required super.isDead,
       required super.addTimestamp,
-      required super.refreshTimestamp});
+      required super.refreshTimestamp,
+      required this.classic});
 
   @override
   int get id => threadId;
+  bool classic;
 }
 
 class TrackedBranch extends TrackedItem {

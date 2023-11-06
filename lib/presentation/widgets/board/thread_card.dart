@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
@@ -84,13 +85,18 @@ class _ThreadCardState extends State<ThreadCard> {
   }
 }
 
-void openThread(BuildContext context, Thread thread, BoardTab currentTab) {
+Future<void> openThread(
+    BuildContext context, Thread thread, BoardTab currentTab) async {
   FocusManager.instance.primaryFocus?.unfocus();
+
+  final prefs = await SharedPreferences.getInstance();
+  // ignore: use_build_context_synchronously
   context.read<PageProvider>().addTab(ThreadTab(
       imageboard: thread.imageboard,
       id: env == Env.prod ? thread.posts.first.id : debugThreadId,
       tag: env == Env.prod ? thread.posts.first.boardTag : debugBoardTag,
       name: thread.posts.first.subject,
+      classic: prefs.getBool('classicThreadView') ?? false,
       prevTab: currentTab));
 }
 

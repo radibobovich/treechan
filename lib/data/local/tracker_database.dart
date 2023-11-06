@@ -20,7 +20,7 @@ class TrackerDatabase {
 
   Future<Database> _createDatabase() async {
     const String sql1 =
-        'CREATE TABLE thread_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, tag TEXT, threadId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
+        'CREATE TABLE thread_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, tag TEXT, threadId INTEGER, name TEXT, classic BOOL, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
     const String sql2 =
         'CREATE TABLE branch_tracker(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, tag TEXT, threadId INTEGER, branchId INTEGER, name TEXT, addTimestamp INTEGER, refreshTimestamp INTEGER, posts INTEGER, newPosts INTEGER, newPostsDiff INTEGER, newReplies INTEGER, newRepliesDiff INTEGER, isDead INTEGER)';
     if (Platform.isWindows || Platform.isLinux) {
@@ -51,7 +51,7 @@ class TrackerDatabase {
   }
 
   Future<void> addThread(Imageboard imageboard, String tag, int threadId,
-      String name, int posts) async {
+      String name, int posts, bool classic) async {
     final Database db = await _database;
 
     final occurence = await db.query('thread_tracker',
@@ -66,6 +66,7 @@ class TrackerDatabase {
       'addTimestamp': DateTime.now().millisecondsSinceEpoch,
       'refreshTimestamp': DateTime.now().millisecondsSinceEpoch,
       'posts': posts,
+      'classic': classic == true ? 1 : 0,
       'newPosts': 0,
       'newPostsDiff': 0,
       'newReplies': 0,
@@ -92,6 +93,7 @@ class TrackerDatabase {
       required int newReplies,
       bool forceNewPosts = false,
       bool forceNewReplies = false,
+      bool? classic,
       required bool isDead}) async {
     final Database db = await _database;
 
@@ -104,6 +106,10 @@ class TrackerDatabase {
     if (currentValuesResponse.isEmpty) return;
     final Map<String, dynamic> currentValues = currentValuesResponse.first;
 
+    int? classicInt;
+    if (classic != null) {
+      classicInt = classic == true ? 1 : 0;
+    }
     final updateValues = {
       'refreshTimestamp': DateTime.now().millisecondsSinceEpoch,
       'posts': posts ?? currentValues['posts'],
@@ -115,6 +121,7 @@ class TrackerDatabase {
           : currentValues['newReplies'] + newReplies,
       'newRepliesDiff': newReplies,
       'isDead': isDead ? 1 : currentValues['isDead'],
+      'classic': classicInt ?? currentValues['classic'],
     };
 
     await db.update('thread_tracker', updateValues,

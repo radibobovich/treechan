@@ -288,11 +288,13 @@ class TabManager {
       return _tabs.keys.firstWhere(
           (tab) => tab is ThreadTab && tab.tag == tag && tab.id == threadId,
           orElse: () => ThreadTab(
-              imageboard: Imageboard.unknown,
-              name: null,
-              tag: 'error',
-              prevTab: boardListTab,
-              id: -1)) as IdMixin;
+                imageboard: Imageboard.unknown,
+                name: null,
+                tag: 'error',
+                prevTab: boardListTab,
+                id: -1,
+                classic: false,
+              )) as IdMixin;
     } else {
       return _tabs.keys.firstWhere(
           (tab) => tab is BranchTab && tab.tag == tag && tab.id == branchId,

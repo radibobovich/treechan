@@ -26,7 +26,8 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
   }
 
   /// Creates new repository with [tag] and [id].
-  ThreadRepository create(Imageboard imageboard, String tag, int id,
+  ThreadRepository create(
+      Imageboard imageboard, String tag, int id, bool classic,
       {String? archiveDate}) {
     final threadRepo = ThreadRepository(
         messenger: _repositoryMessenger,
@@ -34,6 +35,7 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
         boardTag: env == Env.prod ? tag : debugBoardTag,
         threadId: env == Env.prod ? id : debugThreadId,
         archiveDate: archiveDate,
+        classic: classic,
         // param1 only used in test and dev environments
         threadLoader: getIt<IThreadRemoteLoader>(
             param1: imageboard, param2: debugThreadPath),
@@ -68,14 +70,14 @@ class ThreadRepositoryManager implements RepositoryManager<ThreadRepository> {
   /// Returns repository from the list of repositories if it exists.
   /// Otherwise creates new repository, adds it to the list and returns it.
   @override
-  ThreadRepository get(Imageboard imageboard, String tag, int id,
+  ThreadRepository get(Imageboard imageboard, String tag, int id, bool classic,
       {String? date}) {
     return _repos.firstWhere(
         (element) =>
             element.boardTag == tag &&
             element.threadId == id &&
             element.imageboard == imageboard, orElse: () {
-      return create(imageboard, tag, id, archiveDate: date);
+      return create(imageboard, tag, id, classic, archiveDate: date);
     });
   }
 }

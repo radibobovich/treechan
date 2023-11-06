@@ -30,10 +30,10 @@ class ThreadRepository implements Repository {
     this.archiveDate,
     required this.threadLoader,
     required this.threadRefresher,
+    required this.classic,
     required StreamController<RepositoryMessage> messenger,
-  }) : _messenger = messenger {
-    // _messengerStream = _messenger.stream;
-  }
+  }) : _messenger = messenger;
+
   IThreadLoader threadLoader;
   IThreadRefresher threadRefresher;
   @override
@@ -41,9 +41,13 @@ class ThreadRepository implements Repository {
   @override
   final String boardTag;
   final int threadId;
+
+  /// Used by archive threads.
   String? archiveDate;
+
+  /// If true, no roots will be built during load or refresh.
+  bool classic;
   final StreamController<RepositoryMessage> _messenger;
-  // late final Stream<RepositoryMessage> _messengerStream;
   @override
   int get id => threadId;
 
@@ -101,9 +105,6 @@ class ThreadRepository implements Repository {
   /// Loads thread from scratch.
   @override
   Future<void> load() async {
-    // final ThreadFetcherDeprecated fetcher =
-    //     ThreadFetcherDeprecated(boardTag: boardTag, threadId: threadId);
-
     try {
       _posts = await threadLoader.getPosts(
           boardTag: boardTag, threadId: threadId, date: archiveDate);
@@ -114,10 +115,6 @@ class ThreadRepository implements Repository {
         redirectPath: e.redirectPath,
       ));
       rethrow;
-      // await _messenger.stream.firstWhere((message){
-
-      // });
-      // _posts = await _threadLoader.getPosts(boardTag: boardTag, threadId: threadId, date: e.)
     }
 
     _threadInfo = ThreadInfo(
@@ -161,8 +158,6 @@ class ThreadRepository implements Repository {
     if (_posts.isEmpty) {
       return;
     }
-    // final ThreadFetcherDeprecated fetcher = ThreadFetcherDeprecated(
-    //     boardTag: boardTag, threadId: threadId, threadInfo: _threadInfo);
     final int oldPostsCount = _posts.length;
 
     List<Post> newPosts = await threadRefresher.getNewPosts(
@@ -206,7 +201,8 @@ class ThreadRepository implements Repository {
           imageboard: imageboard,
           tag: boardTag,
           prevTab: boardListTab,
-          id: threadId),
+          id: threadId,
+          classic: classic),
       posts: postsCount,
       newPosts: newPostsCount,
       newReplies: newReplies,
@@ -215,7 +211,6 @@ class ThreadRepository implements Repository {
   }
 
   void updateInfo(List<Post> newPosts) {
-    // _threadInfo.postsCount = _threadInfo.postsCount + newPosts.length;
     _threadInfo.maxNum = newPosts.last.id;
 
     /// Highlight new posts and force update numbers

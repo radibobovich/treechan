@@ -26,7 +26,7 @@ class HistoryDatabase implements IHistoryDatabase {
 
   Future<Database> _createDatabase() async {
     const String sql =
-        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, archiveDate TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT)';
+        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, imageboard TEXT, archiveDate TEXT, tag TEXT, threadId INTEGER, timestamp TEXT, name TEXT, classic BOOL)';
     if (Platform.isWindows || Platform.isLinux) {
       databaseFactory = databaseFactoryFfi;
       return databaseFactory.openDatabase(
@@ -116,6 +116,7 @@ class HistoryDatabase implements IHistoryDatabase {
           name: map['name'],
           imageboard: imageboardFromString(map['imageboard']),
           archiveDate: map['archiveDate'],
+          classic: map['classic'] == 1,
           prevTab: boardListTab,
           timestamp: DateTime.parse(map['timestamp']));
     }).reversed.toList();

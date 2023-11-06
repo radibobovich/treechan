@@ -15,6 +15,7 @@ void main() {
       tag: 'bo',
       prevTab: boardListTab,
       name: null,
+      classic: false,
     );
 
     expect(newTab, expectedTab, reason: 'newTab does not match expectedTab');
@@ -62,6 +63,7 @@ void main() {
       tag: 'a',
       name: null,
       prevTab: boardListTab,
+      classic: false,
     );
 
     expect(newTab, expectedTab);
@@ -87,6 +89,7 @@ void main() {
       tag: 'a',
       prevTab: boardListTab,
       id: 7633107,
+      classic: false,
     );
     expect(newTab, expectedTab);
   });

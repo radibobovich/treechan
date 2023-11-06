@@ -194,9 +194,10 @@ path is ${origin + redirectPath}''');
   }
 
   @override
-  DrawerTab tryOpenTabFromLink(Uri parsedUrl, DrawerTab? currentTab,
-      {String? searchTag}) {
+  Future<DrawerTab> tryOpenTabFromLink(Uri parsedUrl, DrawerTab? currentTab,
+      {String? searchTag}) async {
     late DrawerTab newTab;
+    final prefs = await SharedPreferences.getInstance();
     if (parsedUrl.pathSegments.isNotEmpty) {
       newTab = BoardTab(
           imageboard: Imageboard.dvach,
@@ -211,30 +212,36 @@ path is ${origin + redirectPath}''');
         if (cleanSegments[1] == "res" && cleanSegments.length == 3) {
           // split is used to remove the .html extension
           newTab = ThreadTab(
-              imageboard: Imageboard.dvach,
-              tag: parsedUrl.pathSegments[0],
-              prevTab: currentTab ?? boardListTab,
-              id: int.parse(cleanSegments[2].split(".").first),
-              name: null);
+            imageboard: Imageboard.dvach,
+            tag: parsedUrl.pathSegments[0],
+            prevTab: currentTab ?? boardListTab,
+            id: int.parse(cleanSegments[2].split(".").first),
+            name: null,
+            classic: prefs.getBool('classicThreadView') ?? false,
+          );
         } else if (cleanSegments.last == "catalog.html") {
           (newTab as BoardTab).isCatalog = true;
           newTab.query = searchTag;
         } else if (cleanSegments[1] == 'arch') {
           /// e.g. a/arch/2016-02-13/res/2656447.html
           newTab = ThreadTab(
-              imageboard: Imageboard.dvachArchive,
-              archiveDate: cleanSegments[2],
-              tag: cleanSegments[0],
-              id: int.parse(cleanSegments[4].split(".").first),
-              prevTab: currentTab ?? boardListTab,
-              name: null);
+            imageboard: Imageboard.dvachArchive,
+            archiveDate: cleanSegments[2],
+            tag: cleanSegments[0],
+            id: int.parse(cleanSegments[4].split(".").first),
+            prevTab: currentTab ?? boardListTab,
+            name: null,
+            classic: prefs.getBool('classicThreadView') ?? false,
+          );
         } else {
           newTab = ThreadTab(
-              imageboard: Imageboard.dvach,
-              tag: (newTab as BoardTab).tag,
-              prevTab: currentTab ?? boardListTab,
-              id: int.parse(cleanSegments[1].split(".")[0]),
-              name: null);
+            imageboard: Imageboard.dvach,
+            tag: (newTab as BoardTab).tag,
+            prevTab: currentTab ?? boardListTab,
+            id: int.parse(cleanSegments[1].split(".")[0]),
+            name: null,
+            classic: prefs.getBool('classicThreadView') ?? false,
+          );
         }
       }
     }

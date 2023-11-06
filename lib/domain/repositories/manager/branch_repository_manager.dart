@@ -48,7 +48,8 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
   }
 
   @override
-  BranchRepository? get(Imageboard imageboard, String tag, int id) {
+  BranchRepository? get(Imageboard imageboard, String tag, int id,
+      [bool? classic]) {
     BranchRepository repo = _repos.firstWhere(
         (element) => element.boardTag == tag && element.postId == id,
         orElse: () {
@@ -58,6 +59,7 @@ class BranchRepositoryManager implements RepositoryManager<BranchRepository> {
             imageboard: imageboard,
             boardTag: 'error',
             threadId: 0,
+            classic: false,
             threadLoader: getIt<IThreadRemoteLoader>(
                 param1: imageboard, param2: debugThreadPath),
             threadRefresher: getIt<IThreadRemoteRefresher>(

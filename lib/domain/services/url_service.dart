@@ -53,21 +53,25 @@ class UrlService {
         if (cleanSegments[1] == "res" && cleanSegments.length == 3) {
           // split is used to remove the .html extension
           newTab = ThreadTab(
-              imageboard: Imageboard.dvach,
-              tag: parsedUrl.pathSegments[0],
-              prevTab: currentTab ?? boardListTab,
-              id: int.parse(cleanSegments[2].split(".")[0]),
-              name: null);
+            imageboard: Imageboard.dvach,
+            tag: parsedUrl.pathSegments[0],
+            prevTab: currentTab ?? boardListTab,
+            id: int.parse(cleanSegments[2].split(".")[0]),
+            name: null,
+            classic: false,
+          );
         } else if (cleanSegments.last == "catalog.html") {
           (newTab as BoardTab).isCatalog = true;
           newTab.query = searchTag;
         } else {
           newTab = ThreadTab(
-              imageboard: Imageboard.dvach,
-              tag: (newTab as BoardTab).tag,
-              prevTab: currentTab ?? boardListTab,
-              id: int.parse(cleanSegments[1].split(".")[0]),
-              name: null);
+            imageboard: Imageboard.dvach,
+            tag: (newTab as BoardTab).tag,
+            prevTab: currentTab ?? boardListTab,
+            id: int.parse(cleanSegments[1].split(".")[0]),
+            name: null,
+            classic: false,
+          );
         }
       }
     }
