@@ -6,6 +6,7 @@ import 'package:treechan/di/injection.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
 import 'package:treechan/presentation/provider/page_provider.dart';
 import 'package:treechan/domain/services/date_time_service.dart';
+import 'package:treechan/presentation/widgets/board/card_action_menu.dart';
 import 'package:treechan/presentation/widgets/shared/user_platform_icons.dart';
 import 'package:treechan/utils/constants/dev.dart';
 import 'package:treechan/utils/string.dart';
@@ -40,7 +41,13 @@ class _ThreadCardState extends State<ThreadCard> {
                   widget.thread.hidden = false;
                 });
               }
-            : () => openThread(context, widget.thread, widget.currentTab),
+            : () => SharedPreferences.getInstance().then((prefs) {
+                  final classic = prefs.getBool('classicThreadView') ?? false;
+                  openThread(
+                      context, widget.thread, widget.currentTab, classic);
+                }),
+        onLongPress: () =>
+            showCardActionMenu(context, widget.currentTab, widget.thread),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -51,7 +58,7 @@ class _ThreadCardState extends State<ThreadCard> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 8, 8, 16),
-                    child: CardHeader(thread: widget.thread),
+                    child: CardHeader(post: widget.thread.posts.first),
                   ),
                   Text.rich(TextSpan(
                     text: widget.thread.posts.first.subject,
@@ -85,18 +92,17 @@ class _ThreadCardState extends State<ThreadCard> {
   }
 }
 
-Future<void> openThread(
-    BuildContext context, Thread thread, BoardTab currentTab) async {
+void openThread(
+    BuildContext context, Thread thread, BoardTab currentTab, bool classic) {
   FocusManager.instance.primaryFocus?.unfocus();
 
-  final prefs = await SharedPreferences.getInstance();
   // ignore: use_build_context_synchronously
   context.read<PageProvider>().addTab(ThreadTab(
       imageboard: thread.imageboard,
       id: env == Env.prod ? thread.posts.first.id : debugThreadId,
       tag: env == Env.prod ? thread.posts.first.boardTag : debugBoardTag,
       name: thread.posts.first.subject,
-      classic: prefs.getBool('classicThreadView') ?? false,
+      classic: classic,
       prevTab: currentTab));
 }
 
@@ -104,28 +110,28 @@ Future<void> openThread(
 class CardHeader extends StatelessWidget {
   const CardHeader({
     Key? key,
-    required this.thread,
+    required this.post,
     this.greyName = false,
   }) : super(key: key);
   final bool greyName;
-  final Thread thread;
+  final Post post;
   @override
   Widget build(BuildContext context) {
     final nameStyle = greyName
         ? TextStyle(color: Theme.of(context).textTheme.bodySmall!.color)
         : null;
     DateTimeService dateTimeSerivce =
-        DateTimeService(timestamp: thread.posts.first.timestamp);
+        DateTimeService(timestamp: post.timestamp);
     return Row(
       children: [
         /// name
-        thread.posts.first.boardTag != 's'
-            ? Text(thread.posts.first.name, style: nameStyle)
-            : Text(extractUserInfo(thread.posts.first.name), style: nameStyle),
+        post.boardTag != 's'
+            ? Text(post.name, style: nameStyle)
+            : Text(extractUserInfo(post.name), style: nameStyle),
 
         /// device icons
-        thread.posts.first.boardTag == 's'
-            ? UserPlatformIcons(userName: thread.posts.first.name)
+        post.boardTag == 's'
+            ? UserPlatformIcons(userName: post.name)
             : const SizedBox.shrink(),
         const Spacer(),
 

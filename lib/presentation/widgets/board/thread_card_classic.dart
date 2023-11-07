@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:treechan/data/local/hidden_threads_database.dart';
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/presentation/widgets/board/card_action_menu.dart';
 import 'package:treechan/presentation/widgets/board/thread_card.dart';
 
 import '../../../domain/models/tab.dart';
@@ -35,11 +37,17 @@ class _ThreadCardClassicState extends State<ThreadCardClassic> {
                   widget.thread.hidden = false;
                 });
               }
-            : () => openThread(context, widget.thread, widget.currentTab),
+            : () => SharedPreferences.getInstance().then((prefs) {
+                  final classic = prefs.getBool('classicThreadView') ?? false;
+                  openThread(
+                      context, widget.thread, widget.currentTab, classic);
+                }),
+        onLongPress: () =>
+            showCardActionMenu(context, widget.currentTab, widget.thread),
         child: widget.thread.hidden
             ? Row(
                 children: [
-                  Flexible(
+                  Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 8),
@@ -55,6 +63,7 @@ class _ThreadCardClassicState extends State<ThreadCardClassic> {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     /// Title, header, media
                     Row(
@@ -81,7 +90,8 @@ class _ThreadCardClassicState extends State<ThreadCardClassic> {
                                     padding:
                                         const EdgeInsets.fromLTRB(0, 4, 4, 0),
                                     child: CardHeader(
-                                        thread: widget.thread, greyName: true),
+                                        post: widget.thread.posts.first,
+                                        greyName: true),
                                   ),
                                 ],
                               ),
