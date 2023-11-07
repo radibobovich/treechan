@@ -8,9 +8,11 @@ import 'package:hidable/hidable.dart';
 import 'package:provider/provider.dart';
 import 'package:should_rebuild/should_rebuild.dart' as rebuild;
 import 'package:treechan/domain/models/core/core_models.dart';
+import 'package:treechan/domain/models/thread_info.dart';
 import 'package:treechan/presentation/screens/page_navigator.dart';
 import 'package:treechan/presentation/widgets/drawer/end_drawer.dart';
 import 'package:treechan/presentation/widgets/thread/popup_menu_thread.dart';
+import 'package:treechan/presentation/widgets/thread/post_widget_classic.dart';
 import 'package:treechan/utils/constants/constants.dart';
 import 'package:treechan/utils/custom_hidable_visibility.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -55,6 +57,8 @@ class _ThreadScreenState extends State<ThreadScreen>
         key: context.read<ThreadBloc>().scaffoldKey,
         endDrawer: AppEndDrawer(currentTab: widget.currentTab),
         onEndDrawerChanged: (isOpened) {
+          if (widget.currentTab.classic == true) return;
+
           if (isOpened) {
             BlocProvider.of<ThreadBloc>(context)
                 .restoreEndDrawerScrollPosition();
@@ -70,14 +74,7 @@ class _ThreadScreenState extends State<ThreadScreen>
             child: BlocBuilder<ThreadBloc, ThreadState>(
               builder: (context, state) {
                 if (state is ThreadLoadedState) {
-                  if (widget.currentTab.name == null) {
-                    Provider.of<PageProvider>(context, listen: false)
-                        .setName(widget.currentTab, state.threadInfo.title);
-                    widget.currentTab.name = state.threadInfo.title;
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      setState(() {});
-                    });
-                  }
+                  setTabName(context, state.threadInfo);
                   final bloc = context.read<ThreadBloc>();
                   return FlexibleTreeView<Post>(
                     scrollable: prefs.getBool('2dscroll')!,
@@ -100,9 +97,29 @@ class _ThreadScreenState extends State<ThreadScreen>
                         node: node,
                         roots: state.roots!,
                         currentTab: widget.currentTab,
-                        scrollService:
-                            BlocProvider.of<ThreadBloc>(context).scrollService,
+                        scrollService: bloc.scrollService,
                       );
+                    },
+                  );
+                } else if (state is ThreadLoadedClassicState) {
+                  setTabName(context, state.threadInfo);
+                  final bloc = context.read<ThreadBloc>();
+                  final posts = state.posts;
+                  return ListView.separated(
+                    padding: const EdgeInsets.only(
+                        top: 86, bottom: AppConstants.navBarHeight),
+                    controller: bloc.scrollController,
+                    itemCount: posts.length,
+                    itemBuilder: (context, index) {
+                      return PostWidgetClassic(
+                        post: posts[index],
+                        bloc: bloc,
+                        currentTab: widget.currentTab,
+                        scrollService: bloc.scrollService,
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider(indent: 5, endIndent: 5);
                     },
                   );
                 } else if (state is ThreadErrorState) {
@@ -121,6 +138,17 @@ class _ThreadScreenState extends State<ThreadScreen>
           /// lags like we would have if used [extendBodyBehindAppbar] property
           ThreadAppBar(currentTab: widget.currentTab),
         ]));
+  }
+
+  void setTabName(BuildContext context, ThreadInfo threadInfo) {
+    if (widget.currentTab.name == null) {
+      Provider.of<PageProvider>(context, listen: false)
+          .setName(widget.currentTab, threadInfo.title);
+      widget.currentTab.name = threadInfo.title;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {});
+      });
+    }
   }
 }
 
