@@ -75,20 +75,18 @@ class _SpoilerTextState extends State<SpoilerText> {
 /// Represents post text.
 /// Extracted from PostWidget because of a large onLinkTap function.
 class HtmlContainer extends StatelessWidget {
-  const HtmlContainer(
-      {Key? key,
-      required this.bloc,
-      required this.post,
-      required this.currentTab,
-      this.treeNode,
-      this.scrollService})
-      : super(key: key);
+  const HtmlContainer({
+    Key? key,
+    required this.bloc,
+    required this.post,
+    required this.currentTab,
+    this.treeNode,
+  }) : super(key: key);
   final ThreadBase? bloc;
   final Post post;
   final TreeNode<Post>? treeNode;
   final DrawerTab currentTab;
 
-  final ScrollService? scrollService;
   @override
   Widget build(BuildContext context) {
     assert(bloc != null || currentTab is BoardTab,
@@ -115,27 +113,6 @@ class HtmlContainer extends StatelessWidget {
                 bloc: bloc,
                 currentTab: currentTab,
               ),
-          // (node, children) {
-          //   return GestureDetector(
-          //     onTap: () => openLink(node, context, bloc),
-          //     child: Text(
-          //       // custom link color render
-          //       style: TextStyle(
-          //           color: Theme.of(context).secondaryHeaderColor,
-          //           decoration: TextDecoration.underline,
-          //           // highlight current parent in the post text if
-          //           // there are multiple parents
-          //           fontWeight: (treeNode != null &&
-          //                   post.aTagsCount > 1 &&
-          //                   treeNode!.parent != null &&
-          //                   node.tree.element!.text
-          //                       .contains('>>${treeNode!.parent!.data.id}'))
-          //               ? FontWeight.bold
-          //               : FontWeight.normal),
-          //       node.tree.element!.text,
-          //     ),
-          //   );
-          // },
         },
       ),
     );

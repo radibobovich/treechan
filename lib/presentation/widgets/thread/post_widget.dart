@@ -123,7 +123,6 @@ class _PostWidgetState extends State<PostWidget>
                               post: post,
                               treeNode: widget.node,
                               currentTab: widget.currentTab,
-                              scrollService: widget.scrollService,
                             ),
                           ],
                         )
