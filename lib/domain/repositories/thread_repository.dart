@@ -30,9 +30,10 @@ class ThreadRepository implements Repository {
     this.archiveDate,
     required this.threadLoader,
     required this.threadRefresher,
-    required this.classic,
+    required bool classic,
     required StreamController<RepositoryMessage> messenger,
-  }) : _messenger = messenger;
+  })  : _classic = classic,
+        _messenger = messenger;
 
   IThreadLoader threadLoader;
   IThreadRefresher threadRefresher;
@@ -46,7 +47,10 @@ class ThreadRepository implements Repository {
   String? archiveDate;
 
   /// If true, no roots will be built during load or refresh.
-  bool classic;
+  bool _classic;
+
+  bool get classic => _classic;
+
   final StreamController<RepositoryMessage> _messenger;
   @override
   int get id => threadId;
@@ -62,7 +66,7 @@ class ThreadRepository implements Repository {
   /// For use in stateless widgets only. Prefer getRoots() instead.
   List<TreeNode<Post>> get getRootsSynchronously => _roots;
 
-  /// Loads thread at first run and returns roots.
+  /// Loads thread at first run and returns roots (if [classic] == false)
   /// Other times returns roots without loading.
   Future<List<TreeNode<Post>>> getRoots() async {
     prefs = await SharedPreferences.getInstance();
@@ -71,6 +75,17 @@ class ThreadRepository implements Repository {
       await load();
     }
     return _roots;
+  }
+
+  /// Loads thread at first run and returns posts (if [classic] == true)
+  /// Other times returns roots without loading.
+  Future<List<Post>> getPosts() async {
+    prefs = await SharedPreferences.getInstance();
+
+    if (_posts.isEmpty) {
+      await load();
+    }
+    return _posts;
   }
 
   /// PLain list of all posts in the thread.
@@ -124,16 +139,30 @@ class ThreadRepository implements Repository {
       lastPostId: _posts.last.id,
       maxNum: _posts.last.id,
     );
-    // _threadInfo = fetcher.threadInfo;
     if (_posts.isNotEmpty) fixBlankSpace(_posts.first);
-
-    // _threadInfo.opPostId = _posts.first.id;
 
     for (var post in _posts) {
       if (post.comment.contains("video")) fixHtmlVideo(post);
     }
-    final record =
-        await Tree(posts: _posts, opPostId: _threadInfo.id).getTree();
+
+    final treeService = Tree(posts: _posts, opPostId: _threadInfo.id);
+
+    /// Build tree only if thread is not in classic view.
+    if (classic == false) {
+      await _buildTree(treeService);
+    } else {
+      /// Find post parents and children manually
+      treeService.findPostParents();
+      findChildren(posts, 0);
+    }
+
+    hiddenPosts =
+        await HiddenPostsDatabase().getHiddenPostIds(boardTag, threadId);
+  }
+
+  /// Builds posts tree on [load] call or when [changeView] sets tree mode.
+  Future<void> _buildTree(Tree tree) async {
+    final record = await tree.getTree();
     _roots.addAll(record.$1);
     _plainNodes.addAll(record.$2);
 
@@ -143,8 +172,6 @@ class ThreadRepository implements Repository {
     _setShowLinesProperty(_roots);
     stopwatch.stop();
     debugPrint("Set showLines property in ${stopwatch.elapsedMilliseconds}");
-    hiddenPosts =
-        await HiddenPostsDatabase().getHiddenPostIds(boardTag, threadId);
   }
 
   /// Refreshes thread with new posts. Adds new posts to the tree.
@@ -164,7 +191,11 @@ class ThreadRepository implements Repository {
         boardTag: boardTag, threadId: threadId, lastPostId: _threadInfo.maxNum);
     newPostsCount = newPosts.length;
     if (newPosts.isEmpty) return;
-    updateInfo(newPosts);
+    if (classic == true) {
+      /// Find post children manually
+      newPosts = findChildren(newPosts, oldPostsCount);
+    }
+    _updateInfo(newPosts);
     _posts.addAll(newPosts);
 
     // pass new posts so later we call attachNewRoots which will
@@ -175,26 +206,45 @@ class ThreadRepository implements Repository {
       oldPostsCount: oldPostsCount,
     );
 
-    /// This function actually updates [_roots].
-    /// It returns [newPlainNodes] just to add them to [_lastNodes] more easily.
-    final newPlainNodes = await treeService.attachNewRoots(
-        _roots, _plainNodes, _posts, _threadInfo.id);
+    /// Update tree only if thread is not in classic view.
+    if (classic == false) {
+      /// This function actually updates [_roots].
+      /// It returns [newPlainNodes] just to add them to [_lastNodes] more easily.
+      final newPlainNodes = await treeService.attachNewRoots(
+          _roots, _plainNodes, _posts, _threadInfo.id);
 
-    _plainNodes.addAll(newPlainNodes);
+      _plainNodes.addAll(newPlainNodes);
 
-    _lastNodes.clear();
-    for (var nodeList in newPlainNodes.values) {
-      _lastNodes.add(nodeList.first);
+      _lastNodes.clear();
+      for (var nodeList in newPlainNodes.values) {
+        _lastNodes.add(nodeList.first);
+      }
+
+      final stopwatch = Stopwatch()..start();
+      _lastNodes.sort((a, b) => a.data.id.compareTo(b.data.id));
+      stopwatch.stop();
+      debugPrint(
+          'New posts sort executed in ${stopwatch.elapsedMicroseconds} microseconds');
+
+      _setShowLinesProperty(_roots);
+    } else {
+      /// Find post parents manually
+      treeService.findPostParents();
+
+      /// Convert to a map to search faster by id
+      final Map<int, Post> postsMap = {
+        for (var post in _posts) (post).id: post
+      };
+
+      /// Add new posts as a children to the old ones
+      for (int i = 0; i < newPosts.length; i++) {
+        final post = newPosts[i];
+        final parents = post.parents;
+        for (int parentId in parents) {
+          postsMap[parentId]?.children.add(i + oldPostsCount);
+        }
+      }
     }
-
-    final stopwatch = Stopwatch()..start();
-    _lastNodes.sort((a, b) => a.data.id.compareTo(b.data.id));
-    stopwatch.stop();
-    debugPrint(
-        'New posts sort executed in ${stopwatch.elapsedMicroseconds} microseconds');
-
-    _setShowLinesProperty(_roots);
-
     trackerRepo?.updateThreadByTab(
       tab: ThreadTab(
           name: null,
@@ -210,7 +260,20 @@ class ThreadRepository implements Repository {
     return;
   }
 
-  void updateInfo(List<Post> newPosts) {
+  /// Toggles thread classic/tree view.
+  Future<void> changeView() async {
+    if (classic == false) {
+      _classic = true;
+      _roots.clear();
+      _lastNodes.clear();
+    } else {
+      _classic = false;
+      final tree = Tree(posts: _posts, opPostId: _threadInfo.id);
+      await _buildTree(tree);
+    }
+  }
+
+  void _updateInfo(List<Post> newPosts) {
     _threadInfo.maxNum = newPosts.last.id;
 
     /// Highlight new posts and force update numbers

@@ -45,12 +45,22 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
     if (isBusy) return;
     isBusy = true;
     try {
-      final roots = await threadRepository.getRoots();
-      threadInfo = threadRepository.threadInfo;
-      emit(ThreadLoadedState(
-        roots: roots,
-        threadInfo: threadInfo,
-      ));
+      if (threadRepository.classic) {
+        /// Classic view mode
+
+        final posts = await threadRepository.getPosts();
+        threadInfo = threadRepository.threadInfo;
+        emit(ThreadLoadedClassicState(posts: posts, threadInfo: threadInfo));
+      } else {
+        /// Tree view mode
+
+        final roots = await threadRepository.getRoots();
+        threadInfo = threadRepository.threadInfo;
+        emit(ThreadLoadedState(
+          roots: roots,
+          threadInfo: threadInfo,
+        ));
+      }
     } on ThreadNotFoundException catch (e) {
       emit(ThreadErrorState(message: "404 - Тред не найден", exception: e));
     } on ArchiveRedirectException catch (e) {
@@ -89,6 +99,10 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
             roots: (state as ThreadLoadedState).roots,
             threadInfo: (state as ThreadLoadedState).threadInfo),
       );
+    } else if (currentState is ThreadLoadedClassicState) {
+      emit(ThreadRefreshingClassicState(
+          posts: (state as ThreadLoadedClassicState).posts,
+          threadInfo: (state as ThreadLoadedClassicState).threadInfo));
     }
 
     try {
@@ -127,8 +141,9 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
   }
 
   FutureOr<void> _refreshFromThread() async {
-    bool requiresSavingScrollPosition =
-        scrollController.hasClients && scrollController.offset != 0;
+    bool requiresSavingScrollPosition = scrollController.hasClients &&
+        scrollController.offset != 0 &&
+        threadRepository.classic == false;
     if (requiresSavingScrollPosition) {
       scrollService.saveCurrentScrollInfo();
     }
@@ -195,6 +210,13 @@ class ThreadBloc extends Bloc<ThreadEvent, ThreadState> with ThreadBase {
       newReplies: threadRepository.newReplies,
       forceNewReplies: shouldNotifyNewPosts ? false : true,
     );
+  }
+
+  /// Toggles classic/tree thread view.
+  Future<void> changeView() async {
+    (tab as ThreadTab).classic = !(tab as ThreadTab).classic;
+    await threadRepository.changeView();
+    add(LoadThreadEvent());
   }
 
   @override
@@ -304,13 +326,26 @@ abstract class ThreadState {}
 class ThreadInitialState extends ThreadState {}
 
 class ThreadLoadedState extends ThreadState {
-  late final List<TreeNode<Post>>? roots;
-  late final ThreadInfo threadInfo;
+  final List<TreeNode<Post>>? roots;
+  final ThreadInfo threadInfo;
+
   ThreadLoadedState({required this.roots, required this.threadInfo});
+}
+
+class ThreadLoadedClassicState extends ThreadState {
+  final List<Post> posts;
+  final ThreadInfo threadInfo;
+
+  ThreadLoadedClassicState({required this.posts, required this.threadInfo});
 }
 
 class ThreadRefreshingState extends ThreadLoadedState {
   ThreadRefreshingState({required super.roots, required super.threadInfo});
+}
+
+class ThreadRefreshingClassicState extends ThreadLoadedClassicState {
+  ThreadRefreshingClassicState(
+      {required super.posts, required super.threadInfo});
 }
 
 class ThreadErrorState extends ThreadState {
