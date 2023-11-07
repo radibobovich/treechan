@@ -39,7 +39,7 @@ class Tree {
       {bool skipPostsModify = false, bool? forceExpandNodes}) async {
     final prefs = await SharedPreferences.getInstance();
     if (!skipPostsModify) {
-      _findPostParents();
+      findPostParents();
       findChildren(posts, oldPostsCount);
     }
     var record = await compute(_createTreeModel, (
@@ -57,14 +57,14 @@ class Tree {
   }
 
   /// Adds a list of parent posts to each post based on the comment html.
-  void _findPostParents() {
+  void findPostParents() {
     final stopwatch = Stopwatch()..start();
     for (var post in posts) {
       //take post comment
       final postCommentHtml = html.parse(post.comment);
       // find <a> tags which contains data-num attribute
       var aTags = postCommentHtml.getElementsByTagName("a");
-      final parents = List<int>.empty(growable: true);
+      final List<int> parents = [];
       for (var aTag in aTags) {
         final keys = aTag.attributes.keys;
         final values = aTag.attributes.values;
@@ -191,11 +191,6 @@ class Tree {
         final TreeNode<Post>? result = findNode(roots[i].children, id);
         if (result != null) return result;
       }
-
-      // TreeNode<Post>? result = _findNodeInChildren(roots[i], id);
-      // if (result == null) {
-      //   continue;
-      // }
 
       debugPrint(
           'findNode() executed in ${stopwatch.elapsedMicroseconds} microseconds');
